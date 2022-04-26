@@ -31,7 +31,7 @@ contract MultisigManager is Base, IMultisigManager {
 	// Add a multisig. Default to disabled when created.
 	function addMultisig(address _addr) public override {
 		int256 index = getIndexOf(_addr);
-		require(index == -1, "Address already exists");
+		require(index == -1, "addr exists");
 		uint256 count = getUint(keccak256("multisig.count"));
 		setAddress(keccak256(abi.encodePacked("multisig.item", count, ".address")), _addr);
 
@@ -44,14 +44,14 @@ contract MultisigManager is Base, IMultisigManager {
 
 	function enableMultisig(address _addr) public override {
 		int256 index = getIndexOf(_addr);
-		require(index != -1, "Node does not exist");
+		require(index != -1, "node does not exist");
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), true);
 		emit MultisigEnabled(_addr);
 	}
 
 	function disableMultisig(address _addr) public override {
 		int256 index = getIndexOf(_addr);
-		require(index != -1, "Node does not exist");
+		require(index != -1, "node does not exist");
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), false);
 		emit MultisigDisabled(_addr);
 	}
@@ -82,7 +82,7 @@ contract MultisigManager is Base, IMultisigManager {
 		bytes memory _sig
 	) public view returns (bool) {
 		address recovered = ECDSA.recover(_hash, _sig);
-		require(_signer == recovered, "Invalid signature");
+		require(_signer == recovered, "invalid signature");
 		return isActiveMultisig(recovered);
 	}
 
@@ -95,7 +95,7 @@ contract MultisigManager is Base, IMultisigManager {
 		bytes32 _s
 	) public view returns (bool) {
 		address recovered = ECDSA.recover(_hash, _v, _r, _s);
-		require(_signer == recovered, "Invalid signature");
+		require(_signer == recovered, "invalid signature");
 		return isActiveMultisig(recovered);
 	}
 

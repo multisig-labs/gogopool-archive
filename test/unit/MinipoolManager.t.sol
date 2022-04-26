@@ -10,7 +10,7 @@ import "../../contracts/contract/MultisigManager.sol";
 contract MinipoolManagerTest is GGPTest {
 	MinipoolManager private mp;
 	MultisigManager private ms;
-	address private rialtoAddr;
+	address private rialtoAddr1;
 
 	// Since these are used in every test, maybe we declare up here?
 	uint256 private count;
@@ -30,9 +30,9 @@ contract MinipoolManagerTest is GGPTest {
 		mp = new MinipoolManager(s);
 		ms = new MultisigManager(s);
 		registerContract(s, "MultisigManager", address(ms));
-		rialtoAddr = vm.addr(RIALTO1_PK);
-		ms.addMultisig(rialtoAddr);
-		ms.enableMultisig(rialtoAddr);
+		rialtoAddr1 = vm.addr(RIALTO1_PK);
+		ms.addMultisig(rialtoAddr1);
+		ms.enableMultisig(rialtoAddr1);
 		initStorage(s);
 	}
 
@@ -41,17 +41,26 @@ contract MinipoolManagerTest is GGPTest {
 		mp.addMinipool(nodeID, duration);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
-		bytes32 nonce = keccak256("0");
-		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr, nonce)));
+		uint256 nonce = mp.getNonce(rialtoAddr1);
+		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr1, nonce)));
 		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, msgHash);
 
-		vm.startPrank(rialtoAddr);
-		mp.claimAndInitiateStaking(nodeID, nonce, v, r, s);
-		vm.expectRevert("Nonce reused");
-		mp.claimAndInitiateStaking(nodeID, nonce, v, r, s);
+		vm.startPrank(rialtoAddr1);
+		mp.claimAndInitiateStaking(nodeID, v, r, s);
+		// Nonce has now been incremented, so the same sig should fail (replay protection)
+		vm.expectRevert("invalid signature");
+		mp.claimAndInitiateStaking(nodeID, v, r, s);
+
+		// Get new nonce and try again
+		nonce = mp.getNonce(rialtoAddr1);
+		msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr1, nonce)));
+		(v, r, s) = vm.sign(RIALTO1_PK, msgHash);
+		mp.claimAndInitiateStaking(nodeID, v, r, s);
 		vm.stopPrank();
-		vm.expectRevert("wrong multisig");
-		mp.claimAndInitiateStaking(nodeID, nonce, v, r, s);
+
+		// Should fail now that we are not rialtoaddr1
+		vm.expectRevert("invalid multisigaddr");
+		mp.claimAndInitiateStaking(nodeID, v, r, s);
 	}
 
 	function testEmptyState() public {

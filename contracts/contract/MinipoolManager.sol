@@ -36,10 +36,7 @@ import "../types/MinipoolStatus.sol";
 
 contract MinipoolManager is Base, IMinipoolManager {
 	// Used for signature verifying of Rialto multisig to prevent replay attacks
-	// Concat "this" (contract address) so when we upgrade this contract and lose the storage
-	// we are still protected from replay attacks
-	// nonce = keccak256(abi.encodePacked(this, nonce))
-	mapping(bytes32 => bool) private _usedNonces;
+	mapping(address => uint256) private _nonces;
 
 	// Events
 	event MinipoolCreated(address indexed nodeID);
@@ -101,32 +98,29 @@ contract MinipoolManager is Base, IMinipoolManager {
 
 	// Given a signer addr and a random nonce, return the hash that should be signed to claim a nodeID
 	// SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
-	function formatClaimMessageHash(address _signer, bytes32 _nonce) private view returns (bytes32) {
-		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, _signer, _nonce)));
+	function formatClaimMessageHash(address _signer) public view returns (bytes32) {
+		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, _signer, _nonces[_signer])));
 	}
 
 	// If correct multisig calls this, xfer funds from vault to their address
 	function claimAndInitiateStaking(
 		address _nodeID,
-		bytes32 _nonce,
 		// bytes memory _sig,
 		uint8 _v,
 		bytes32 _r,
 		bytes32 _s
 	) external {
 		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "Node does not exist");
+		require(index != -1, "node does not exist");
 
 		address assignedMultisig = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
-		require(msg.sender == assignedMultisig, "wrong multisig");
+		require(msg.sender == assignedMultisig, "invalid multisigaddr");
 
-		bytes32 msgHash = formatClaimMessageHash(msg.sender, _nonce);
-
-		require(!_usedNonces[msgHash], "Nonce reused");
-		_usedNonces[msgHash] = true;
+		bytes32 msgHash = formatClaimMessageHash(assignedMultisig);
+		_nonces[assignedMultisig] += 1;
 
 		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
-		require(multisigManager.verifySignature(msg.sender, msgHash, _v, _r, _s), "Invalid signature");
+		require(multisigManager.verifySignature(assignedMultisig, msgHash, _v, _r, _s), "invalid signature");
 		// TODO xfer funds
 	}
 
@@ -232,6 +226,10 @@ contract MinipoolManager is Base, IMinipoolManager {
 	// Returns -1 if the value is not found
 	function getIndexOf(address _nodeID) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("minipool.index", _nodeID)))) - 1;
+	}
+
+	function getNonce(address _signer) public view returns (uint256) {
+		return _nonces[_signer];
 	}
 
 	function getMinipool(uint256 _index)
