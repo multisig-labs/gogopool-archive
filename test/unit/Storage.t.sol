@@ -13,7 +13,7 @@ contract StorageTest is GGPTest {
 
 	function testGuardian() public {
 		s = new Storage();
-		hevm.label(address(s), "Storage");
+		vm.label(address(s), "Storage");
 		// Storage() was executed by "this", so it is the guardian to start
 		assertEq(s.getGuardian(), address(this));
 		// We start out in an undeployed state while everything gets set up
@@ -24,7 +24,7 @@ contract StorageTest is GGPTest {
 		// Should not change yet, must be confirmed
 		assertEq(s.getGuardian(), address(this));
 		// Impersonate an address
-		hevm.startPrank(NEWGUARDIAN);
+		vm.startPrank(NEWGUARDIAN);
 		s.confirmGuardian();
 		assertEq(s.getGuardian(), NEWGUARDIAN);
 		s.setString(KEY, "test");
@@ -41,7 +41,7 @@ contract StorageTest is GGPTest {
 	// A test named *Fail* is expected to fail
 	function testFailStorage() public {
 		s = new Storage();
-		hevm.prank(ZERO_ADDRESS);
+		vm.prank(ZERO_ADDRESS);
 		s.setInt(KEY, 1);
 	}
 }

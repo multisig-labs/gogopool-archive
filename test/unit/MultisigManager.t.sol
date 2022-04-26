@@ -23,27 +23,27 @@ contract MultisigManagerTest is GGPTest {
 
 	// Example of how to sign and recover an address
 	function testSimpleVerifySignature() public {
-		address rialto1Addr = hevm.addr(RIALTO1_PK);
+		address rialto1Addr = vm.addr(RIALTO1_PK);
 		bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked("test message")));
-		(uint8 v, bytes32 r, bytes32 s) = hevm.sign(RIALTO1_PK, h);
+		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, h);
 		address recovered = ECDSA.recover(h, v, r, s);
 		assertEq(recovered, rialto1Addr);
-		hevm.expectRevert("ECDSA: invalid signature 'v' value");
+		vm.expectRevert("ECDSA: invalid signature 'v' value");
 		recovered = ECDSA.recover(h, 99, r, s);
 	}
 
 	// Example where hash and sig dont match
 	function testSimpleVerifySignature2() public {
-		address rialto1Addr = hevm.addr(RIALTO1_PK);
+		address rialto1Addr = vm.addr(RIALTO1_PK);
 		bytes32 h = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked("test message")));
-		(uint8 v, bytes32 r, bytes32 s) = hevm.sign(RIALTO1_PK, h);
+		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, h);
 		bytes32 badH = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked("different message")));
 		address recovered = ECDSA.recover(badH, v, r, s);
 		assertFalse(recovered == rialto1Addr);
 	}
 
 	function testAddMultisig() public {
-		address rialto1Addr = hevm.addr(RIALTO1_PK);
+		address rialto1Addr = vm.addr(RIALTO1_PK);
 		addMultisig(rialto1Addr);
 		int256 index = ms.getIndexOf(rialto1Addr);
 		assertEq(index, 0);
@@ -53,10 +53,10 @@ contract MultisigManagerTest is GGPTest {
 	}
 
 	function testVerifySignature() public {
-		address rialto1Addr = hevm.addr(RIALTO1_PK);
+		address rialto1Addr = vm.addr(RIALTO1_PK);
 		addMultisig(rialto1Addr);
 		bytes32 h = bytes32("test msg");
-		(uint8 v, bytes32 r, bytes32 s) = hevm.sign(RIALTO1_PK, h);
+		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, h);
 		address recovered = ecrecover(h, v, r, s);
 		assertEq(recovered, rialto1Addr);
 		assert(ms.verifySignature(rialto1Addr, h, v, r, s));

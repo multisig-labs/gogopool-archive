@@ -43,9 +43,10 @@ test-hh:
 solhint:
 	npx solhint -f table contracts/**/*.sol
 
-# Update the foundry binaries for forge to the nightly version
+# Update git submodules and foundry binaries to the nightly version
 foundryup:
 	foundryup --version nightly
+	git submodule foreach git pull
 
 # Allow the Remix ide to connect to your local files
 remix:

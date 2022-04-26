@@ -2,26 +2,46 @@
 
 pragma solidity ^0.8.0;
 
-import "./Console.sol";
-import "./DSTestPlus.sol";
+import "../../../lib/forge-std/src/Test.sol";
 import "../../../contracts/contract/Storage.sol";
 
-contract GGPTest is DSTestPlus {
+contract GGPTest is Test {
 	// This is a magic addr that forge deploys all contracts from
 	address internal constant GUARDIAN = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
 	address internal constant ZERO_ADDRESS = address(0x00);
 	address internal constant NONEXISTANT_NODEID = address(0x0123456789);
-	// hevm.addr(USER1_PK) gives the address of the private key
+	// vm.addr(USER1_PK) gives the address of the private key
 	uint256 internal constant USER1_PK = 0x9c4b7f4ad48f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c5b923d;
 	uint256 internal constant RIALTO1_PK = 0xb4679213567f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c8b571a;
 	uint256 private randNonce = 0;
 
+	// Copy over some funcs from DSTestPlus
+	string private checkpointLabel;
+	uint256 private checkpointGasLeft;
+
+	function startMeasuringGas(string memory label) internal virtual {
+		checkpointLabel = label;
+		checkpointGasLeft = gasleft();
+	}
+
+	function stopMeasuringGas() internal virtual {
+		uint256 checkpointGasLeft2 = gasleft();
+
+		string memory label = checkpointLabel;
+
+		emit log_named_uint(string(abi.encodePacked(label, " Gas")), checkpointGasLeft - checkpointGasLeft2);
+	}
+
+	function assertBoolEq(bool a, bool b) internal virtual {
+		b ? assertTrue(a) : assertFalse(a);
+	}
+
 	// Init common things that needs to be setup
 	// Must be last func called from a setUp() function
 	function initStorage(Storage _s) internal {
-		hevm.label(GUARDIAN, "GUARDIAN");
+		vm.label(GUARDIAN, "GUARDIAN");
 		_s.setGuardian(GUARDIAN);
-		hevm.prank(GUARDIAN);
+		vm.prank(GUARDIAN);
 		_s.confirmGuardian();
 	}
 

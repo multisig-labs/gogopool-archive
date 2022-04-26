@@ -30,7 +30,7 @@ contract MinipoolManagerTest is GGPTest {
 		mp = new MinipoolManager(s);
 		ms = new MultisigManager(s);
 		registerContract(s, "MultisigManager", address(ms));
-		rialtoAddr = hevm.addr(RIALTO1_PK);
+		rialtoAddr = vm.addr(RIALTO1_PK);
 		ms.addMultisig(rialtoAddr);
 		ms.enableMultisig(rialtoAddr);
 		initStorage(s);
@@ -43,14 +43,14 @@ contract MinipoolManagerTest is GGPTest {
 
 		bytes32 nonce = keccak256("0");
 		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr, nonce)));
-		(uint8 v, bytes32 r, bytes32 s) = hevm.sign(RIALTO1_PK, msgHash);
+		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, msgHash);
 
-		hevm.startPrank(rialtoAddr);
+		vm.startPrank(rialtoAddr);
 		mp.claimAndInitiateStaking(nodeID, nonce, v, r, s);
-		hevm.expectRevert("Nonce reused");
+		vm.expectRevert("Nonce reused");
 		mp.claimAndInitiateStaking(nodeID, nonce, v, r, s);
-		hevm.stopPrank();
-		hevm.expectRevert("wrong multisig");
+		vm.stopPrank();
+		vm.expectRevert("wrong multisig");
 		mp.claimAndInitiateStaking(nodeID, nonce, v, r, s);
 	}
 

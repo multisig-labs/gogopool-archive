@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "../../test/unit/utils/Console.sol";
 import "./Base.sol";
 import "../interface/IStorage.sol";
 import "../interface/IMinipoolManager.sol";
