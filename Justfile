@@ -43,10 +43,6 @@ test-hh:
 solhint:
 	npx solhint -f table contracts/**/*.sol
 
-# Update git submodules and foundry binaries to the nightly version
-foundryup:
-	foundryup --version nightly
-	git submodule foreach git pull
 
 # Allow the Remix ide to connect to your local files
 remix:
@@ -58,16 +54,33 @@ gen:
 	THATDIR=$PWD && cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.6 && cat $THATDIR/artifacts/contracts/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/_oracle.go
 	echo "Complete!"
 
-# TODO Diagnose any obvious setup issues for new folks
+# Update foundry binaries to the nightly version
+update-foundry:
+	foundryup --version nightly
+
+# Update git submodules
+update-submodules:
+	git submodule update --recursive --remote
+
+# Diagnose any obvious setup issues for new folks
 doctor:
 	#!/usr/bin/env bash
-	set -euxo pipefail
+	set -euo pipefail
 
-	if [ ! -e $HOME/.foundry/bin/forge ]; then
-		echo Install forge from https://book.getfoundry.sh/getting-started/installation.html
-		echo (Make sure it gets installed to $HOME/.foundry/bin not $HOME/.cargo/bin if you want foundryup to work)
+	# check if yarn is installed
+	if ! yarn --version > /dev/null 2>&1; then
+		echo "yarn is not installed"
+		echo "You can install it via npm with 'npm install -g yarn'"
 		exit 1
 	fi
+	echo "yarn ok"
+
+	if [ ! -e $HOME/.foundry/bin/forge ]; then
+		echo "Install forge from https://book.getfoundry.sh/getting-started/installation.html"
+		echo "(Make sure it gets installed to $HOME/.foundry/bin not $HOME/.cargo/bin if you want foundryup to work)"
+		exit 1
+	fi
+	echo "forge ok"
 
 # Im a recipie that doesnt show up in the default list
 _secret:
