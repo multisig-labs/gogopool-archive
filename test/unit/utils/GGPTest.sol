@@ -72,4 +72,18 @@ contract GGPTest is Test {
 		uint256 duration = randUint(2000000);
 		return (nodeID, duration);
 	}
+
+	// Helper to combine r/s/v ECDSA signature into a single bytes
+	function combineSigParts(
+		uint8 _v,
+		bytes32 _r,
+		bytes32 _s
+	) internal pure returns (bytes memory) {
+		return abi.encodePacked(_r, _s, _v);
+	}
+
+	function signHash(uint256 pk, bytes32 h) internal returns (bytes memory) {
+		(uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, h);
+		return combineSigParts(v, r, s);
+	}
 }

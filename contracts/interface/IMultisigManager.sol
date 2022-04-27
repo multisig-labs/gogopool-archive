@@ -15,17 +15,9 @@ interface IMultisigManager {
 
 	function disableMultisig(address _addr) external;
 
-	function verifySignature(
-		address signer,
-		bytes32 hash,
+	function requireValidSignature(
+		address _signer,
+		bytes32 _msgHash,
 		bytes memory signature
-	) external returns (bool);
-
-	function verifySignature(
-		address signer,
-		bytes32 hash,
-		uint8 v,
-		bytes32 r,
-		bytes32 s
-	) external returns (bool);
+	) external;
 }

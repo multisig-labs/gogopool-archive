@@ -96,31 +96,29 @@ contract MinipoolManager is Base, IMinipoolManager {
 	// RIALTO FUNCTIONS
 	//
 
-	// Given a signer addr and a random nonce, return the hash that should be signed to claim a nodeID
+	// Given a signer addr, return the hash that should be signed to claim a nodeID
 	// SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
-	function formatClaimMessageHash(address _signer) public view returns (bytes32) {
+	function formatClaimMessageHash(address _signer) private view returns (bytes32) {
 		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, _signer, _nonces[_signer])));
 	}
 
+	// Verify that _signer is an enabled multisig, and signature is valid for current nonce value, and bump nonce
+	function requireValidSigAndUpdateNonce(address _signer, bytes memory _sig) private {
+		bytes32 msgHash = formatClaimMessageHash(_signer);
+		_nonces[_signer] += 1;
+		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
+		multisigManager.requireValidSignature(_signer, msgHash, _sig);
+	}
+
 	// If correct multisig calls this, xfer funds from vault to their address
-	function claimAndInitiateStaking(
-		address _nodeID,
-		// bytes memory _sig,
-		uint8 _v,
-		bytes32 _r,
-		bytes32 _s
-	) external {
+	function claimAndInitiateStaking(address _nodeID, bytes memory _sig) external {
 		int256 index = getIndexOf(_nodeID);
 		require(index != -1, "node does not exist");
 
 		address assignedMultisig = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
 		require(msg.sender == assignedMultisig, "invalid multisigaddr");
 
-		bytes32 msgHash = formatClaimMessageHash(assignedMultisig);
-		_nonces[assignedMultisig] += 1;
-
-		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
-		require(multisigManager.verifySignature(assignedMultisig, msgHash, _v, _r, _s), "invalid signature");
+		requireValidSigAndUpdateNonce(assignedMultisig, _sig);
 		// TODO xfer funds
 	}
 

@@ -75,35 +75,21 @@ contract MultisigManager is Base, IMultisigManager {
 		return multisigAddress;
 	}
 
-	// Verifies that an active Rialto multisig signed the _hash
-	function verifySignature(
+	// Verifies that an active Rialto multisig signed the _msgHash
+	function requireValidSignature(
 		address _signer,
-		bytes32 _hash,
+		bytes32 _msgHash,
 		bytes memory _sig
-	) public view returns (bool) {
-		address recovered = ECDSA.recover(_hash, _sig);
+	) public view {
+		address recovered = ECDSA.recover(_msgHash, _sig);
 		require(_signer == recovered, "invalid signature");
-		return isActiveMultisig(recovered);
+		requireActiveMultisig(recovered);
 	}
 
-	// Verifies that an active Rialto multisig signed the _hash
-	function verifySignature(
-		address _signer,
-		bytes32 _hash,
-		uint8 _v,
-		bytes32 _r,
-		bytes32 _s
-	) public view returns (bool) {
-		address recovered = ECDSA.recover(_hash, _v, _r, _s);
-		require(_signer == recovered, "invalid signature");
-		return isActiveMultisig(recovered);
-	}
-
-	function isActiveMultisig(address _addr) private view returns (bool) {
+	function requireActiveMultisig(address _addr) private view {
 		int256 index = getIndexOf(_addr);
-		require(index != -1, "addr does not exist");
+		require(index != -1, "multisig does not exist");
 		(, bool enabled) = getMultisig(uint256(index));
-		require(enabled, "addr is disabled");
-		return true;
+		require(enabled, "multisig is disabled");
 	}
 }

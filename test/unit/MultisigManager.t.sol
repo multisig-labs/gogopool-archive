@@ -51,14 +51,4 @@ contract MultisigManagerTest is GGPTest {
 		assertEq(a, rialto1Addr);
 		assert(enabled);
 	}
-
-	function testVerifySignature() public {
-		address rialto1Addr = vm.addr(RIALTO1_PK);
-		addMultisig(rialto1Addr);
-		bytes32 h = bytes32("test msg");
-		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, h);
-		address recovered = ecrecover(h, v, r, s);
-		assertEq(recovered, rialto1Addr);
-		assert(ms.verifySignature(rialto1Addr, h, v, r, s));
-	}
 }

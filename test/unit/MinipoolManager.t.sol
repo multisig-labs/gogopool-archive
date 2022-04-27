@@ -43,24 +43,23 @@ contract MinipoolManagerTest is GGPTest {
 
 		uint256 nonce = mp.getNonce(rialtoAddr1);
 		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr1, nonce)));
-		(uint8 v, bytes32 r, bytes32 s) = vm.sign(RIALTO1_PK, msgHash);
-
+		bytes memory sig = signHash(RIALTO1_PK, msgHash);
 		vm.startPrank(rialtoAddr1);
-		mp.claimAndInitiateStaking(nodeID, v, r, s);
+		mp.claimAndInitiateStaking(nodeID, sig);
 		// Nonce has now been incremented, so the same sig should fail (replay protection)
 		vm.expectRevert("invalid signature");
-		mp.claimAndInitiateStaking(nodeID, v, r, s);
+		mp.claimAndInitiateStaking(nodeID, sig);
 
 		// Get new nonce and try again
 		nonce = mp.getNonce(rialtoAddr1);
 		msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr1, nonce)));
-		(v, r, s) = vm.sign(RIALTO1_PK, msgHash);
-		mp.claimAndInitiateStaking(nodeID, v, r, s);
+		sig = signHash(RIALTO1_PK, msgHash);
+		mp.claimAndInitiateStaking(nodeID, sig);
 		vm.stopPrank();
 
 		// Should fail now that we are not rialtoaddr1
 		vm.expectRevert("invalid multisigaddr");
-		mp.claimAndInitiateStaking(nodeID, v, r, s);
+		mp.claimAndInitiateStaking(nodeID, sig);
 	}
 
 	function testEmptyState() public {
