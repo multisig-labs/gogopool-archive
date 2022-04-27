@@ -43,6 +43,13 @@ contract GGPTest is Test {
 		_s.setGuardian(GUARDIAN);
 		vm.prank(GUARDIAN);
 		_s.confirmGuardian();
+
+		// put any default values here
+		vm.startPrank(GUARDIAN);
+		bytes32 protocolDaoSettingsNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
+		_s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.rate")), 1000133680617113500);
+		_s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.start")), block.timestamp + 1 days);
+		vm.stopPrank();
 	}
 
 	// Register a contract in Storage
