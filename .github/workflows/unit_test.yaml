@@ -17,5 +17,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install dependencies
+        run: |
+          npm i -g yarn
+          yarn install
+
       - name: Foundry Test
         uses: multisig-labs/foundry-test-action@v1
