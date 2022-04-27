@@ -16,12 +16,11 @@ import "../Vault.sol";
 contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	/**** Properties ***********/
 
-	// How many GGP tokens minted to date (18m from fixed supply)
-	uint256 private constant TOTAL_INITIAL_SUPPLY = 18000000000000000000000000;
+	// RP has 18 million to start because of their fixed supply tokens
+	// how many should we have since we're starting from 0?
+	uint256 private constant TOTAL_INITIAL_SUPPLY = 0;
 	// The GGP inflation interval
 	uint256 private constant INFLATION_INTERVAL = 1 days;
-	// How many GGP tokens have been swapped for new ones
-	uint256 public totalSwappedGGP = 0;
 
 	// Timestamp of last block inflation was calculated at
 	uint256 private inflationCalcTime = 0;
@@ -40,8 +39,6 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 		// Version
 		version = 1;
 		settingNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
-		// Mint the 18m tokens that currently exist and allow them to be sent to people burning existing fixed supply GGP
-		_mint(address(this), TOTAL_INITIAL_SUPPLY);
 	}
 
 	function _getInflationCalcTime() private view returns (uint256) {
@@ -109,6 +106,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 
 	function getInflationRewardsContractAddress() external view override returns (address) {
 		// Inflation rewards contract address controlled by the DAO
+		// does not exist yet
 		return getContractAddress("rewards");
 	}
 
