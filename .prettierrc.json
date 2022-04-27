@@ -12,6 +12,13 @@
 				"bracketSpacing": false,
 				"explicitTypes": "always"
 			}
+		},
+		{
+			"files": ["*.yaml", "*.yml"],
+			"options": {
+				"useTabs": false,
+				"tabWidth": 2
+			}
 		}
 	]
 }

@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 // The Vault contract must not be upgraded
 
 /// @title AVAX Vault
-/// @author Chandler Lofland
+/// @author Chandler
 // based on RocketVault by RocketPool
 
 contract Vault is Base, IVault {

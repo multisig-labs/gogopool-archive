@@ -63,6 +63,13 @@ doctor:
 	#!/usr/bin/env bash
 	set -euxo pipefail
 
+	# check if yarn is installed
+	if ! yarn --version > /dev/null 2>&1; then
+		echo "yarn is not installed"
+		echo "You can install it via npm with 'npm install -g yarn'"
+		exit 1
+	fi
+
 	if [ ! -e $HOME/.foundry/bin/forge ]; then
 		echo Install forge from https://book.getfoundry.sh/getting-started/installation.html
 		echo (Make sure it gets installed to $HOME/.foundry/bin not $HOME/.cargo/bin if you want foundryup to work)

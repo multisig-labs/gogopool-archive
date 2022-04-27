@@ -6,7 +6,7 @@ import "./Storage.sol";
 import "../interface/IStorage.sol";
 
 /// @title Base settings / modifiers for each contract in GoGoPool
-/// @author Chandler Lofland
+/// @author Chandler
 // Based on RocketBase by RocketPool
 
 abstract contract Base {

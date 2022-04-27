@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../interface/IStorage.sol";
 
 /// @title The primary persistent storage for GoGoPool
-/// @author Chandler Lofland
+/// @author Chandler
 /// Based on RocketStorage by RocketPool
 
 contract Storage is IStorage {
