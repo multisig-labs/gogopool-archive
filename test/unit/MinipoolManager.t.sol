@@ -31,14 +31,14 @@ contract MinipoolManagerTest is GGPTest {
 		ms = new MultisigManager(s);
 		registerContract(s, "MultisigManager", address(ms));
 		rialtoAddr1 = vm.addr(RIALTO1_PK);
-		ms.addMultisig(rialtoAddr1);
+		ms.registerMultisig(rialtoAddr1);
 		ms.enableMultisig(rialtoAddr1);
 		initStorage(s);
 	}
 
 	function testClaim() public {
 		(nodeID, duration) = randMinipool();
-		mp.addMinipool(nodeID, duration);
+		mp.registerMinipool(nodeID, duration);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		uint256 nonce = mp.getNonce(rialtoAddr1);
@@ -47,7 +47,7 @@ contract MinipoolManagerTest is GGPTest {
 		vm.startPrank(rialtoAddr1);
 		mp.claimAndInitiateStaking(nodeID, sig);
 		// Nonce has now been incremented, so the same sig should fail (replay protection)
-		vm.expectRevert("invalid signature");
+		vm.expectRevert(IMultisigManager.SignatureInvalid.selector);
 		mp.claimAndInitiateStaking(nodeID, sig);
 
 		// Get new nonce and try again
@@ -58,13 +58,13 @@ contract MinipoolManagerTest is GGPTest {
 		vm.stopPrank();
 
 		// Should fail now that we are not rialtoaddr1
-		vm.expectRevert("invalid multisigaddr");
+		vm.expectRevert(IMinipoolManager.InvalidMultisigAddress.selector);
 		mp.claimAndInitiateStaking(nodeID, sig);
 	}
 
 	function testCancelByMultisig() public {
 		(nodeID, duration) = randMinipool();
-		mp.addMinipool(nodeID, duration);
+		mp.registerMinipool(nodeID, duration);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		uint256 nonce = mp.getNonce(rialtoAddr1);
@@ -76,12 +76,12 @@ contract MinipoolManagerTest is GGPTest {
 
 	function testCancelByOwner() public {
 		(nodeID, duration) = randMinipool();
-		mp.addMinipool(nodeID, duration);
+		mp.registerMinipool(nodeID, duration);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 		mp.cancelMinipool(nodeID);
 
 		vm.startPrank(rialtoAddr1);
-		vm.expectRevert("only owner can cancel");
+		vm.expectRevert(IMinipoolManager.OnlyOwnerCanCancel.selector);
 		mp.cancelMinipool(nodeID);
 	}
 
@@ -97,14 +97,14 @@ contract MinipoolManagerTest is GGPTest {
 	function testGasAddOne() public {
 		(nodeID, duration) = randMinipool();
 		startMeasuringGas("testGasAddOne");
-		mp.addMinipool(nodeID, duration);
+		mp.registerMinipool(nodeID, duration);
 		stopMeasuringGas();
 	}
 
 	function testAddAndGetMany() public {
 		for (uint256 i = 0; i < 100; i++) {
 			(nodeID, duration) = randMinipool();
-			mp.addMinipool(nodeID, duration);
+			mp.registerMinipool(nodeID, duration);
 		}
 		index = mp.getIndexOf(nodeID);
 		assertEq(index, 99);
@@ -113,7 +113,7 @@ contract MinipoolManagerTest is GGPTest {
 	function testGetStatusCounts() public {
 		for (uint256 i = 0; i < 100; i++) {
 			(nodeID, duration) = randMinipool();
-			mp.addMinipool(nodeID, duration);
+			mp.registerMinipool(nodeID, duration);
 		}
 
 		// Get all in one page
@@ -138,7 +138,7 @@ contract MinipoolManagerTest is GGPTest {
 		uint256 foundCount = 0;
 		for (uint256 i = 0; i < max; i++) {
 			(nodeID, duration) = randMinipool();
-			mp.addMinipool(nodeID, duration);
+			mp.registerMinipool(nodeID, duration);
 			// Update every other one to prelaunch status
 			if (i % 2 == 0) {
 				mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);

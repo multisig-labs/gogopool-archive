@@ -38,14 +38,11 @@ contract MinipoolManager is Base, IMinipoolManager {
 	// Used for signature verifying of Rialto multisig to prevent replay attacks
 	mapping(address => uint256) private _nonces;
 
-	// Events
-	event MinipoolCreated(address indexed nodeID);
-
 	constructor(IStorage _storageAddress) Base(_storageAddress) {
 		version = 1;
 	}
 
-	function addMinipool(address _nodeID, uint256 _duration) external {
+	function registerMinipool(address _nodeID, uint256 _duration) external {
 		// TODO check for max node count from dao
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
@@ -71,13 +68,15 @@ contract MinipoolManager is Base, IMinipoolManager {
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
 		setUint(keccak256(abi.encodePacked("minipool.index", _nodeID)), count + 1);
 		addUint(keccak256("minipool.count"), 1);
-		emit MinipoolCreated(_nodeID);
+		emit RegisteredMinipool(_nodeID);
 	}
 
 	// TODO This forces minipool into a state. Do we need this? For tests?
 	function updateMinipoolStatus(address _nodeID, MinipoolStatus status) external {
 		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "Node does not exist");
+		if (index == -1) {
+			revert MinipoolNotFound();
+		}
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
 
@@ -88,9 +87,13 @@ contract MinipoolManager is Base, IMinipoolManager {
 	// Owner of a node can call this to cancel the minipool
 	function cancelMinipool(address _nodeID) external {
 		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "Node does not exist");
+		if (index == -1) {
+			revert MinipoolNotFound();
+		}
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
-		require(msg.sender == owner, "only owner can cancel");
+		if (msg.sender != owner) {
+			revert OnlyOwnerCanCancel();
+		}
 		_cancelMinipoolAndReturnFunds(index);
 	}
 
@@ -139,34 +142,13 @@ contract MinipoolManager is Base, IMinipoolManager {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
 
 		uint256 startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
-		require(_endTime > startTime, "end must come after start");
+		if (_endTime <= startTime) {
+			revert InvalidEndTime();
+		}
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), _endTime);
 
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), _avaxRewardAmt);
 		// emit StakingEndEvent
-	}
-
-	function requireValidStateTransition(int256 _index, MinipoolStatus _to) private view {
-		bytes32 statusKey = keccak256(abi.encodePacked("minipool.item", _index, ".status"));
-		MinipoolStatus currentStatus = MinipoolStatus(getUint(statusKey));
-		bool isValid;
-
-		if (currentStatus == MinipoolStatus.Initialised) {
-			isValid = (_to == MinipoolStatus.Prelaunch || _to == MinipoolStatus.Canceled);
-		} else if (currentStatus == MinipoolStatus.Prelaunch) {
-			isValid = (_to == MinipoolStatus.Staking || _to == MinipoolStatus.Canceled);
-		} else if (currentStatus == MinipoolStatus.Staking) {
-			isValid = (_to == MinipoolStatus.Withdrawable);
-		} else if (currentStatus == MinipoolStatus.Withdrawable) {
-			isValid = (_to == MinipoolStatus.Finished);
-		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
-			// Once a node is finished or cancelled, if they re-validate they go back to beginning state
-			isValid = (_to == MinipoolStatus.Initialised);
-		} else {
-			isValid = false;
-		}
-
-		require(isValid, "invalid state transition");
 	}
 
 	// Get the number of minipools in each status.
@@ -276,12 +258,40 @@ contract MinipoolManager is Base, IMinipoolManager {
 
 	function requireValidMultisig(address _nodeID, bytes memory _sig) private returns (int256) {
 		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "node does not exist");
+		if (index == -1) {
+			revert MinipoolNotFound();
+		}
 
 		address assignedMultisig = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
-		require(msg.sender == assignedMultisig, "invalid multisigaddr");
-
+		if (msg.sender != assignedMultisig) {
+			revert InvalidMultisigAddress();
+		}
 		requireValidSigAndUpdateNonce(assignedMultisig, _sig);
 		return index;
+	}
+
+	function requireValidStateTransition(int256 _index, MinipoolStatus _to) private view {
+		bytes32 statusKey = keccak256(abi.encodePacked("minipool.item", _index, ".status"));
+		MinipoolStatus currentStatus = MinipoolStatus(getUint(statusKey));
+		bool isValid;
+
+		if (currentStatus == MinipoolStatus.Initialised) {
+			isValid = (_to == MinipoolStatus.Prelaunch || _to == MinipoolStatus.Canceled);
+		} else if (currentStatus == MinipoolStatus.Prelaunch) {
+			isValid = (_to == MinipoolStatus.Staking || _to == MinipoolStatus.Canceled);
+		} else if (currentStatus == MinipoolStatus.Staking) {
+			isValid = (_to == MinipoolStatus.Withdrawable);
+		} else if (currentStatus == MinipoolStatus.Withdrawable) {
+			isValid = (_to == MinipoolStatus.Finished);
+		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
+			// Once a node is finished or cancelled, if they re-validate they go back to beginning state
+			isValid = (_to == MinipoolStatus.Initialised);
+		} else {
+			isValid = false;
+		}
+
+		if (!isValid) {
+			revert InvalidStateTransition();
+		}
 	}
 }
