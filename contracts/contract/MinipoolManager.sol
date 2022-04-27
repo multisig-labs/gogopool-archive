@@ -110,8 +110,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		multisigManager.requireValidSignature(_signer, msgHash, _sig);
 	}
 
-	// If correct multisig calls this, xfer funds from vault to their address
-	function claimAndInitiateStaking(address _nodeID, bytes memory _sig) external {
+	function requireValidMultisig(address _nodeID, bytes memory _sig) private returns (int256) {
 		int256 index = getIndexOf(_nodeID);
 		require(index != -1, "node does not exist");
 
@@ -119,18 +118,23 @@ contract MinipoolManager is Base, IMinipoolManager {
 		require(msg.sender == assignedMultisig, "invalid multisigaddr");
 
 		requireValidSigAndUpdateNonce(assignedMultisig, _sig);
+		return index;
+	}
+
+	// If correct multisig calls this, xfer funds from vault to their address
+	function claimAndInitiateStaking(address _nodeID, bytes memory _sig) external {
+		requireValidMultisig(_nodeID, _sig);
 		// TODO xfer funds
 	}
 
 	// Rialto calls this after a successful minipool launch
-	// TODO pass in sig and verify so only address can update
 	function recordStakingStart(
 		address _nodeID,
-		uint256 _startTime,
-		address _multisigAddr // uint256 _nonce, // bytes memory _sig
+		bytes memory _sig,
+		uint256 _startTime
 	) external {
-		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "Node does not exist");
+		int256 index = requireValidMultisig(_nodeID, _sig);
+		requireValidStateTransition(index, MinipoolStatus.Staking);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Staking));
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), _startTime);
 		// emit StakingStartEvent
@@ -138,19 +142,46 @@ contract MinipoolManager is Base, IMinipoolManager {
 
 	// Rialto calls this when validation period ends
 	// Rialto will also xfer back all avax + avax rewards to vault
-	// TODO pass in sig and verify so only address can update
 	// TODO is this payable then? accept all funds here and distribute?
 	function recordStakingEnd(
 		address _nodeID,
+		bytes memory _sig,
 		uint256 _endTime,
 		uint256 _avaxRewardAmt
 	) external {
-		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "Node does not exist");
+		int256 index = requireValidMultisig(_nodeID, _sig);
+		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
+
+		uint256 startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
+		require(_endTime > startTime, "end must come after start");
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), _endTime);
+
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), _avaxRewardAmt);
 		// emit StakingEndEvent
+	}
+
+	function requireValidStateTransition(int256 _index, MinipoolStatus _to) private view {
+		bytes32 statusKey = keccak256(abi.encodePacked("minipool.item", _index, ".status"));
+		MinipoolStatus currentStatus = MinipoolStatus(getUint(statusKey));
+		bool isValid;
+
+		if (currentStatus == MinipoolStatus.Initialised) {
+			isValid = (_to == MinipoolStatus.Prelaunch || _to == MinipoolStatus.Canceled);
+		} else if (currentStatus == MinipoolStatus.Prelaunch) {
+			isValid = (_to == MinipoolStatus.Staking || _to == MinipoolStatus.Canceled);
+		} else if (currentStatus == MinipoolStatus.Staking) {
+			isValid = (_to == MinipoolStatus.Withdrawable);
+		} else if (currentStatus == MinipoolStatus.Withdrawable) {
+			isValid = (_to == MinipoolStatus.Finished);
+		} else if (currentStatus == MinipoolStatus.Finished) {
+			// Once a node is finished, if they re-validate they go back to beginning state
+			isValid = (_to == MinipoolStatus.Initialised);
+		} else {
+			isValid = false;
+		}
+
+		require(isValid, "invalid state transition");
 	}
 
 	// Get the number of minipools in each status.
