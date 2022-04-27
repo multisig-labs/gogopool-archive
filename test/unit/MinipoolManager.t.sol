@@ -62,6 +62,29 @@ contract MinipoolManagerTest is GGPTest {
 		mp.claimAndInitiateStaking(nodeID, sig);
 	}
 
+	function testCancelByMultisig() public {
+		(nodeID, duration) = randMinipool();
+		mp.addMinipool(nodeID, duration);
+		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+
+		uint256 nonce = mp.getNonce(rialtoAddr1);
+		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(mp), rialtoAddr1, nonce)));
+		bytes memory sig = signHash(RIALTO1_PK, msgHash);
+		vm.startPrank(rialtoAddr1);
+		mp.cancelMinipool(nodeID, sig);
+	}
+
+	function testCancelByOwner() public {
+		(nodeID, duration) = randMinipool();
+		mp.addMinipool(nodeID, duration);
+		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+		mp.cancelMinipool(nodeID);
+
+		vm.startPrank(rialtoAddr1);
+		vm.expectRevert("only owner can cancel");
+		mp.cancelMinipool(nodeID);
+	}
+
 	function testEmptyState() public {
 		index = mp.getIndexOf(NONEXISTANT_NODEID);
 		assertEq(index, -1);

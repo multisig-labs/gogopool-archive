@@ -52,8 +52,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		// (completed its validation period and all rewards paid and processing is complete)
 		int256 index = getIndexOf(_nodeID);
 		if (index != -1) {
-			uint256 statusID = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
-			require(statusID >= uint256(MinipoolStatus.Finished), "cannot overwrite minipool");
+			requireValidStateTransition(index, MinipoolStatus.Initialised);
 		}
 
 		// Get a Rialto multisig to assign for this minipool
@@ -66,6 +65,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".status")), uint256(MinipoolStatus.Initialised));
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".duration")), _duration);
 		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".multisigAddr")), multisig);
+		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".owner")), msg.sender);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
@@ -74,51 +74,36 @@ contract MinipoolManager is Base, IMinipoolManager {
 		emit MinipoolCreated(_nodeID);
 	}
 
-	// TODO remove and make more focused funcs for each action we want to do
+	// TODO This forces minipool into a state. Do we need this? For tests?
 	function updateMinipoolStatus(address _nodeID, MinipoolStatus status) external {
 		int256 index = getIndexOf(_nodeID);
 		require(index != -1, "Node does not exist");
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
 
-	// ???
-	function cancelMinipool(address _nodeID) external {
-		// TODO only allow nodes with initialised status to be canceled by owner. Return all funds.
-		// TODO allow Rialto multisig to cancel if in PreLaunch status
-		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "Node does not exist");
-		// uint256 statusID = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
-		// require(statusID == uint256(MinipoolStatus.Initialised));
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Canceled));
-	}
-
 	//
 	// RIALTO FUNCTIONS
 	//
 
-	// Given a signer addr, return the hash that should be signed to claim a nodeID
-	// SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
-	function formatClaimMessageHash(address _signer) private view returns (bytes32) {
-		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, _signer, _nonces[_signer])));
-	}
-
-	// Verify that _signer is an enabled multisig, and signature is valid for current nonce value, and bump nonce
-	function requireValidSigAndUpdateNonce(address _signer, bytes memory _sig) private {
-		bytes32 msgHash = formatClaimMessageHash(_signer);
-		_nonces[_signer] += 1;
-		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
-		multisigManager.requireValidSignature(_signer, msgHash, _sig);
-	}
-
-	function requireValidMultisig(address _nodeID, bytes memory _sig) private returns (int256) {
+	// Owner of a node can call this to cancel the minipool
+	function cancelMinipool(address _nodeID) external {
 		int256 index = getIndexOf(_nodeID);
-		require(index != -1, "node does not exist");
+		require(index != -1, "Node does not exist");
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+		require(msg.sender == owner, "only owner can cancel");
+		_cancelMinipoolAndReturnFunds(index);
+	}
 
-		address assignedMultisig = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
-		require(msg.sender == assignedMultisig, "invalid multisigaddr");
+	// TODO Do we allow Rialto to also cancel a minipool using this func?
+	function cancelMinipool(address _nodeID, bytes memory _sig) external {
+		int256 index = requireValidMultisig(_nodeID, _sig);
+		_cancelMinipoolAndReturnFunds(index);
+	}
 
-		requireValidSigAndUpdateNonce(assignedMultisig, _sig);
-		return index;
+	function _cancelMinipoolAndReturnFunds(int256 _index) private {
+		requireValidStateTransition(_index, MinipoolStatus.Canceled);
+		setUint(keccak256(abi.encodePacked("minipool.item", _index, ".status")), uint256(MinipoolStatus.Canceled));
+		// TODO return funds
 	}
 
 	// If correct multisig calls this, xfer funds from vault to their address
@@ -174,8 +159,8 @@ contract MinipoolManager is Base, IMinipoolManager {
 			isValid = (_to == MinipoolStatus.Withdrawable);
 		} else if (currentStatus == MinipoolStatus.Withdrawable) {
 			isValid = (_to == MinipoolStatus.Finished);
-		} else if (currentStatus == MinipoolStatus.Finished) {
-			// Once a node is finished, if they re-validate they go back to beginning state
+		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
+			// Once a node is finished or cancelled, if they re-validate they go back to beginning state
 			isValid = (_to == MinipoolStatus.Initialised);
 		} else {
 			isValid = false;
@@ -273,5 +258,30 @@ contract MinipoolManager is Base, IMinipoolManager {
 		nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", _index, ".nodeID")));
 		status = getUint(keccak256(abi.encodePacked("minipool.item", _index, ".status")));
 		duration = getUint(keccak256(abi.encodePacked("minipool.item", _index, ".duration")));
+	}
+
+	// Given a signer addr, return the hash that should be signed to claim a nodeID
+	// SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
+	function formatClaimMessageHash(address _signer) private view returns (bytes32) {
+		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, _signer, _nonces[_signer])));
+	}
+
+	// Verify that _signer is an enabled multisig, and signature is valid for current nonce value, and bump nonce
+	function requireValidSigAndUpdateNonce(address _signer, bytes memory _sig) private {
+		bytes32 msgHash = formatClaimMessageHash(_signer);
+		_nonces[_signer] += 1;
+		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
+		multisigManager.requireValidSignature(_signer, msgHash, _sig);
+	}
+
+	function requireValidMultisig(address _nodeID, bytes memory _sig) private returns (int256) {
+		int256 index = getIndexOf(_nodeID);
+		require(index != -1, "node does not exist");
+
+		address assignedMultisig = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
+		require(msg.sender == assignedMultisig, "invalid multisigaddr");
+
+		requireValidSigAndUpdateNonce(assignedMultisig, _sig);
+		return index;
 	}
 }
