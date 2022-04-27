@@ -16,8 +16,8 @@ contract MultisigManagerTest is GGPTest {
 		initStorage(s);
 	}
 
-	function addMultisig(address _addr) public {
-		ms.addMultisig(_addr);
+	function registerMultisig(address _addr) public {
+		ms.registerMultisig(_addr);
 		ms.enableMultisig(_addr);
 	}
 
@@ -44,7 +44,7 @@ contract MultisigManagerTest is GGPTest {
 
 	function testAddMultisig() public {
 		address rialto1Addr = vm.addr(RIALTO1_PK);
-		addMultisig(rialto1Addr);
+		registerMultisig(rialto1Addr);
 		int256 index = ms.getIndexOf(rialto1Addr);
 		assertEq(index, 0);
 		(address a, bool enabled) = ms.getMultisig(uint256(index));

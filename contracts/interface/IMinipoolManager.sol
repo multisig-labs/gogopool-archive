@@ -11,6 +11,24 @@ interface IMinipoolManager {
 		uint256 duration;
 	}
 
+	/// @notice A minipool with this nodeid has already been registered
+	error MinipoolAlreadyRegistered();
+
+	/// @notice A minipool with this nodeid has not been registered
+	error MinipoolNotFound();
+
+	/// @notice Invalid state transition
+	error InvalidStateTransition();
+
+	error InvalidEndTime();
+
+	error OnlyOwnerCanCancel();
+
+	error InvalidMultisigAddress();
+	error InvalidMultisigSignature();
+
+	event RegisteredMinipool(address indexed _nodeID);
+
 	function getIndexOf(address _nodeID) external view returns (int256);
 
 	function getMinipool(uint256 _index)
@@ -22,7 +40,7 @@ interface IMinipoolManager {
 			uint256 duration
 		);
 
-	function addMinipool(address _nodeID, uint256 _duration) external;
+	function registerMinipool(address _nodeID, uint256 _duration) external;
 
 	function cancelMinipool(address _nodeID) external;
 
@@ -41,5 +59,4 @@ interface IMinipoolManager {
 			uint256 finishedCount,
 			uint256 canceledCount
 		);
-
 }

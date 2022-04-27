@@ -19,19 +19,16 @@ import "../interface/IMultisigManager.sol";
 */
 
 contract MultisigManager is Base, IMultisigManager {
-	// Events
-	event MultisigCreated(address indexed addr);
-	event MultisigEnabled(address indexed addr);
-	event MultisigDisabled(address indexed addr);
-
 	constructor(IStorage _storageAddress) Base(_storageAddress) {
 		version = 1;
 	}
 
-	// Add a multisig. Default to disabled when created.
-	function addMultisig(address _addr) public override {
+	// Register a multisig. Defaults to disabled when first registered.
+	function registerMultisig(address _addr) external override {
 		int256 index = getIndexOf(_addr);
-		require(index == -1, "addr exists");
+		if (index != -1) {
+			revert MultisigAlreadyRegistered();
+		}
 		uint256 count = getUint(keccak256("multisig.count"));
 		setAddress(keccak256(abi.encodePacked("multisig.item", count, ".address")), _addr);
 
@@ -39,21 +36,43 @@ contract MultisigManager is Base, IMultisigManager {
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
 		setUint(keccak256(abi.encodePacked("multisig.index", _addr)), count + 1);
 		addUint(keccak256("multisig.count"), 1);
-		emit MultisigCreated(_addr);
+		emit RegisteredMultisig(_addr);
 	}
 
-	function enableMultisig(address _addr) public override {
+	function enableMultisig(address _addr) external override {
 		int256 index = getIndexOf(_addr);
-		require(index != -1, "node does not exist");
+		if (index == -1) {
+			revert MultisigNotFound();
+		}
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), true);
-		emit MultisigEnabled(_addr);
+		emit EnabledMultisig(_addr);
 	}
 
-	function disableMultisig(address _addr) public override {
-		int256 index = getIndexOf(_addr);
-		require(index != -1, "node does not exist");
+	function disableMultisig(address _addr) external override {
+		int256 index = requireEnabledMultisig(_addr);
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), false);
-		emit MultisigDisabled(_addr);
+		emit DisabledMultisig(_addr);
+	}
+
+	// In future, have a way to choose which multisig gets used for each validator
+	// i.e. round-robin, or based on GGP staked, etc
+	function getNextActiveMultisig() external view override returns (address) {
+		uint256 index = 0; // In future some other method of selecting multisig
+		(address multisigAddress, ) = getMultisig(index);
+		return multisigAddress;
+	}
+
+	// Verifies that an active Rialto multisig signed the _msgHash
+	function requireValidSignature(
+		address _addr,
+		bytes32 _msgHash,
+		bytes calldata _sig
+	) external view {
+		requireEnabledMultisig(_addr);
+		address recovered = ECDSA.recover(_msgHash, _sig);
+		if (_addr != recovered) {
+			revert SignatureInvalid();
+		}
 	}
 
 	// The index of an item
@@ -67,29 +86,15 @@ contract MultisigManager is Base, IMultisigManager {
 		enabled = getBool(keccak256(abi.encodePacked("multisig.item", _index, ".enabled")));
 	}
 
-	// In future, have a way to choose which multisig gets used for each validator
-	// i.e. round-robin, or based on GGP staked, etc
-	function getNextActiveMultisig() public view override returns (address) {
-		uint256 index = 0; // In future some other method of selecting multisig
-		(address multisigAddress, ) = getMultisig(index);
-		return multisigAddress;
-	}
-
-	// Verifies that an active Rialto multisig signed the _msgHash
-	function requireValidSignature(
-		address _signer,
-		bytes32 _msgHash,
-		bytes memory _sig
-	) public view {
-		address recovered = ECDSA.recover(_msgHash, _sig);
-		require(_signer == recovered, "invalid signature");
-		requireActiveMultisig(recovered);
-	}
-
-	function requireActiveMultisig(address _addr) private view {
+	function requireEnabledMultisig(address _addr) private view returns (int256) {
 		int256 index = getIndexOf(_addr);
-		require(index != -1, "multisig does not exist");
+		if (index == -1) {
+			revert MultisigNotFound();
+		}
 		(, bool enabled) = getMultisig(uint256(index));
-		require(enabled, "multisig is disabled");
+		if (!enabled) {
+			revert MultisigDisabled();
+		}
+		return index;
 	}
 }
