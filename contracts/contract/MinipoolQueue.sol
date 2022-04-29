@@ -13,23 +13,17 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 	uint256 public constant CAPACITY = 2**255; // max uint256 / 2
 
 	// Construct
-	constructor(IStorage _storageAddress) Base(_storageAddress) {
+	constructor(IStorage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 
 	// Add item to the end of the queue
-	function enqueue(
-		bytes32 nodeID,
-		uint256 duration,
-		address owner
-	) external override {
+	function enqueue(bytes32 nodeID) external override {
 		require(getLength() < CAPACITY - 1, "Queue is at capacity");
 		require(getUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID))) == 0, "NodeID exists in queue");
 		uint256 index = getUint(keccak256("minipoolqueue.end"));
 		// Save the attrs individually in the k/v store
 		setBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")), nodeID);
-		setUint(keccak256(abi.encodePacked("minipoolqueue.item", index, ".duration")), duration);
-		setAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".owner")), owner);
 		setUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID)), index + 1);
 		index = index + 1;
 		if (index >= CAPACITY) {
@@ -52,8 +46,6 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 		uint256 index = getUint(keccak256("minipoolqueue.start"));
 
 		bytes32 nodeID = getBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
-		uint256 duration = getUint(keccak256(abi.encodePacked("minipoolqueue.item", index, ".duration")));
-		address owner = getAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".owner")));
 		index = index + 1;
 		if (index >= CAPACITY) {
 			index = index - CAPACITY;
@@ -87,8 +79,6 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 			index = index - CAPACITY;
 		}
 		bytes32 nodeID = getBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
-		uint256 duration = getUint(keccak256(abi.encodePacked("minipoolqueue.item", index, ".duration")));
-		address owner = getAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".owner")));
 		return (nodeID, duration, owner);
 	}
 
