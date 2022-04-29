@@ -28,6 +28,7 @@ interface IMultisigManager {
 
 	function getNextActiveMultisig() external returns (address);
 
+	/// @notice Reverts if signature is invalid
 	function requireValidSignature(
 		address addr,
 		bytes32 msgHash,

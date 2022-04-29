@@ -53,9 +53,11 @@ contract MinipoolManager is Base, IMinipoolManager {
 		// TODO check for valid amount (1000 AVAX to start?)
 
 		// Deposit avax into Vault
-		// IVault vault = IVault(getContractAddress("Vault"));
-		// // if (vault.balanceOf("MinipoolManager").add(msg.value) <= some setting ), "The deposit pool size after depositing exceeds the maximum size");
-		// rocketVault.depositEther{value: msg.value}();
+		IVault vault = IVault(getContractAddress("Vault"));
+		// if (vault.balanceOf("MinipoolManager").add(msg.value) <= some setting ), "The deposit pool size after depositing exceeds the maximum size");
+		vault.depositAvax{value: msg.value}();
+
+		// TODO deposit ggp bond to vault, ensure correct amounts
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
 		// (completed its validation period and all rewards paid and processing is complete)

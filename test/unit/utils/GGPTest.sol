@@ -4,16 +4,106 @@ pragma solidity ^0.8.0;
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../contracts/contract/Storage.sol";
+import "../../../contracts/contract/Vault.sol";
+import "../../../contracts/contract/LaunchManager.sol";
+import "../../../contracts/contract/MinipoolManager.sol";
+import "../../../contracts/contract/MultisigManager.sol";
 
 contract GGPTest is Test {
 	// This is a magic addr that forge deploys all contracts from
 	address internal constant GUARDIAN = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
 	address internal constant ZERO_ADDRESS = address(0x00);
-	address internal constant NONEXISTANT_NODEID = address(0x0123456789);
-	// vm.addr(USER1_PK) gives the address of the private key
-	uint256 internal constant USER1_PK = 0x9c4b7f4ad48f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c5b923d;
+	// vm.addr(RIALTO1_PK) gives the address of the private key, We need this because we test rialto signing things
 	uint256 internal constant RIALTO1_PK = 0xb4679213567f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c8b571a;
+	uint256 internal constant RIALTO2_PK = 0x9c4b7f4ad48f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c5b923d;
 	uint256 private randNonce = 0;
+
+	function initManagers()
+		internal
+		returns (
+			MinipoolManager mp,
+			MultisigManager ms,
+			LaunchManager lm,
+			Vault v
+		)
+	{
+		Storage s = new Storage();
+		mp = new MinipoolManager(s);
+		registerContract(s, "MinipoolManager", address(mp));
+		ms = new MultisigManager(s);
+		registerContract(s, "MultisigManager", address(ms));
+		lm = new LaunchManager(s);
+		registerContract(s, "LaunchManager", address(lm));
+		v = new Vault(s);
+		registerContract(s, "Vault", address(v));
+
+		address addr = vm.addr(RIALTO1_PK);
+		ms.registerMultisig(addr);
+		ms.enableMultisig(addr);
+
+		// Give guardian and rialto some funds
+		vm.deal(addr, 100000 ether);
+		vm.deal(GUARDIAN, 100000 ether);
+
+		initStorage(s);
+	}
+
+	// Init common things that needs to be setup
+	// Must be last func called from a setUp() function
+	function initStorage(Storage s) internal {
+		// Init any default values we want in storage
+		bytes32 protocolDaoSettingsNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
+		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.rate")), 1000133680617113500);
+		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.start")), block.timestamp + 1 days);
+
+		// Switch the guardian over and confirm
+		vm.label(GUARDIAN, "GUARDIAN");
+		s.setGuardian(GUARDIAN);
+		vm.prank(GUARDIAN);
+		s.confirmGuardian();
+	}
+
+	// Register a contract in Storage
+	function registerContract(
+		Storage s,
+		bytes memory _name,
+		address _addr
+	) internal {
+		s.setBool(keccak256(abi.encodePacked("contract.exists", _addr)), true);
+		s.setAddress(keccak256(abi.encodePacked("contract.address", _name)), _addr);
+		s.setString(keccak256(abi.encodePacked("contract.name", _addr)), string(_name));
+	}
+
+	// Get a deterministic address for an actor
+	function getActor(uint160 index) internal pure returns (address) {
+		return address(uint160(0x50000 + index));
+	}
+
+	function randAddress() internal returns (address) {
+		randNonce++;
+		return address(uint160(uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp))))));
+	}
+
+	function randUint(uint256 _modulus) internal returns (uint256) {
+		randNonce++;
+		return uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)))) % _modulus;
+	}
+
+	// Generate data to create a random minipool for tests
+	function randMinipool()
+		internal
+		returns (
+			address,
+			uint256,
+			uint256
+		)
+	{
+		randNonce++;
+		address nodeID = randAddress();
+		uint256 duration = randUint(2000000);
+		uint256 delegationFee = uint256(0); // TODO make this better
+		return (nodeID, duration, delegationFee);
+	}
 
 	// Copy over some funcs from DSTestPlus
 	string private checkpointLabel;
@@ -36,65 +126,13 @@ contract GGPTest is Test {
 		b ? assertTrue(a) : assertFalse(a);
 	}
 
-	// Init common things that needs to be setup
-	// Must be last func called from a setUp() function
-	function initStorage(Storage _s) internal {
-		vm.label(GUARDIAN, "GUARDIAN");
-		_s.setGuardian(GUARDIAN);
-		vm.prank(GUARDIAN);
-		_s.confirmGuardian();
-
-		// put any default values here
-		vm.startPrank(GUARDIAN);
-		bytes32 protocolDaoSettingsNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
-		_s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.rate")), 1000133680617113500);
-		_s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.start")), block.timestamp + 1 days);
-		vm.stopPrank();
-	}
-
-	// Register a contract in Storage
-	function registerContract(
-		Storage _s,
-		bytes memory _name,
-		address _addr
-	) internal {
-		_s.setBool(keccak256(abi.encodePacked("contract.exists", _addr)), true);
-		_s.setAddress(keccak256(abi.encodePacked("contract.address", _name)), _addr);
-	}
-
-	function randAddress() internal returns (address) {
-		randNonce++;
-		return address(uint160(uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp))))));
-	}
-
-	function randUint(uint256 _modulus) internal returns (uint256) {
-		randNonce++;
-		return uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)))) % _modulus;
-	}
-
-	// Generate a random minipool for test data
-	function randMinipool()
-		internal
-		returns (
-			address,
-			uint256,
-			uint256
-		)
-	{
-		randNonce++;
-		address nodeID = randAddress();
-		uint256 duration = randUint(2000000);
-		uint256 delegationFee = uint256(0); // TODO make this better
-		return (nodeID, duration, delegationFee);
-	}
-
 	// Helper to combine r/s/v ECDSA signature into a single bytes
 	function combineSigParts(
 		uint8 _v,
 		bytes32 _r,
-		bytes32 _s
+		bytes32 s
 	) internal pure returns (bytes memory) {
-		return abi.encodePacked(_r, _s, _v);
+		return abi.encodePacked(_r, s, _v);
 	}
 
 	function signHash(uint256 pk, bytes32 h) internal returns (bytes memory) {

@@ -38,30 +38,6 @@ abstract contract Base {
 	}
 
 	/**
-	 * @dev Throws if called by any sender that isn't a registered node
-	 */
-	modifier onlyRegisteredNode(address _nodeAddress) {
-		require(getBool(keccak256(abi.encodePacked("node.exists", _nodeAddress))), "Invalid node");
-		_;
-	}
-
-	/**
-	 * @dev Throws if called by any sender that isn't a trusted node DAO member
-	 */
-	modifier onlyTrustedNode(address _nodeAddress) {
-		require(getBool(keccak256(abi.encodePacked("dao.trustednodes.", "member", _nodeAddress))), "Invalid trusted node");
-		_;
-	}
-
-	/**
-	 * @dev Throws if called by any sender that isn't a registered minipool
-	 */
-	modifier onlyRegisteredMinipool(address _minipoolAddress) {
-		require(getBool(keccak256(abi.encodePacked("minipool.exists", _minipoolAddress))), "Invalid minipool");
-		_;
-	}
-
-	/**
 	 * @dev Throws if called by any account other than a guardian account (temporary account allowed access to settings before DAO is fully enabled)
 	 */
 	modifier onlyGuardian() {

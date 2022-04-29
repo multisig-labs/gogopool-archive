@@ -15,66 +15,56 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 /// @author Chandler
 // based on RocketVault by RocketPool
 
+// TODO Switch to using custom errors defined in IVault
+
 contract Vault is Base, IVault {
 	using SafeERC20 for uint256;
 
 	// Network contract balances
-	mapping(string => uint256) private etherBalances;
+	mapping(string => uint256) private avaxBalances;
 	mapping(bytes32 => uint256) private tokenBalances;
 
 	// Events
-	event EtherDeposited(string indexed by, uint256 amount, uint256 time);
-	event EtherWithdrawn(string indexed by, uint256 amount, uint256 time);
+	event AvaxDeposited(string indexed by, uint256 amount, uint256 time);
+	event AvaxWithdrawn(string indexed by, uint256 amount, uint256 time);
 	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
 	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
 	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
 	event TokenTransfer(bytes32 indexed by, bytes32 indexed to, address indexed tokenAddress, uint256 amount, uint256 time);
 
 	// Construct
-	constructor(Storage _storageAddress) Base(_storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 
-	// Get a contract's ETH balance by address
-	function balanceOf(string memory _networkContractName) external view returns (uint256) {
-		// Return balance
-		return etherBalances[_networkContractName];
-	}
-
-	// Get the balance of a token held by a network contract
-	function balanceOfToken(string memory _networkContractName, IERC20 _tokenAddress) external view returns (uint256) {
-		// Return balance
-		return tokenBalances[keccak256(abi.encodePacked(_networkContractName, _tokenAddress))];
-	}
-
-	// Accept an ETH deposit from a network contract
-	// Only accepts calls from Rocket Pool network contracts
-	function depositAvax() external payable onlyLatestNetworkContract {
+	// Accept an AVAX deposit from a network contract
+	// Only accepts calls from GoGo Pool network contracts
+	function depositAvax() external payable override onlyLatestNetworkContract {
 		// Valid amount?
-		require(msg.value > 0, "No valid amount of ETH given to deposit");
+		require(msg.value > 0, "No valid amount of AVAX given to deposit");
 		// Get contract key
 		string memory contractName = getContractName(msg.sender);
 		// Update contract balance
-		etherBalances[contractName] = etherBalances[contractName] + msg.value;
+		avaxBalances[contractName] = avaxBalances[contractName] + msg.value;
 		// Emit ether deposited event
-		emit EtherDeposited(contractName, msg.value, block.timestamp);
+		emit AvaxDeposited(contractName, msg.value, block.timestamp);
 	}
 
-	// Withdraw an amount of ETH to a network contract
-	// Only accepts calls from Rocket Pool network contracts
+	// Withdraw an amount of AVAX to a network contract
+	// Only accepts calls from GoGo Pool network contracts
 	function withdrawAvax(uint256 _amount) external onlyLatestNetworkContract {
 		// Valid amount?
-		require(_amount > 0, "No valid amount of ETH given to withdraw");
+		require(_amount > 0, "No valid amount of AVAX given to withdraw");
 		// Get contract key
 		string memory contractName = getContractName(msg.sender);
 		// Check and update contract balance
-		require(etherBalances[contractName] >= _amount, "Insufficient contract ETH balance");
-		etherBalances[contractName] = etherBalances[contractName] - _amount;
+		require(avaxBalances[contractName] >= _amount, "Insufficient contract AVAX balance");
+		avaxBalances[contractName] = avaxBalances[contractName] - _amount;
 		// Withdraw
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
 		withdrawer.receiveVaultWithdrawalAVAX{value: _amount}();
 		// Emit ether withdrawn event
-		emit EtherWithdrawn(contractName, _amount, block.timestamp);
+		emit AvaxWithdrawn(contractName, _amount, block.timestamp);
 	}
 
 	// Accept an token deposit and assign its balance to a network contract (saves a large amount of gas this way through not needing a double token transfer via a network contract first)
@@ -113,7 +103,7 @@ contract Vault is Base, IVault {
 		// Get the token ERC20 instance
 		IERC20 tokenContract = IERC20(_tokenAddress);
 		// Withdraw to the desired address
-		require(tokenContract.transfer(_withdrawalAddress, _amount), "Rocket Vault token withdrawal unsuccessful");
+		require(tokenContract.transfer(_withdrawalAddress, _amount), "GoGo Vault token withdrawal unsuccessful");
 		// Emit token withdrawn event
 		emit TokenWithdrawn(contractKey, address(_tokenAddress), _amount, block.timestamp);
 	}
@@ -152,5 +142,17 @@ contract Vault is Base, IVault {
 		tokenContract.burn(_amount);
 		// Emit token burn event
 		emit TokenBurned(contractKey, address(_tokenAddress), _amount, block.timestamp);
+	}
+
+	// Get a contract's ETH balance by address
+	function balanceOf(string memory _networkContractName) external view returns (uint256) {
+		// Return balance
+		return avaxBalances[_networkContractName];
+	}
+
+	// Get the balance of a token held by a network contract
+	function balanceOfToken(string memory _networkContractName, IERC20 _tokenAddress) external view returns (uint256) {
+		// Return balance
+		return tokenBalances[keccak256(abi.encodePacked(_networkContractName, _tokenAddress))];
 	}
 }
