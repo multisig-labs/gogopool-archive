@@ -20,21 +20,21 @@ interface IMultisigManager {
 	event EnabledMultisig(address indexed addr);
 	event DisabledMultisig(address indexed addr);
 
-	function registerMultisig(address _addr) external;
+	function registerMultisig(address addr) external;
 
-	function enableMultisig(address _addr) external;
+	function enableMultisig(address addr) external;
 
-	function disableMultisig(address _addr) external;
+	function disableMultisig(address addr) external;
 
-	function getIndexOf(address _addr) external view returns (int256);
-
-	function getMultisig(uint256 _index) external view returns (address addr, bool enabled);
-
-	function getNextActiveMultisig() external view returns (address addr);
+	function getNextActiveMultisig() external returns (address);
 
 	function requireValidSignature(
-		address _addr,
-		bytes32 _msgHash,
-		bytes memory signature
+		address addr,
+		bytes32 msgHash,
+		bytes memory sig
 	) external view;
+
+	function getIndexOf(address addr) external view returns (int256);
+
+	function getMultisig(uint256 index) external view returns (address addr, bool enabled);
 }

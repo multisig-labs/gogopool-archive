@@ -24,6 +24,7 @@ contract MinipoolManagerTest is GGPTest {
 	address private nodeID;
 	uint256 private status;
 	uint256 private duration;
+	uint256 private delegationFee;
 
 	function setUp() public {
 		Storage s = new Storage();
@@ -37,8 +38,8 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testClaim() public {
-		(nodeID, duration) = randMinipool();
-		mp.registerMinipool(nodeID, duration);
+		(nodeID, duration, delegationFee) = randMinipool();
+		mp.createMinipool(nodeID, duration, delegationFee);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		uint256 nonce = mp.getNonce(rialtoAddr1);
@@ -63,8 +64,8 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testCancelByMultisig() public {
-		(nodeID, duration) = randMinipool();
-		mp.registerMinipool(nodeID, duration);
+		(nodeID, duration, delegationFee) = randMinipool();
+		mp.createMinipool(nodeID, duration, delegationFee);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		uint256 nonce = mp.getNonce(rialtoAddr1);
@@ -75,8 +76,8 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testCancelByOwner() public {
-		(nodeID, duration) = randMinipool();
-		mp.registerMinipool(nodeID, duration);
+		(nodeID, duration, delegationFee) = randMinipool();
+		mp.createMinipool(nodeID, duration, delegationFee);
 		mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 		mp.cancelMinipool(nodeID);
 
@@ -88,71 +89,25 @@ contract MinipoolManagerTest is GGPTest {
 	function testEmptyState() public {
 		index = mp.getIndexOf(NONEXISTANT_NODEID);
 		assertEq(index, -1);
-		(nodeID, status, duration) = mp.getMinipool(1);
+		(nodeID, status, duration, delegationFee) = mp.getMinipool(1);
 		assertEq(nodeID, ZERO_ADDRESS);
 	}
 
 	// Maybe we have testGas... tests that just do a single important operation
 	// to make it easier to monitor gas usage
 	function testGasAddOne() public {
-		(nodeID, duration) = randMinipool();
+		(nodeID, duration, delegationFee) = randMinipool();
 		startMeasuringGas("testGasAddOne");
-		mp.registerMinipool(nodeID, duration);
+		mp.createMinipool(nodeID, duration, delegationFee);
 		stopMeasuringGas();
 	}
 
 	function testAddAndGetMany() public {
 		for (uint256 i = 0; i < 100; i++) {
-			(nodeID, duration) = randMinipool();
-			mp.registerMinipool(nodeID, duration);
+			(nodeID, duration, delegationFee) = randMinipool();
+			mp.createMinipool(nodeID, duration, delegationFee);
 		}
 		index = mp.getIndexOf(nodeID);
 		assertEq(index, 99);
-	}
-
-	function testGetStatusCounts() public {
-		for (uint256 i = 0; i < 100; i++) {
-			(nodeID, duration) = randMinipool();
-			mp.registerMinipool(nodeID, duration);
-		}
-
-		// Get all in one page
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = mp.getMinipoolCountPerStatus(0, 0);
-		assertEq(initialisedCount, 100);
-		assertEq(prelaunchCount, 0);
-		assertEq(stakingCount, 0);
-		assertEq(withdrawableCount, 0);
-		assertEq(finishedCount, 0);
-		assertEq(canceledCount, 0);
-
-		// Test pagination
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = mp.getMinipoolCountPerStatus(0, 10);
-		assertEq(initialisedCount, 10);
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = mp.getMinipoolCountPerStatus(90, 10);
-		assertEq(initialisedCount, 10);
-	}
-
-	function testGetPrelaunchMinipools() public {
-		uint256 max = 10;
-		address[] memory allNodeIDs = new address[](max);
-		uint256 foundCount = 0;
-		for (uint256 i = 0; i < max; i++) {
-			(nodeID, duration) = randMinipool();
-			mp.registerMinipool(nodeID, duration);
-			// Update every other one to prelaunch status
-			if (i % 2 == 0) {
-				mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-				allNodeIDs[foundCount] = nodeID;
-				foundCount++;
-			}
-		}
-
-		(, prelaunchCount, , , , ) = mp.getMinipoolCountPerStatus(0, 0);
-		assertEq(prelaunchCount, max / 2);
-
-		MinipoolManager.Node[] memory nodes = mp.getPrelaunchMinipools(0, 0);
-		for (uint256 i = 0; i < nodes.length; i++) {
-			assertEq(nodes[i].nodeID, allNodeIDs[i]);
-		}
 	}
 }

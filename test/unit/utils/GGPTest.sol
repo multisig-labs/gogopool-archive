@@ -73,11 +73,19 @@ contract GGPTest is Test {
 	}
 
 	// Generate a random minipool for test data
-	function randMinipool() internal returns (address, uint256) {
+	function randMinipool()
+		internal
+		returns (
+			address,
+			uint256,
+			uint256
+		)
+	{
 		randNonce++;
 		address nodeID = randAddress();
 		uint256 duration = randUint(2000000);
-		return (nodeID, duration);
+		uint256 delegationFee = uint256(0); // TODO make this better
+		return (nodeID, duration, delegationFee);
 	}
 
 	// Helper to combine r/s/v ECDSA signature into a single bytes

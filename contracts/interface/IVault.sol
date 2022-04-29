@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 interface IVault {
 	function balanceOf(string memory _networkContractName) external view returns (uint256);
 
-	function depositEther() external payable;
+	function depositAvax() external payable;
 
-	function withdrawEther(uint256 _amount) external;
+	function withdrawAvax(uint256 _amount) external;
 
 	function depositToken(
 		string memory _networkContractName,

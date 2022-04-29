@@ -49,7 +49,7 @@ contract Vault is Base, IVault {
 
 	// Accept an ETH deposit from a network contract
 	// Only accepts calls from Rocket Pool network contracts
-	function depositEther() external payable onlyLatestNetworkContract {
+	function depositAvax() external payable onlyLatestNetworkContract {
 		// Valid amount?
 		require(msg.value > 0, "No valid amount of ETH given to deposit");
 		// Get contract key
@@ -62,7 +62,7 @@ contract Vault is Base, IVault {
 
 	// Withdraw an amount of ETH to a network contract
 	// Only accepts calls from Rocket Pool network contracts
-	function withdrawEther(uint256 _amount) external onlyLatestNetworkContract {
+	function withdrawAvax(uint256 _amount) external onlyLatestNetworkContract {
 		// Valid amount?
 		require(_amount > 0, "No valid amount of ETH given to withdraw");
 		// Get contract key
@@ -72,7 +72,7 @@ contract Vault is Base, IVault {
 		etherBalances[contractName] = etherBalances[contractName] - _amount;
 		// Withdraw
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
-		withdrawer.receiveVaultWithdrawalETH{value: _amount}();
+		withdrawer.receiveVaultWithdrawalAVAX{value: _amount}();
 		// Emit ether withdrawn event
 		emit EtherWithdrawn(contractName, _amount, block.timestamp);
 	}

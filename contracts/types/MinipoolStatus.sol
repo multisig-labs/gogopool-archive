@@ -10,5 +10,6 @@ enum MinipoolStatus {
 	Staking, // The minipool node is currently staking
 	Withdrawable, // The minipool has finished staking period and all funds / rewards have been moved back to c-chain by Rialto
 	Finished, // The minipool node has withdrawn all funds
-	Canceled // The minipool has been canceled before ever starting validation
+	Canceled, // The minipool has been canceled before ever starting validation
+	Error // An error occured at some point in the process
 }

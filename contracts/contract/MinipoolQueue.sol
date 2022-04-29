@@ -34,14 +34,7 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 
 	// Remove an item from the start of a queue and return it
 	// Requires that the queue is not empty
-	function dequeue()
-		external
-		returns (
-			bytes32,
-			uint256,
-			address
-		)
-	{
+	function dequeue() external returns (bytes32) {
 		require(getLength() > 0, "Queue is empty");
 		uint256 index = getUint(keccak256("minipoolqueue.start"));
 
@@ -51,7 +44,7 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 			index = index - CAPACITY;
 		}
 		setUint(keccak256("minipoolqueue.start"), index);
-		return (nodeID, duration, owner);
+		return nodeID;
 	}
 
 	// The number of items in a queue
@@ -65,21 +58,12 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 	}
 
 	// The item in a queue by index
-	function getItem(uint256 _index)
-		public
-		view
-		returns (
-			bytes32,
-			uint256,
-			address
-		)
-	{
+	function getItem(uint256 _index) public view returns (bytes32) {
 		uint256 index = getUint(keccak256("minipoolqueue.start")) + _index;
 		if (index >= CAPACITY) {
 			index = index - CAPACITY;
 		}
-		bytes32 nodeID = getBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
-		return (nodeID, duration, owner);
+		return getBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
 	}
 
 	// The index of an item in a queue

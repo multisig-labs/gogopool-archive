@@ -19,39 +19,39 @@ import "../interface/IMultisigManager.sol";
 */
 
 contract MultisigManager is Base, IMultisigManager {
-	constructor(IStorage _storageAddress) Base(_storageAddress) {
+	constructor(IStorage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 
 	// Register a multisig. Defaults to disabled when first registered.
-	function registerMultisig(address _addr) external override {
-		int256 index = getIndexOf(_addr);
+	function registerMultisig(address addr) external override {
+		int256 index = getIndexOf(addr);
 		if (index != -1) {
 			revert MultisigAlreadyRegistered();
 		}
 		uint256 count = getUint(keccak256("multisig.count"));
-		setAddress(keccak256(abi.encodePacked("multisig.item", count, ".address")), _addr);
+		setAddress(keccak256(abi.encodePacked("multisig.item", count, ".address")), addr);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
-		setUint(keccak256(abi.encodePacked("multisig.index", _addr)), count + 1);
+		setUint(keccak256(abi.encodePacked("multisig.index", addr)), count + 1);
 		addUint(keccak256("multisig.count"), 1);
-		emit RegisteredMultisig(_addr);
+		emit RegisteredMultisig(addr);
 	}
 
-	function enableMultisig(address _addr) external override {
-		int256 index = getIndexOf(_addr);
+	function enableMultisig(address addr) external override {
+		int256 index = getIndexOf(addr);
 		if (index == -1) {
 			revert MultisigNotFound();
 		}
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), true);
-		emit EnabledMultisig(_addr);
+		emit EnabledMultisig(addr);
 	}
 
-	function disableMultisig(address _addr) external override {
-		int256 index = requireEnabledMultisig(_addr);
+	function disableMultisig(address addr) external override {
+		int256 index = requireEnabledMultisig(addr);
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), false);
-		emit DisabledMultisig(_addr);
+		emit DisabledMultisig(addr);
 	}
 
 	// In future, have a way to choose which multisig gets used for each validator
@@ -62,32 +62,32 @@ contract MultisigManager is Base, IMultisigManager {
 		return multisigAddress;
 	}
 
-	// Verifies that an active Rialto multisig signed the _msgHash
+	// Verifies that an active Rialto multisig signed the msgHash
 	function requireValidSignature(
-		address _addr,
-		bytes32 _msgHash,
-		bytes calldata _sig
-	) external view {
-		requireEnabledMultisig(_addr);
-		address recovered = ECDSA.recover(_msgHash, _sig);
-		if (_addr != recovered) {
+		address addr,
+		bytes32 msgHash,
+		bytes memory sig
+	) public view {
+		requireEnabledMultisig(addr);
+		address recovered = ECDSA.recover(msgHash, sig);
+		if (addr != recovered) {
 			revert SignatureInvalid();
 		}
 	}
 
 	// The index of an item
 	// Returns -1 if the value is not found
-	function getIndexOf(address _addr) public view override returns (int256) {
-		return int256(getUint(keccak256(abi.encodePacked("multisig.index", _addr)))) - 1;
+	function getIndexOf(address addr) public view override returns (int256) {
+		return int256(getUint(keccak256(abi.encodePacked("multisig.index", addr)))) - 1;
 	}
 
-	function getMultisig(uint256 _index) public view override returns (address addr, bool enabled) {
-		addr = getAddress(keccak256(abi.encodePacked("multisig.item", _index, ".address")));
-		enabled = getBool(keccak256(abi.encodePacked("multisig.item", _index, ".enabled")));
+	function getMultisig(uint256 index) public view override returns (address addr, bool enabled) {
+		addr = getAddress(keccak256(abi.encodePacked("multisig.item", index, ".address")));
+		enabled = getBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")));
 	}
 
-	function requireEnabledMultisig(address _addr) private view returns (int256) {
-		int256 index = getIndexOf(_addr);
+	function requireEnabledMultisig(address addr) private view returns (int256) {
+		int256 index = getIndexOf(addr);
 		if (index == -1) {
 			revert MultisigNotFound();
 		}
