@@ -15,15 +15,15 @@ contract StorageTest is GGPTest {
 
 	function testGuardian() public {
 		// Storage() was created by guardian in setup, so it is the guardian to start
-		assertEq(store.getGuardian(), GUARDIAN);
+		assertEq(store.getGuardian(), guardian);
 		// We start out in an undeployed state while everything gets set up
 		assertBoolEq(store.getDeployedStatus(), false);
 
 		// Change the guardian
-		vm.prank(GUARDIAN, GUARDIAN);
+		vm.prank(guardian, guardian);
 		store.setGuardian(NEWGUARDIAN);
 		// Should not change yet, must be confirmed
-		assertEq(store.getGuardian(), GUARDIAN);
+		assertEq(store.getGuardian(), guardian);
 
 		// Impersonate an address
 		vm.startPrank(NEWGUARDIAN, NEWGUARDIAN);
@@ -36,7 +36,7 @@ contract StorageTest is GGPTest {
 
 	// Accepting params will fuzz the test
 	function testStorageFuzz(int256 i) public {
-		vm.prank(GUARDIAN, GUARDIAN);
+		vm.prank(guardian, guardian);
 		store.setInt(KEY, i);
 		assertEq(store.getInt(KEY), i);
 	}

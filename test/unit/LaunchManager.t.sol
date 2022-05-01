@@ -5,8 +5,6 @@ pragma solidity ^0.8.0;
 import "./utils/GGPTest.sol";
 
 contract LaunchManagerTest is GGPTest {
-	address private rialto1;
-
 	int256 private index;
 	address private nodeID;
 	uint256 private status;
@@ -15,7 +13,6 @@ contract LaunchManagerTest is GGPTest {
 
 	function setUp() public override {
 		super.setUp();
-		rialto1 = vm.addr(RIALTO1_PK);
 	}
 
 	function testGetStatusCounts() public {

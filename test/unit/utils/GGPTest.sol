@@ -12,13 +12,18 @@ import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 
 abstract contract GGPTest is Test {
-	address internal constant GUARDIAN = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
 	address internal constant ZERO_ADDRESS = address(0x00);
 	// vm.addr(RIALTO1_PK) gives the address of the private key, We need this because we test rialto signing things
 	uint256 internal constant RIALTO1_PK = 0xb4679213567f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c8b571a;
 	uint256 internal constant RIALTO2_PK = 0x9c4b7f4ad48f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c5b923d;
 	uint256 private randNonce = 0;
 
+	// Users
+	address public guardian;
+	address public rialto1;
+	address public rialto2;
+
+	// Contracts
 	Storage public store;
 	Vault public vault;
 	MinipoolManager public minipoolMgr;
@@ -28,41 +33,41 @@ abstract contract GGPTest is Test {
 	TokenGGP public ggp;
 
 	function setUp() public virtual {
+		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
+		vm.label(address(guardian), "guardian");
+
+		rialto1 = vm.addr(RIALTO1_PK);
+		vm.label(address(rialto1), "rialto1");
+
+		rialto2 = vm.addr(RIALTO2_PK);
+		vm.label(address(rialto2), "rialto2");
+
 		// Construct all contracts as Guardian
-		vm.startPrank(GUARDIAN, GUARDIAN);
+		vm.startPrank(guardian, guardian);
 
 		store = new Storage();
-		// label makes for nicer traces
-		vm.label(address(store), "Storage");
 		initStorage(store);
-		// registerContract(store, "TestContract", address(this));
 
 		vault = new Vault(store);
-		vm.label(address(vault), "Vault");
 		registerContract(store, "Vault", address(vault));
 
 		minipoolMgr = new MinipoolManager(store);
-		vm.label(address(minipoolMgr), "MinipoolManager");
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
-		vm.label(address(multisigMgr), "MultisigManager");
 		registerContract(store, "MultisigManager", address(multisigMgr));
 
 		launchMgr = new LaunchManager(store);
-		vm.label(address(launchMgr), "LaunchManager");
 		registerContract(store, "LaunchManager", address(launchMgr));
 
 		dao = new ProtocolDAO(store);
-		vm.label(address(dao), "ProtocolDAO");
 		registerContract(store, "ProtocolDAO", address(dao));
 		dao.initialize();
 
 		ggp = new TokenGGP(store);
-		vm.label(address(ggp), "TokenGGP");
 		registerContract(store, "TokenGGP", address(ggp));
 
-		vm.deal(GUARDIAN, 100000 ether);
+		vm.deal(guardian, 100000 ether);
 
 		vm.stopPrank();
 	}
@@ -80,7 +85,7 @@ abstract contract GGPTest is Test {
 		bytes memory name,
 		address addr
 	) internal {
-		console.log(string(name), addr);
+		// console.log(string(name), addr);
 		s.setBool(keccak256(abi.encodePacked("contract.exists", addr)), true);
 		s.setAddress(keccak256(abi.encodePacked("contract.address", name)), addr);
 		s.setString(keccak256(abi.encodePacked("contract.name", addr)), string(name));
