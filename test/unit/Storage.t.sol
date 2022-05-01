@@ -9,39 +9,42 @@ contract StorageTest is GGPTest {
 	address private constant NEWGUARDIAN = address(0xDEADBEEF);
 	bytes32 private constant KEY = keccak256("test.key");
 
-	Storage private s;
+	function setUp() public override {
+		super.setUp();
+	}
 
 	function testGuardian() public {
-		s = new Storage();
-		vm.label(address(s), "Storage");
-		// Storage() was executed by "this", so it is the guardian to start
-		assertEq(s.getGuardian(), address(this));
+		// Storage() was created by guardian in setup, so it is the guardian to start
+		assertEq(store.getGuardian(), GUARDIAN);
 		// We start out in an undeployed state while everything gets set up
-		assertBoolEq(s.getDeployedStatus(), false);
+		assertBoolEq(store.getDeployedStatus(), false);
 
 		// Change the guardian
-		s.setGuardian(NEWGUARDIAN);
+		vm.prank(GUARDIAN, GUARDIAN);
+		store.setGuardian(NEWGUARDIAN);
 		// Should not change yet, must be confirmed
-		assertEq(s.getGuardian(), address(this));
+		assertEq(store.getGuardian(), GUARDIAN);
+
 		// Impersonate an address
-		vm.startPrank(NEWGUARDIAN);
-		s.confirmGuardian();
-		assertEq(s.getGuardian(), NEWGUARDIAN);
-		s.setString(KEY, "test");
-		assertEq(s.getString(KEY), "test");
+		vm.startPrank(NEWGUARDIAN, NEWGUARDIAN);
+		store.confirmGuardian();
+		assertEq(store.getGuardian(), NEWGUARDIAN);
+		store.setString(KEY, "test");
+		assertEq(store.getString(KEY), "test");
+		vm.stopPrank();
 	}
 
 	// Accepting params will fuzz the test
 	function testStorageFuzz(int256 i) public {
-		s = new Storage();
-		s.setInt(KEY, i);
-		assertEq(s.getInt(KEY), i);
+		vm.prank(GUARDIAN, GUARDIAN);
+		store.setInt(KEY, i);
+		assertEq(store.getInt(KEY), i);
 	}
 
-	// A test named *Fail* is expected to fail
-	function testFailStorage() public {
-		s = new Storage();
-		vm.prank(ZERO_ADDRESS);
-		s.setInt(KEY, 1);
+	function testNotGuardian() public {
+		vm.prank(NEWGUARDIAN, NEWGUARDIAN);
+		vm.expectRevert("Invalid or outdated network contract attempting access during deployment");
+		store.setInt(KEY, 2);
+		assertEq(store.getInt(KEY), 0);
 	}
 }

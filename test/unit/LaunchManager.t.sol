@@ -5,8 +5,6 @@ pragma solidity ^0.8.0;
 import "./utils/GGPTest.sol";
 
 contract LaunchManagerTest is GGPTest {
-	LaunchManager private lm;
-	MinipoolManager private mp;
 	address private rialto1;
 
 	int256 private index;
@@ -15,21 +13,9 @@ contract LaunchManagerTest is GGPTest {
 	uint256 private duration;
 	uint256 private delegationFee;
 
-	function setUp() public {
-		(mp, , lm, ) = initManagers();
+	function setUp() public override {
+		super.setUp();
 		rialto1 = vm.addr(RIALTO1_PK);
-	}
-
-	function initMinipools() public {
-		for (uint256 i = 0; i < 10; i++) {
-			(nodeID, duration, delegationFee) = randMinipool();
-			mp.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
-		}
-		for (uint256 i = 0; i < 10; i++) {
-			(nodeID, duration, delegationFee) = randMinipool();
-			mp.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
-			mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-		}
 	}
 
 	function testGetStatusCounts() public {
@@ -40,25 +26,48 @@ contract LaunchManagerTest is GGPTest {
 		uint256 finishedCount;
 		uint256 canceledCount;
 
-		for (uint256 i = 0; i < 100; i++) {
+		for (uint256 i = 0; i < 10; i++) {
 			(nodeID, duration, delegationFee) = randMinipool();
-			mp.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Staking);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Withdrawable);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Finished);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Canceled);
 		}
 
 		// Get all in one page
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = lm.getMinipoolCountPerStatus(0, 0);
-		assertEq(initialisedCount, 100);
-		assertEq(prelaunchCount, 0);
-		assertEq(stakingCount, 0);
-		assertEq(withdrawableCount, 0);
-		assertEq(finishedCount, 0);
-		assertEq(canceledCount, 0);
+		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = launchMgr.getMinipoolCountPerStatus(0, 0);
+		assertEq(initialisedCount, 10);
+		assertEq(prelaunchCount, 10);
+		assertEq(stakingCount, 10);
+		assertEq(withdrawableCount, 10);
+		assertEq(finishedCount, 10);
+		assertEq(canceledCount, 10);
 
 		// Test pagination
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = lm.getMinipoolCountPerStatus(0, 10);
-		assertEq(initialisedCount, 10);
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = lm.getMinipoolCountPerStatus(90, 10);
-		assertEq(initialisedCount, 10);
+		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = launchMgr.getMinipoolCountPerStatus(0, 6);
+		assertEq(initialisedCount, 1);
+		assertEq(prelaunchCount, 1);
+		assertEq(stakingCount, 1);
+		assertEq(withdrawableCount, 1);
+		assertEq(finishedCount, 1);
+		assertEq(canceledCount, 1);
 	}
 
 	function testGetPrelaunchMinipools() public {
@@ -69,19 +78,19 @@ contract LaunchManagerTest is GGPTest {
 		uint256 foundCount = 0;
 		for (uint256 i = 0; i < max; i++) {
 			(nodeID, duration, delegationFee) = randMinipool();
-			mp.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
 			// Update every other one to prelaunch status
 			if (i % 2 == 0) {
-				mp.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+				minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 				allNodeIDs[foundCount] = nodeID;
 				foundCount++;
 			}
 		}
 
-		(, prelaunchCount, , , , ) = lm.getMinipoolCountPerStatus(0, 0);
+		(, prelaunchCount, , , , ) = launchMgr.getMinipoolCountPerStatus(0, 0);
 		assertEq(prelaunchCount, max / 2);
 
-		LaunchManager.Node[] memory nodes = lm.getPrelaunchMinipools(0, 0);
+		LaunchManager.Node[] memory nodes = launchMgr.getPrelaunchMinipools(0, 0);
 		for (uint256 i = 0; i < nodes.length; i++) {
 			assertEq(nodes[i].nodeID, allNodeIDs[i]);
 		}

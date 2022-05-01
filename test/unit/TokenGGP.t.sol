@@ -1,23 +1,12 @@
-// SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.0;
+
+// SPDX-License-Identifier: GPL-3.0-only
+
 import "./utils/GGPTest.sol";
-import "../../contracts/contract/tokens/TokenGGP.sol";
-import "../../contracts/contract/Storage.sol";
 
 contract TokenGGPTest is GGPTest {
-	address constant deployer = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
-	address constant storageUpdater = address(0xDEADBEEF);
-	address constant zeroAddress = address(0x0);
-	Storage s;
-	TokenGGP t;
-
-	function setUp() public {
-		s = new Storage();
-		t = new TokenGGP(s);
-
-		registerContract(s, "tokenGGP", address(t));
-
-		initStorage(s);
+	function setUp() public override {
+		super.setUp();
 	}
 
 	// **
@@ -26,31 +15,30 @@ contract TokenGGPTest is GGPTest {
 
 	// get inflation calc time
 	function testGetInflationCalcTime() public {
-		assert(t.getInflationCalcTime() == 0);
+		assert(ggp.getInflationCalcTime() == 0);
 	}
 
 	function testGetInflationIntervalTime() public {
-		assert(t.getInflationIntervalTime() == 1 days);
+		assert(ggp.getInflationIntervalTime() == 1 days);
 	}
 
 	function testGetInflationIntervalRate() public {
-		assert(t.getInflationIntervalRate() == uint256(1000133680617113500));
+		assert(ggp.getInflationIntervalRate() == uint256(1000133680617113500));
 	}
 
+	// TODO figure out how we handle time-based tests like this
 	function testGetInflationIntervalStartTime() public {
-		// when testing, the default timestamp is zero
-		// so it is one day after the deployment in seconds
-		assert(t.getInflationIntervalStartTime() == 86400);
+		assert(ggp.getInflationIntervalStartTime() == (block.timestamp + 1 days));
 	}
 
 	function testGetInflationIntervalsPassed() public {
 		// no inflation intervals have passed
-		assert(t.getInflationIntervalsPassed() == 0);
+		assert(ggp.getInflationIntervalsPassed() == 0);
 	}
 
 	function testInflationCalculate() public {
-		// we haven't minted anything yet,
+		// we haven'ggp minted anything yet,
 		// so there should be no inflation
-		assert(t.inflationCalculate() == 0);
+		assert(ggp.inflationCalculate() == 0);
 	}
 }

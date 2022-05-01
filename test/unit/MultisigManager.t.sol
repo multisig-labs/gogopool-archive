@@ -4,21 +4,10 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./utils/GGPTest.sol";
-import "../../contracts/contract/Storage.sol";
-import "../../contracts/contract/MultisigManager.sol";
 
 contract MultisigManagerTest is GGPTest {
-	MultisigManager private ms;
-
-	function setUp() public {
-		Storage s = new Storage();
-		ms = new MultisigManager(s);
-		initStorage(s);
-	}
-
-	function registerMultisig(address _addr) public {
-		ms.registerMultisig(_addr);
-		ms.enableMultisig(_addr);
+	function setUp() public override {
+		super.setUp();
 	}
 
 	// Example of how to sign and recover an address
@@ -45,9 +34,9 @@ contract MultisigManagerTest is GGPTest {
 	function testAddMultisig() public {
 		address rialto1Addr = vm.addr(RIALTO1_PK);
 		registerMultisig(rialto1Addr);
-		int256 index = ms.getIndexOf(rialto1Addr);
+		int256 index = multisigMgr.getIndexOf(rialto1Addr);
 		assertEq(index, 0);
-		(address a, bool enabled) = ms.getMultisig(uint256(index));
+		(address a, bool enabled) = multisigMgr.getMultisig(uint256(index));
 		assertEq(a, rialto1Addr);
 		assert(enabled);
 	}

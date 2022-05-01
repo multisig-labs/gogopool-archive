@@ -7,6 +7,7 @@ solc-version = "0.8.13"
 verbosity = 2
 # Setting sender to magic forge deployer addr, makes things easier
 sender = "0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84"
+tx_origin = "0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84"
 remappings = [
 	'@openzeppelin/=node_modules/@openzeppelin/',
 	'@rari-capital/=node_modules/@rari-capital/',

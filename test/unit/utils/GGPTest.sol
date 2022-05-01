@@ -8,9 +8,10 @@ import "../../../contracts/contract/Vault.sol";
 import "../../../contracts/contract/LaunchManager.sol";
 import "../../../contracts/contract/MinipoolManager.sol";
 import "../../../contracts/contract/MultisigManager.sol";
+import "../../../contracts/contract/dao/ProtocolDAO.sol";
+import "../../../contracts/contract/tokens/TokenGGP.sol";
 
-contract GGPTest is Test {
-	// This is a magic addr that forge deploys all contracts from
+abstract contract GGPTest is Test {
 	address internal constant GUARDIAN = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
 	address internal constant ZERO_ADDRESS = address(0x00);
 	// vm.addr(RIALTO1_PK) gives the address of the private key, We need this because we test rialto signing things
@@ -18,60 +19,76 @@ contract GGPTest is Test {
 	uint256 internal constant RIALTO2_PK = 0x9c4b7f4ad48f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c5b923d;
 	uint256 private randNonce = 0;
 
-	function initManagers()
-		internal
-		returns (
-			MinipoolManager mp,
-			MultisigManager ms,
-			LaunchManager lm,
-			Vault v
-		)
-	{
-		Storage s = new Storage();
-		mp = new MinipoolManager(s);
-		registerContract(s, "MinipoolManager", address(mp));
-		ms = new MultisigManager(s);
-		registerContract(s, "MultisigManager", address(ms));
-		lm = new LaunchManager(s);
-		registerContract(s, "LaunchManager", address(lm));
-		v = new Vault(s);
-		registerContract(s, "Vault", address(v));
+	Storage public store;
+	Vault public vault;
+	MinipoolManager public minipoolMgr;
+	MultisigManager public multisigMgr;
+	LaunchManager public launchMgr;
+	ProtocolDAO public dao;
+	TokenGGP public ggp;
 
-		address addr = vm.addr(RIALTO1_PK);
-		ms.registerMultisig(addr);
-		ms.enableMultisig(addr);
+	function setUp() public virtual {
+		// Construct all contracts as Guardian
+		vm.startPrank(GUARDIAN, GUARDIAN);
 
-		// Give guardian and rialto some funds
-		vm.deal(addr, 100000 ether);
+		store = new Storage();
+		// label makes for nicer traces
+		vm.label(address(store), "Storage");
+		initStorage(store);
+		// registerContract(store, "TestContract", address(this));
+
+		vault = new Vault(store);
+		vm.label(address(vault), "Vault");
+		registerContract(store, "Vault", address(vault));
+
+		minipoolMgr = new MinipoolManager(store);
+		vm.label(address(minipoolMgr), "MinipoolManager");
+		registerContract(store, "MinipoolManager", address(minipoolMgr));
+
+		multisigMgr = new MultisigManager(store);
+		vm.label(address(multisigMgr), "MultisigManager");
+		registerContract(store, "MultisigManager", address(multisigMgr));
+
+		launchMgr = new LaunchManager(store);
+		vm.label(address(launchMgr), "LaunchManager");
+		registerContract(store, "LaunchManager", address(launchMgr));
+
+		dao = new ProtocolDAO(store);
+		vm.label(address(dao), "ProtocolDAO");
+		registerContract(store, "ProtocolDAO", address(dao));
+		dao.initialize();
+
+		ggp = new TokenGGP(store);
+		vm.label(address(ggp), "TokenGGP");
+		registerContract(store, "TokenGGP", address(ggp));
+
 		vm.deal(GUARDIAN, 100000 ether);
 
-		initStorage(s);
+		vm.stopPrank();
 	}
 
-	// Init common things that needs to be setup
-	// Must be last func called from a setUp() function
 	function initStorage(Storage s) internal {
 		// Init any default values we want in storage
 		bytes32 protocolDaoSettingsNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
 		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.rate")), 1000133680617113500);
 		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.start")), block.timestamp + 1 days);
-
-		// Switch the guardian over and confirm
-		vm.label(GUARDIAN, "GUARDIAN");
-		s.setGuardian(GUARDIAN);
-		vm.prank(GUARDIAN);
-		s.confirmGuardian();
 	}
 
 	// Register a contract in Storage
 	function registerContract(
 		Storage s,
-		bytes memory _name,
-		address _addr
+		bytes memory name,
+		address addr
 	) internal {
-		s.setBool(keccak256(abi.encodePacked("contract.exists", _addr)), true);
-		s.setAddress(keccak256(abi.encodePacked("contract.address", _name)), _addr);
-		s.setString(keccak256(abi.encodePacked("contract.name", _addr)), string(_name));
+		console.log(string(name), addr);
+		s.setBool(keccak256(abi.encodePacked("contract.exists", addr)), true);
+		s.setAddress(keccak256(abi.encodePacked("contract.address", name)), addr);
+		s.setString(keccak256(abi.encodePacked("contract.name", addr)), string(name));
+	}
+
+	function registerMultisig(address _addr) internal {
+		multisigMgr.registerMultisig(_addr);
+		multisigMgr.enableMultisig(_addr);
 	}
 
 	// Get a deterministic address for an actor

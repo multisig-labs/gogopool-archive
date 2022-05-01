@@ -4,17 +4,10 @@ pragma solidity ^0.8.0;
 
 import "./utils/GGPTest.sol";
 import "../../contracts/contract/dao/ProtocolDAO.sol";
-import "../../contracts/contract/Storage.sol";
 
 contract ProtocolDAOTest is GGPTest {
-	ProtocolDAO private dao;
-
-	function setUp() public {
-		Storage s = new Storage();
-		dao = new ProtocolDAO(s);
-		registerContract(s, "protocolDAO", address(dao));
-		dao.initialize();
-		initStorage(s);
+	function setUp() public override {
+		super.setUp();
 	}
 
 	function testGetInflation() public {
