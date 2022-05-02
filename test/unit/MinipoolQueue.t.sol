@@ -41,4 +41,29 @@ contract MinipoolQueueTest is GGPTest {
 		// check the node ID
 		require(nodeId == NODE_ID_1, "node ID should be node_1");
 	}
+
+	function testIndexOf() public {
+		// enqueue the first node
+		minipoolQueue.enqueue(NODE_ID_1);
+
+		// check the length
+		require(minipoolQueue.getLength() == 1, "length should be one");
+
+		// check the index of the first node
+		require(minipoolQueue.getIndexOf(NODE_ID_1) == 0, "index should be zero");
+	}
+
+	function testGetItem() public {
+		// enqueue the first node
+		minipoolQueue.enqueue(NODE_ID_1);
+
+		// check the length
+		require(minipoolQueue.getLength() == 1, "length should be one");
+
+		// check the index of the first node
+		require(minipoolQueue.getIndexOf(NODE_ID_1) == 0, "index should be zero");
+
+		// check the node ID
+		require(minipoolQueue.getItem(0) == NODE_ID_1, "node ID should be node_1");
+	}
 }
