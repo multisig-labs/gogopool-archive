@@ -10,6 +10,7 @@ import "../../../contracts/contract/MinipoolManager.sol";
 import "../../../contracts/contract/MultisigManager.sol";
 import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
+import "../../../contracts/contract/MinipoolQueue.sol";
 
 abstract contract GGPTest is Test {
 	address internal constant ZERO_ADDRESS = address(0x00);
@@ -31,6 +32,7 @@ abstract contract GGPTest is Test {
 	LaunchManager public launchMgr;
 	ProtocolDAO public dao;
 	TokenGGP public ggp;
+	MinipoolQueue public minipoolQueue;
 
 	function setUp() public virtual {
 		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
@@ -56,6 +58,9 @@ abstract contract GGPTest is Test {
 
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
+
+		minipoolQueue = new MinipoolQueue(store);
+		registerContract(store, "MinipoolQueue", address(minipoolQueue));
 
 		launchMgr = new LaunchManager(store);
 		registerContract(store, "LaunchManager", address(launchMgr));
