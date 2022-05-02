@@ -14,7 +14,7 @@ contract MinipoolQueueTest is GGPTest {
 	}
 
 	function testEmpty() public {
-		require(minipoolQueue.getLength() == 0, "length should be zero");
+		assertEq(minipoolQueue.getLength(), 0);
 	}
 
 	function testEnqueue() public {
@@ -22,7 +22,7 @@ contract MinipoolQueueTest is GGPTest {
 		minipoolQueue.enqueue(NODE_ID_1);
 
 		// check the length
-		require(minipoolQueue.getLength() == 1, "length should be one");
+		assertEq(minipoolQueue.getLength(), 1);
 	}
 
 	function testDequeue() public {
@@ -30,16 +30,16 @@ contract MinipoolQueueTest is GGPTest {
 		minipoolQueue.enqueue(NODE_ID_1);
 
 		// check the length
-		require(minipoolQueue.getLength() == 1, "length should be one");
+		assertEq(minipoolQueue.getLength(), 1);
 
 		// dequeue the first node
 		bytes32 nodeId = minipoolQueue.dequeue();
 
 		// check the length
-		require(minipoolQueue.getLength() == 0, "length should be zero");
+		assertEq(minipoolQueue.getLength(), 0);
 
 		// check the node ID
-		require(nodeId == NODE_ID_1, "node ID should be node_1");
+		assertEq(nodeId, NODE_ID_1);
 	}
 
 	function testIndexOf() public {
@@ -47,10 +47,10 @@ contract MinipoolQueueTest is GGPTest {
 		minipoolQueue.enqueue(NODE_ID_1);
 
 		// check the length
-		require(minipoolQueue.getLength() == 1, "length should be one");
+		assertEq(minipoolQueue.getLength(), 1);
 
 		// check the index of the first node
-		require(minipoolQueue.getIndexOf(NODE_ID_1) == 0, "index should be zero");
+		assertEq(minipoolQueue.getIndexOf(NODE_ID_1), 0);
 	}
 
 	function testGetItem() public {
@@ -58,12 +58,12 @@ contract MinipoolQueueTest is GGPTest {
 		minipoolQueue.enqueue(NODE_ID_1);
 
 		// check the length
-		require(minipoolQueue.getLength() == 1, "length should be one");
+		assertEq(minipoolQueue.getLength(), 1);
 
 		// check the index of the first node
-		require(minipoolQueue.getIndexOf(NODE_ID_1) == 0, "index should be zero");
+		assertEq(minipoolQueue.getIndexOf(NODE_ID_1), 0);
 
 		// check the node ID
-		require(minipoolQueue.getItem(0) == NODE_ID_1, "node ID should be node_1");
+		assertEq(minipoolQueue.getItem(0), NODE_ID_1);
 	}
 }
