@@ -18,12 +18,12 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 	}
 
 	// Add item to the end of the queue
-	function enqueue(bytes32 nodeID) external override {
+	function enqueue(address nodeID) external override {
 		require(getLength() < CAPACITY - 1, "Queue is at capacity");
 		require(getUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID))) == 0, "NodeID exists in queue");
 		uint256 index = getUint(keccak256("minipoolqueue.end"));
 		// Save the attrs individually in the k/v store
-		setBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")), nodeID);
+		setAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")), nodeID);
 		setUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID)), index + 1);
 		index = index + 1;
 		if (index >= CAPACITY) {
@@ -34,11 +34,11 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 
 	// Remove an item from the start of a queue and return it
 	// Requires that the queue is not empty
-	function dequeue() external returns (bytes32) {
+	function dequeue() external returns (address) {
 		require(getLength() > 0, "Queue is empty");
 		uint256 index = getUint(keccak256("minipoolqueue.start"));
 
-		bytes32 nodeID = getBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
+		address nodeID = getAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
 		index = index + 1;
 		if (index >= CAPACITY) {
 			index = index - CAPACITY;
@@ -58,17 +58,17 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 	}
 
 	// The item in a queue by index
-	function getItem(uint256 _index) public view returns (bytes32) {
+	function getItem(uint256 _index) public view returns (address) {
 		uint256 index = getUint(keccak256("minipoolqueue.start")) + _index;
 		if (index >= CAPACITY) {
 			index = index - CAPACITY;
 		}
-		return getBytes32(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
+		return getAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
 	}
 
 	// The index of an item in a queue
 	// Returns -1 if the value is not found
-	function getIndexOf(bytes32 _nodeID) public view returns (int256) {
+	function getIndexOf(address _nodeID) public view returns (int256) {
 		int256 index = int256(getUint(keccak256(abi.encodePacked("minipoolqueue.index", _nodeID)))) - 1;
 		if (index != -1) {
 			index -= int256(getUint(keccak256("minipoolqueue.start")));
