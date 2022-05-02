@@ -65,4 +65,25 @@ contract MinipoolQueueTest is GGPTest {
 		// check the node ID
 		assertEq(minipoolQueue.getItem(0), NODE_ID_1);
 	}
+
+	function testManyPools(uint256 x) public {
+		vm.assume(x <= 1000);
+		vm.assume(x > 0);
+		// add x pools to the queue
+		for (uint256 i = 0; i < x; i++) {
+			minipoolQueue.enqueue(randAddress());
+		}
+
+		// check the length
+		assertEq(minipoolQueue.getLength(), x);
+
+		// get a random uint
+		uint256 index = randUint(x);
+
+		// try to access it
+		address nodeId = minipoolQueue.getItem(index);
+
+		// check its index
+		assertEq(minipoolQueue.getIndexOf(nodeId), int256(index));
+	}
 }
