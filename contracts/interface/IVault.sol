@@ -6,6 +6,21 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 interface IVault {
+	/// @notice amount was not valid
+	error InvalidAmount();
+
+	/// @notice Insufficient contract balance
+	error InsufficientContractBalance();
+
+	/// @notice not a valid network contract
+	error InvalidNetworkContract();
+
+	/// @notice token transfer failed
+	error TokenTransferFailed();
+
+	/// @notice Vault token withdrawal failed
+	error VaultTokenWithdrawalFailed();
+
 	function depositAvax() external payable;
 
 	function withdrawAvax(uint256 _amount) external;
