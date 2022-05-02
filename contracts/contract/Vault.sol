@@ -41,7 +41,9 @@ contract Vault is Base, IVault {
 	// Only accepts calls from GoGo Pool network contracts
 	function depositAvax() external payable override onlyLatestNetworkContract {
 		// Valid amount?
-		require(msg.value > 0, "No valid amount of AVAX given to deposit");
+		if (msg.value == 0) {
+			revert InvalidAmount();
+		}
 		// Get contract key
 		string memory contractName = getContractName(msg.sender);
 		// Update contract balance
@@ -54,11 +56,15 @@ contract Vault is Base, IVault {
 	// Only accepts calls from GoGo Pool network contracts
 	function withdrawAvax(uint256 _amount) external onlyLatestNetworkContract {
 		// Valid amount?
-		require(_amount > 0, "No valid amount of AVAX given to withdraw");
+		if (_amount == 0) {
+			revert InvalidAmount();
+		}
 		// Get contract key
 		string memory contractName = getContractName(msg.sender);
 		// Check and update contract balance
-		require(avaxBalances[contractName] >= _amount, "Insufficient contract AVAX balance");
+		if (avaxBalances[contractName] < _amount) {
+			revert InsufficientContractBalance();
+		}
 		avaxBalances[contractName] = avaxBalances[contractName] - _amount;
 		// Withdraw
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
@@ -74,13 +80,19 @@ contract Vault is Base, IVault {
 		uint256 _amount
 	) external {
 		// Valid amount?
-		require(_amount > 0, "No valid amount of tokens given to deposit");
+		if (_amount == 0) {
+			revert InvalidAmount();
+		}
 		// Make sure the network contract is valid (will throw if not)
-		require(getContractAddress(_networkContractName) != address(0x0), "Not a valid network contract");
+		if (getContractAddress(_networkContractName) == address(0x0)) {
+			revert InvalidNetworkContract();
+		}
 		// Get contract key
 		bytes32 contractKey = keccak256(abi.encodePacked(_networkContractName, address(_tokenContract)));
 		// Send the tokens to this contract now
-		require(_tokenContract.transferFrom(msg.sender, address(this), _amount), "Token transfer was not successful");
+		if (!_tokenContract.transferFrom(msg.sender, address(this), _amount)) {
+			revert TokenTransferFailed();
+		}
 		// Update contract balance
 		tokenBalances[contractKey] = tokenBalances[contractKey] + _amount;
 		// Emit token transfer
@@ -95,7 +107,9 @@ contract Vault is Base, IVault {
 		uint256 _amount
 	) external onlyLatestNetworkContract {
 		// Valid amount?
-		require(_amount > 0, "No valid amount of tokens given to withdraw");
+		if (_amount == 0) {
+			revert InvalidAmount();
+		}
 		// Get contract key
 		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
 		// Update balances
@@ -103,7 +117,9 @@ contract Vault is Base, IVault {
 		// Get the token ERC20 instance
 		IERC20 tokenContract = IERC20(_tokenAddress);
 		// Withdraw to the desired address
-		require(tokenContract.transfer(_withdrawalAddress, _amount), "GoGo Vault token withdrawal unsuccessful");
+		if (!tokenContract.transfer(_withdrawalAddress, _amount)) {
+			revert VaultTokenWithdrawalFailed();
+		}
 		// Emit token withdrawn event
 		emit TokenWithdrawn(contractKey, address(_tokenAddress), _amount, block.timestamp);
 	}
@@ -116,9 +132,13 @@ contract Vault is Base, IVault {
 		uint256 _amount
 	) external onlyLatestNetworkContract {
 		// Valid amount?
-		require(_amount > 0, "No valid amount of tokens given to transfer");
+		if (_amount == 0) {
+			revert InvalidAmount();
+		}
 		// Make sure the network contract is valid (will throw if not)
-		require(getContractAddress(_networkContractName) != address(0x0), "Not a valid network contract");
+		if (getContractAddress(_networkContractName) == address(0x0)) {
+			revert InvalidNetworkContract();
+		}
 		// Get contract keys
 		bytes32 contractKeyFrom = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
 		bytes32 contractKeyTo = keccak256(abi.encodePacked(_networkContractName, _tokenAddress));
