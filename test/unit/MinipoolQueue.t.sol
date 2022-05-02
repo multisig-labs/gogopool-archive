@@ -6,8 +6,7 @@ import "./utils/GGPTest.sol";
 
 contract MinipoolQueueTest is GGPTest {
 	// test node IDs
-	bytes32 private constant NODE_ID_1 = keccak256("node_1");
-	bytes32 private constant NODE_ID_2 = keccak256("node_2");
+	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
 
 	function setUp() public override {
 		super.setUp();
@@ -33,7 +32,7 @@ contract MinipoolQueueTest is GGPTest {
 		assertEq(minipoolQueue.getLength(), 1);
 
 		// dequeue the first node
-		bytes32 nodeId = minipoolQueue.dequeue();
+		address nodeId = minipoolQueue.dequeue();
 
 		// check the length
 		assertEq(minipoolQueue.getLength(), 0);
