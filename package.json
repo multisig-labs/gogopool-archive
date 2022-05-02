@@ -35,6 +35,7 @@
 	},
 	"dependencies": {
 		"@openzeppelin/contracts": "^4.5.0",
+		"@rari-capital/solmate": "https://github.com/Rari-Capital/solmate.git",
 		"web3": "^1.7.3"
 	},
 	"scripts": {
