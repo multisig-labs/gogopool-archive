@@ -2,10 +2,7 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import "../../interface/token/ITokenGGP.sol";
+import "./ERC20Burnable.sol";
 
 import "../Base.sol";
 import "../Vault.sol";
@@ -13,7 +10,7 @@ import "../Vault.sol";
 // GGP Governance and utility token
 // Inflationary with rate determined by DAO
 
-contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
+contract TokenGGP is Base, ERC20Burnable {
 	/**** Properties ***********/
 
 	// RP has 18 million to start because of their fixed supply tokens
@@ -35,7 +32,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	event MintGGPToken(address _minter, address _address, uint256 _value);
 
 	// Construct
-	constructor(Storage storageAddress) Base(storageAddress) ERC20("GoGoPool Protocol", "GGP") {
+	constructor(Storage storageAddress) Base(storageAddress) ERC20("GoGoPool Protocol", "GGP", 18) {
 		// Version
 		version = 1;
 		settingNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
@@ -52,7 +49,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * Get the last time that inflation was calculated at
 	 * @return uint256 Last timestamp since inflation was calculated
 	 */
-	function getInflationCalcTime() external view override returns (uint256) {
+	function getInflationCalcTime() external view returns (uint256) {
 		return _getInflationCalcTime();
 	}
 
@@ -60,7 +57,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * How many seconds to calculate inflation at
 	 * @return uint256 how many seconds to calculate inflation at
 	 */
-	function getInflationIntervalTime() external pure override returns (uint256) {
+	function getInflationIntervalTime() external pure returns (uint256) {
 		return INFLATION_INTERVAL;
 	}
 
@@ -68,7 +65,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * The current inflation rate per interval (eg 1000133680617113500 = 5% annual)
 	 * @return uint256 The current inflation rate per interval
 	 */
-	function getInflationIntervalRate() external view override returns (uint256) {
+	function getInflationIntervalRate() external view returns (uint256) {
 		// Inflation rate controlled by the DAO
 		return getSettingUint(settingNamespace, "ggp.inflation.interval.rate");
 	}
@@ -77,7 +74,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * The current block to begin inflation at
 	 * @return uint256 The current block to begin inflation at
 	 */
-	function getInflationIntervalStartTime() public view override returns (uint256) {
+	function getInflationIntervalStartTime() public view returns (uint256) {
 		// Inflation rate start time controlled by the DAO
 		return getSettingUint(settingNamespace, "ggp.inflation.interval.start");
 	}
@@ -91,7 +88,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * Compute interval since last inflation update (on call)
 	 * @return uint256 Time intervals since last update
 	 */
-	function getInflationIntervalsPassed() external view override returns (uint256) {
+	function getInflationIntervalsPassed() external view returns (uint256) {
 		return _getIntervalsSinceLastMint();
 	}
 
@@ -104,7 +101,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 		}
 	}
 
-	function getInflationRewardsContractAddress() external view override returns (address) {
+	function getInflationRewardsContractAddress() external view returns (address) {
 		// Inflation rewards contract address controlled by the DAO
 		// does not exist yet
 		return getContractAddress("rewards");
@@ -114,7 +111,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * @dev Function to compute how many tokens should be minted
 	 * @return A uint256 specifying number of new tokens to mint
 	 */
-	function inflationCalculate() external view override returns (uint256) {
+	function inflationCalculate() external view returns (uint256) {
 		return _inflationCalculate(_getIntervalsSinceLastMint());
 	}
 
@@ -127,7 +124,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 			uint256 inflationRate = getSettingUint(settingNamespace, "ggp.inflation.interval.rate");
 			if (inflationRate > 0) {
 				// Get the total supply now
-				uint256 totalSupplyCurrent = totalSupply();
+				uint256 totalSupplyCurrent = totalSupply;
 				uint256 newTotalSupply = totalSupplyCurrent;
 				// Compute inflation for total inflation intervals elapsed
 				for (uint256 i = 0; i < _intervalsSinceLastMint; i++) {
@@ -145,7 +142,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 	 * @dev Mint new tokens if enough time has elapsed since last mint
 	 * @return A uint256 specifying number of new tokens that were minted
 	 */
-	function inflationMintTokens() external override returns (uint256) {
+	function inflationMintTokens() external returns (uint256) {
 		// Only run inflation process if at least 1 interval has passed (function returns 0 otherwise)
 		uint256 inflationLastCalcTime = _getInflationCalcTime();
 		uint256 intervalsSinceLastMint = _getInflationIntervalsPassed(inflationLastCalcTime);
@@ -166,7 +163,7 @@ contract TokenGGP is Base, ERC20Burnable, ITokenGGP {
 			// Mint to itself, then allocate tokens for transfer to rewards contract, this will update balance & supply
 			_mint(address(this), newTokens);
 			// Let vault know it can move these tokens to itself now and credit the balance to the GGP rewards pool contract
-			vaultContract.depositToken("rocketRewardsPool", IERC20(address(this)), newTokens);
+			vaultContract.depositToken("rocketRewardsPool", ERC20(address(this)), newTokens);
 		}
 		// Log it
 		emit GGPInflationLog(msg.sender, newTokens, inflationCalcTime);

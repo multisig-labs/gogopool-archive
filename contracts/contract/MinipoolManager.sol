@@ -228,7 +228,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		return index;
 	}
 
-	// TODO how to handle error in issuing validation tx? error status? or set to withdrawable with an error note or something?
+	// TODO how to handle error when Rialto is issuing validation tx? error status? or set to withdrawable with an error note or something?
 	function requireValidStateTransition(int256 index, MinipoolStatus to) private view {
 		bytes32 statusKey = keccak256(abi.encodePacked("minipool.item", index, ".status"));
 		MinipoolStatus currentStatus = MinipoolStatus(getUint(statusKey));

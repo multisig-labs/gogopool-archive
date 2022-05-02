@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "./utils/GGPTest.sol";
+import {ECDSA, IMinipoolManager, IMultisigManager} from "../../contracts/contract/MinipoolManager.sol";
 
 contract MinipoolManagerTest is GGPTest {
 	int256 private index;

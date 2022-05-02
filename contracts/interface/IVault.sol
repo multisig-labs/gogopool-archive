@@ -2,8 +2,7 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {ERC20, ERC20Burnable} from "../contract/tokens/ERC20Burnable.sol";
 
 interface IVault {
 	/// @notice amount was not valid
@@ -23,29 +22,29 @@ interface IVault {
 
 	function depositAvax() external payable;
 
-	function withdrawAvax(uint256 _amount) external;
+	function withdrawAvax(uint256 amount) external;
 
 	function depositToken(
-		string memory _networkContractName,
-		IERC20 _tokenAddress,
-		uint256 _amount
+		string memory networkContractName,
+		ERC20 tokenAddress,
+		uint256 amount
 	) external;
 
 	function transferToken(
-		string memory _networkContractName,
-		IERC20 _tokenAddress,
-		uint256 _amount
+		string memory networkContractName,
+		ERC20 tokenAddress,
+		uint256 amount
 	) external;
 
 	function withdrawToken(
-		address _withdrawalAddress,
-		IERC20 _tokenAddress,
-		uint256 _amount
+		address withdrawalAddress,
+		ERC20 tokenAddress,
+		uint256 amount
 	) external;
 
-	function burnToken(ERC20Burnable _tokenAddress, uint256 _amount) external;
+	function burnToken(ERC20Burnable tokenAddress, uint256 amount) external;
 
-	function balanceOf(string memory _networkContractName) external view returns (uint256);
+	function balanceOf(string memory networkContractName) external view returns (uint256);
 
-	function balanceOfToken(string memory _networkContractName, IERC20 _tokenAddress) external view returns (uint256);
+	function balanceOfToken(string memory networkContractName, ERC20 tokenAddress) external view returns (uint256);
 }

@@ -4,12 +4,11 @@ pragma solidity ^0.8.0;
 
 import "../Base.sol";
 import "../Storage.sol";
-import "../../interface/token/ITokenGGP.sol";
-import "../../interface/dao/IProtocolDAO.sol";
+import "../tokens/TokenGGP.sol";
 
 // TODO: Add actual DAO functionality.
 
-contract ProtocolDAO is Base, IProtocolDAO {
+contract ProtocolDAO is Base {
 	string private constant DAO_NAMESPACE = "dao.protocol.";
 	string private constant DAO_SETTING_PATH = "dao.protocol.setting.";
 	bytes32 private settingNamespace;
@@ -22,13 +21,13 @@ contract ProtocolDAO is Base, IProtocolDAO {
 	// modifier that checks if the caller is a dao member
 	modifier isDaoMember() {
 		// create an instance of the token contract
-		ITokenGGP token = ITokenGGP(getContractAddress("tokenGGP"));
+		TokenGGP token = TokenGGP(getContractAddress("tokenGGP"));
 		// check that the sender's balance is greater than 0
 		require(token.balanceOf(msg.sender) > 0, "You do not own any GGP tokens");
 		_;
 	}
 
-	function initialize() external override onlyGuardian {
+	function initialize() external onlyGuardian {
 		if (!getBool(keccak256(abi.encodePacked(settingNamespace, "deployed")))) {
 			// GGP Inflation settings
 			// these may change when we finialize tokenomics
@@ -62,7 +61,7 @@ contract ProtocolDAO is Base, IProtocolDAO {
 	 * The current inflation rate per interval (eg 1000133680617113500 = 5% annual)
 	 * @return uint256 The current inflation rate per interval
 	 */
-	function getInflationIntervalRate() external view override returns (uint256) {
+	function getInflationIntervalRate() external view returns (uint256) {
 		// Inflation rate controlled by the DAO
 		return getSettingUint(settingNamespace, "ggp.inflation.interval.rate");
 	}
@@ -71,7 +70,7 @@ contract ProtocolDAO is Base, IProtocolDAO {
 	 * The current block to begin inflation at
 	 * @return uint256 The current block to begin inflation at
 	 */
-	function getInflationIntervalStartTime() external view override returns (uint256) {
+	function getInflationIntervalStartTime() external view returns (uint256) {
 		// Inflation rate start time controlled by the DAO
 		return getSettingUint(settingNamespace, "ggp.inflation.interval.start");
 	}

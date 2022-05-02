@@ -3,10 +3,9 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "./Base.sol";
+import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
 import "../interface/IVault.sol";
 import "../interface/IWithdrawer.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 // AVAX and ggpAVAX are stored here to prevent contract upgrades from affecting balances
 // The Vault contract must not be upgraded
@@ -15,11 +14,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 /// @author Chandler
 // based on RocketVault by RocketPool
 
-// TODO Switch to using custom errors defined in IVault
-
 contract Vault is Base, IVault {
-	using SafeERC20 for uint256;
-
 	// Network contract balances
 	mapping(string => uint256) private avaxBalances;
 	mapping(bytes32 => uint256) private tokenBalances;
@@ -76,7 +71,7 @@ contract Vault is Base, IVault {
 	// Accept an token deposit and assign its balance to a network contract (saves a large amount of gas this way through not needing a double token transfer via a network contract first)
 	function depositToken(
 		string memory _networkContractName,
-		IERC20 _tokenContract,
+		ERC20 _tokenContract,
 		uint256 _amount
 	) external {
 		// Valid amount?
@@ -103,7 +98,7 @@ contract Vault is Base, IVault {
 	// Only accepts calls from Rocket Pool network contracts
 	function withdrawToken(
 		address _withdrawalAddress,
-		IERC20 _tokenAddress,
+		ERC20 _tokenAddress,
 		uint256 _amount
 	) external onlyLatestNetworkContract {
 		// Valid amount?
@@ -115,7 +110,7 @@ contract Vault is Base, IVault {
 		// Update balances
 		tokenBalances[contractKey] = tokenBalances[contractKey] - _amount;
 		// Get the token ERC20 instance
-		IERC20 tokenContract = IERC20(_tokenAddress);
+		ERC20 tokenContract = ERC20(_tokenAddress);
 		// Withdraw to the desired address
 		if (!tokenContract.transfer(_withdrawalAddress, _amount)) {
 			revert VaultTokenWithdrawalFailed();
@@ -128,7 +123,7 @@ contract Vault is Base, IVault {
 	// Only accepts calls from Rocket Pool network contracts
 	function transferToken(
 		string memory _networkContractName,
-		IERC20 _tokenAddress,
+		ERC20 _tokenAddress,
 		uint256 _amount
 	) external onlyLatestNetworkContract {
 		// Valid amount?
@@ -151,12 +146,13 @@ contract Vault is Base, IVault {
 
 	// Burns an amount of a token that implements a burn(uint256) method
 	// Only accepts calls from Rocket Pool network contracts
+	// [GGP] The only place this is used in RP is to fine node ops, and only RPL is burnable.
 	function burnToken(ERC20Burnable _tokenAddress, uint256 _amount) external onlyLatestNetworkContract {
 		// Get contract key
 		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
 		// Update balances
 		tokenBalances[contractKey] = tokenBalances[contractKey] - _amount;
-		// Get the token ERC20 instance
+		// Get the token ERC20Burnable instance
 		ERC20Burnable tokenContract = ERC20Burnable(_tokenAddress);
 		// Burn the tokens
 		tokenContract.burn(_amount);
@@ -171,7 +167,7 @@ contract Vault is Base, IVault {
 	}
 
 	// Get the balance of a token held by a network contract
-	function balanceOfToken(string memory _networkContractName, IERC20 _tokenAddress) external view returns (uint256) {
+	function balanceOfToken(string memory _networkContractName, ERC20 _tokenAddress) external view returns (uint256) {
 		// Return balance
 		return tokenBalances[keccak256(abi.encodePacked(_networkContractName, _tokenAddress))];
 	}

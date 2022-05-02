@@ -3,14 +3,16 @@
 pragma solidity ^0.8.0;
 
 import "../../../lib/forge-std/src/Test.sol";
-import "../../../contracts/contract/Storage.sol";
-import "../../../contracts/contract/Vault.sol";
 import "../../../contracts/contract/LaunchManager.sol";
 import "../../../contracts/contract/MinipoolManager.sol";
+import "../../../contracts/contract/MinipoolQueue.sol";
 import "../../../contracts/contract/MultisigManager.sol";
+import "../../../contracts/contract/Storage.sol";
+import "../../../contracts/contract/Vault.sol";
 import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
-import "../../../contracts/contract/MinipoolQueue.sol";
+import "../../../contracts/contract/tokens/TokenggpAVAX.sol";
+import "../../../contracts/contract/tokens/WAVAX.sol";
 
 abstract contract GGPTest is Test {
 	address internal constant ZERO_ADDRESS = address(0x00);
@@ -27,12 +29,14 @@ abstract contract GGPTest is Test {
 	// Contracts
 	Storage public store;
 	Vault public vault;
+	MinipoolQueue public minipoolQueue;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	LaunchManager public launchMgr;
 	ProtocolDAO public dao;
 	TokenGGP public ggp;
-	MinipoolQueue public minipoolQueue;
+	TokenggpAVAX public ggpAVAX;
+	WAVAX public wavax;
 
 	function setUp() public virtual {
 		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
@@ -53,14 +57,14 @@ abstract contract GGPTest is Test {
 		vault = new Vault(store);
 		registerContract(store, "Vault", address(vault));
 
+		minipoolQueue = new MinipoolQueue(store);
+		registerContract(store, "MinipoolQueue", address(minipoolQueue));
+
 		minipoolMgr = new MinipoolManager(store);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
-
-		minipoolQueue = new MinipoolQueue(store);
-		registerContract(store, "MinipoolQueue", address(minipoolQueue));
 
 		launchMgr = new LaunchManager(store);
 		registerContract(store, "LaunchManager", address(launchMgr));
@@ -72,7 +76,13 @@ abstract contract GGPTest is Test {
 		ggp = new TokenGGP(store);
 		registerContract(store, "TokenGGP", address(ggp));
 
-		vm.deal(guardian, 100000 ether);
+		wavax = new WAVAX();
+		ggpAVAX = new TokenggpAVAX(store, wavax);
+		registerContract(store, "TokenggpAVAX", address(ggpAVAX));
+		// Initialize the rewards cycle
+		ggpAVAX.syncRewards();
+
+		deal(guardian, 1 << 128);
 
 		vm.stopPrank();
 	}
@@ -104,6 +114,17 @@ abstract contract GGPTest is Test {
 	// Get a deterministic address for an actor
 	function getActor(uint160 index) internal pure returns (address) {
 		return address(uint160(0x50000 + index));
+	}
+
+	// Get an address with `amount` of funds in WAVAX
+	function getActorWithWAVAX(uint160 i, uint128 amount) public returns (address) {
+		address actor = getActor(i);
+		vm.deal(actor, amount);
+		vm.startPrank(actor);
+		wavax.deposit{value: amount}();
+		wavax.approve(address(ggpAVAX), amount);
+		vm.stopPrank();
+		return actor;
 	}
 
 	function randAddress() internal returns (address) {
