@@ -54,7 +54,7 @@ contract TokenggpAVAXTest is GGPTest {
 		uint256 alicePreDepositBal = alice.balance;
 
 		vm.prank(alice);
-		uint256 aliceShareAmount = ggpAVAX.deposit{value: aliceUnderlyingAmount}();
+		uint256 aliceShareAmount = ggpAVAX.depositAVAX{value: aliceUnderlyingAmount}();
 
 		// Expect exchange rate to be 1:1 on initial deposit.
 		assertEq(aliceUnderlyingAmount, aliceShareAmount);
@@ -158,5 +158,18 @@ contract TokenggpAVAXTest is GGPTest {
 		console.log("skip ahead to end of reward cycle");
 		skip(ggpAVAX.rewardsCycleLength() / 2);
 		assertEq(ggpAVAX.totalAssets(), aliceUnderlyingAmount + rialtoRewardsAmount);
+	}
+
+	uint256 AVAX = 1e18;
+
+	function testFloat() public {
+		uint256 float = 1e17; // 1e18 * 10%;
+		uint256 amountDeposited = 2200 * AVAX;
+
+		vm.prank(alice);
+		ggpAVAX.deposit(amountDeposited, alice);
+		assertEq(ggpAVAX.stakingTotalAssets(), 0);
+		assertEq(ggpAVAX.totalFloat(), amountDeposited);
+		assertEq(ggpAVAX.amountAvailableForStaking(), 200 * AVAX);
 	}
 }
