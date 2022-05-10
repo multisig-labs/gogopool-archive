@@ -23,7 +23,6 @@ import "./Base.sol";
 	minipool.item<index>.status = enum
 	minipool.item<index>.duration = requested validation duration in seconds
 	minipool.item<index>.owner = owner address
-	minipool.item<index>.withdrawalAddr = an allowed withdrawalAddress (overrides owner if set?)
 	minipool.item<index>.delegationFee = node operator specified fee
 	minipool.item<index>.avaxAmt = avax deposited by node op (1000 avax for now)
 	minipool.item<index>.avaxUserAmt = avax deposited by users (1000 avax for now)
@@ -54,10 +53,11 @@ contract MinipoolManager is Base, IMinipoolManager {
 
 		// Deposit avax into Vault
 		IVault vault = IVault(getContractAddress("Vault"));
-		// if (vault.balanceOf("MinipoolManager").add(msg.value) <= some setting ), "The deposit pool size after depositing exceeds the maximum size");
+		// TODO if (vault.balanceOf("MinipoolManager").add(msg.value) <= some setting ), "The deposit pool size after depositing exceeds the maximum size");
 		vault.depositAvax{value: msg.value}();
 
-		// TODO deposit ggp bond to vault, ensure correct amounts
+		// TODO deposit ggpBondAmt to vault, ensure correct amounts
+		// How to do this? Can we accept AVAX and ggp in the same tx?
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
 		// (completed its validation period and all rewards paid and processing is complete)
@@ -77,6 +77,9 @@ contract MinipoolManager is Base, IMinipoolManager {
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".duration")), duration);
 		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".multisigAddr")), multisig);
 		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".owner")), msg.sender);
+		setUint(keccak256(abi.encodePacked("minipool.item", count, ".avaxAmt")), msg.value);
+		// TODO setUint(keccak256(abi.encodePacked("minipool.item", count, ".ggpBondAmt")), ggpBondAmt);
+		setUint(keccak256(abi.encodePacked("minipool.item", count, ".delegationFee")), delegationFee);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
