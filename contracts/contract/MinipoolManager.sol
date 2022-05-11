@@ -101,36 +101,50 @@ contract MinipoolManager is Base {
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
 		// (completed its validation period and all rewards paid and processing is complete)
-		int256 index = getIndexOf(nodeID);
-		if (index != -1) {
-			requireValidStateTransition(index, MinipoolStatus.Initialised);
+		uint256 index;
+		// getIndexOf returns -1 if node does not exist, so have to use signed type int256 here
+		int256 i = getIndexOf(nodeID);
+		if (i != -1) {
+			// Existing nodeID
+			requireValidStateTransition(i, MinipoolStatus.Initialised);
+			index = uint256(i);
+		} else {
+			// new nodeID
+			index = getUint(keccak256("minipool.count"));
 		}
 
 		// Get a Rialto multisig to assign for this minipool
 		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
 		address multisig = multisigManager.getNextActiveMultisig();
 
-		uint256 count = getUint(keccak256("minipool.count"));
 		// Save the attrs individually in the k/v store
-		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".nodeID")), nodeID);
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".status")), uint256(MinipoolStatus.Initialised));
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".duration")), duration);
-		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".multisigAddr")), multisig);
-		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".owner")), msg.sender);
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".avaxAmt")), msg.value);
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".delegationFee")), delegationFee);
+		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")), nodeID);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Initialised));
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")), duration);
+		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")), multisig);
+		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")), msg.sender);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")), msg.value);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")), delegationFee);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
 		// Zero out any left over data from a previous validation
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".ggpBondAmt")), 0);
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".startTime")), 0);
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".endTime")), 0);
-		setUint(keccak256(abi.encodePacked("minipool.item", count, ".avaxRewardAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), 0);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
-		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), count + 1);
+		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), index + 1);
 		addUint(keccak256("minipool.count"), 1);
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
+	}
+
+	// This forces minipool into a state. Do we need this? For tests?
+	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external {
+		int256 index = getIndexOf(nodeID);
+		if (index == -1) {
+			revert MinipoolNotFound();
+		}
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
 
 	//
@@ -230,13 +244,15 @@ contract MinipoolManager is Base {
 			address nodeID,
 			uint256 status,
 			uint256 duration,
-			uint256 delegationFee
+			uint256 delegationFee,
+			uint256 ggpBondAmt
 		)
 	{
 		nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
 		status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
 		duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
 		delegationFee = getUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")));
+		ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 	}
 
 	// Given a signer addr, return the hash that should be signed to claim a nodeID

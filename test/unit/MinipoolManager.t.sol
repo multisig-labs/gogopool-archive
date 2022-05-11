@@ -11,21 +11,33 @@ contract MinipoolManagerTest is GGPTest {
 	uint256 private status;
 	uint256 private duration;
 	uint256 private delegationFee;
+	uint256 private ggpBondAmt;
 
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
 	}
 
-	function testBond() public {
+	function testBondZeroGGP() public {
 		address nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
 		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
-		minipoolMgr.bondMinipool(nodeID, 100);
 		index = minipoolMgr.getIndexOf(nodeID);
-		uint256 ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
-		assertEq(ggpBondAmt, 100);
+		address nodeID_ = store.getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
+		assertEq(nodeID_, nodeID);
+		ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		assertEq(ggpBondAmt, 0);
+	}
+
+	function testBondWithGGP() public {
+		address nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
+		vm.startPrank(nodeOp);
+		(nodeID, duration, delegationFee) = randMinipool();
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 1 ether);
+		index = minipoolMgr.getIndexOf(nodeID);
+		ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		assertEq(ggpBondAmt, 1 ether);
 	}
 
 	function testClaim() public {
@@ -80,7 +92,7 @@ contract MinipoolManagerTest is GGPTest {
 	function testEmptyState() public {
 		index = minipoolMgr.getIndexOf(ZERO_ADDRESS);
 		assertEq(index, -1);
-		(nodeID, status, duration, delegationFee) = minipoolMgr.getMinipool(1);
+		(nodeID, status, duration, delegationFee, ggpBondAmt) = minipoolMgr.getMinipool(1);
 		assertEq(nodeID, ZERO_ADDRESS);
 	}
 
@@ -91,6 +103,7 @@ contract MinipoolManagerTest is GGPTest {
 		startMeasuringGas("testGasCreateMinipool");
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		stopMeasuringGas();
+		index = minipoolMgr.getIndexOf(nodeID);
 	}
 
 	function testCreateAndGetMany() public {
