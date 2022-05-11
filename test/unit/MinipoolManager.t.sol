@@ -17,6 +17,17 @@ contract MinipoolManagerTest is GGPTest {
 		registerMultisig(rialto1);
 	}
 
+	function testBond() public {
+		address nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
+		vm.startPrank(nodeOp);
+		(nodeID, duration, delegationFee) = randMinipool();
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.bondMinipool(nodeID, 100);
+		index = minipoolMgr.getIndexOf(nodeID);
+		uint256 ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		assertEq(ggpBondAmt, 100);
+	}
+
 	function testClaim() public {
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);

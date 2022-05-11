@@ -6,9 +6,11 @@ import "../interface/IStorage.sol";
 import "../interface/IMinipoolManager.sol";
 import "../interface/IMultisigManager.sol";
 import "../interface/IVault.sol";
+import "./tokens/TokenGGP.sol";
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import "../types/MinipoolStatus.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import "./Base.sol";
 
 /*
@@ -38,8 +40,11 @@ contract MinipoolManager is Base, IMinipoolManager {
 	// Used for signature verifying of Rialto multisig to prevent replay attacks
 	mapping(address => uint256) private nonces;
 
-	constructor(IStorage storageAddress) Base(storageAddress) {
+	ERC20 public immutable ggp;
+
+	constructor(IStorage storageAddress, ERC20 ggp_) Base(storageAddress) {
 		version = 1;
+		ggp = ggp_;
 	}
 
 	// Accept deposit from node operator
@@ -57,7 +62,6 @@ contract MinipoolManager is Base, IMinipoolManager {
 		vault.depositAvax{value: msg.value}();
 
 		// TODO deposit ggpBondAmt to vault, ensure correct amounts
-		// How to do this? Can we accept AVAX and ggp in the same tx?
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
 		// (completed its validation period and all rewards paid and processing is complete)
@@ -78,14 +82,40 @@ contract MinipoolManager is Base, IMinipoolManager {
 		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".multisigAddr")), multisig);
 		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".owner")), msg.sender);
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".avaxAmt")), msg.value);
-		// TODO setUint(keccak256(abi.encodePacked("minipool.item", count, ".ggpBondAmt")), ggpBondAmt);
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".delegationFee")), delegationFee);
+		// Zero out any left over data from a previous validation
+		setUint(keccak256(abi.encodePacked("minipool.item", count, ".ggpBondAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", count, ".startTime")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", count, ".endTime")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", count, ".avaxRewardAmt")), 0);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), count + 1);
 		addUint(keccak256("minipool.count"), 1);
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
+	}
+
+	// TODO only allow node owner to bond?
+	function bondMinipool(address nodeID, uint256 ggpBondAmt) external {
+		int256 index = getIndexOf(nodeID);
+		if (index == -1) {
+			revert MinipoolNotFound();
+		}
+		uint256 status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
+		if (status != uint256(MinipoolStatus.Initialised)) {
+			revert MinipoolMustBeInitialised();
+		}
+		// TODO should we have a new status for "Bonded"? Or is the below attr enough?
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
+
+		// Move the GGP funds (assume allowance has been set properly beforehand by the front end)
+		IVault vault = IVault(getContractAddress("Vault"));
+		// TODO switch to error objects
+		require(ggp.transferFrom(msg.sender, address(this), ggpBondAmt), "Could not transfer GGP to MiniPool contract");
+		require(ggp.approve(address(vault), ggpBondAmt), "Could not approve vault GGP deposit");
+		// depositToken reverts if not successful
+		vault.depositToken("MinipoolManager", ggp, ggpBondAmt);
 	}
 
 	// This forces minipool into a state. Do we need this? For tests?

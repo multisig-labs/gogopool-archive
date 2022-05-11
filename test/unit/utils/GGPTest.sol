@@ -13,6 +13,7 @@ import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 import "../../../contracts/contract/tokens/TokenggpAVAX.sol";
 import "../../../contracts/contract/tokens/WAVAX.sol";
+import {MockERC20} from "@rari-capital/solmate/src/test/utils/mocks/MockERC20.sol";
 
 abstract contract GGPTest is Test {
 	address internal constant ZERO_ADDRESS = address(0x00);
@@ -35,6 +36,7 @@ abstract contract GGPTest is Test {
 	LaunchManager public launchMgr;
 	ProtocolDAO public dao;
 	TokenGGP public ggp;
+	MockERC20 public mockGGP;
 	TokenggpAVAX public ggpAVAX;
 	WAVAX public wavax;
 
@@ -51,6 +53,8 @@ abstract contract GGPTest is Test {
 		// Construct all contracts as Guardian
 		vm.startPrank(guardian, guardian);
 
+		mockGGP = new MockERC20("Mock GGP", "GGP", 18);
+
 		store = new Storage();
 		initStorage(store);
 
@@ -60,7 +64,7 @@ abstract contract GGPTest is Test {
 		minipoolQueue = new MinipoolQueue(store);
 		registerContract(store, "MinipoolQueue", address(minipoolQueue));
 
-		minipoolMgr = new MinipoolManager(store);
+		minipoolMgr = new MinipoolManager(store, mockGGP);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
@@ -123,6 +127,32 @@ abstract contract GGPTest is Test {
 		vm.startPrank(actor);
 		wavax.deposit{value: amount}();
 		wavax.approve(address(ggpAVAX), amount);
+		vm.stopPrank();
+		return actor;
+	}
+
+	// Get an address with `amount` of funds in GGP
+	function getActorWithGGP(uint160 i, uint128 amount) public returns (address) {
+		address actor = getActor(i);
+		vm.startPrank(actor);
+		mockGGP.mint(actor, amount);
+		mockGGP.approve(address(minipoolMgr), amount);
+		vm.stopPrank();
+		return actor;
+	}
+
+	function getActorWithTokens(
+		uint160 i,
+		uint128 avaxAmt,
+		uint128 ggpAmt
+	) public returns (address) {
+		address actor = getActor(i);
+		vm.deal(actor, avaxAmt * 2);
+		vm.startPrank(actor);
+		wavax.deposit{value: avaxAmt}();
+		wavax.approve(address(ggpAVAX), avaxAmt);
+		mockGGP.mint(actor, ggpAmt);
+		mockGGP.approve(address(minipoolMgr), ggpAmt);
 		vm.stopPrank();
 		return actor;
 	}

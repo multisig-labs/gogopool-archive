@@ -29,6 +29,8 @@ interface IMinipoolManager {
 	/// @notice An error occured when attempting to issue a validation tx for the nodeID
 	error ErrorIssuingValidationTx();
 
+	error MinipoolMustBeInitialised();
+
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
 	/**
