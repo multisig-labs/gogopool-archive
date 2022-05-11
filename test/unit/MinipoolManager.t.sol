@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "./utils/GGPTest.sol";
-import {ECDSA, IMinipoolManager, IMultisigManager} from "../../contracts/contract/MinipoolManager.sol";
+import {ECDSA, MinipoolManager, IMultisigManager} from "../../contracts/contract/MinipoolManager.sol";
 
 contract MinipoolManagerTest is GGPTest {
 	int256 private index;
@@ -21,7 +21,7 @@ contract MinipoolManagerTest is GGPTest {
 		address nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
 		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
-		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.bondMinipool(nodeID, 100);
 		index = minipoolMgr.getIndexOf(nodeID);
 		uint256 ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
@@ -30,7 +30,7 @@ contract MinipoolManagerTest is GGPTest {
 
 	function testClaim() public {
 		(nodeID, duration, delegationFee) = randMinipool();
-		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		uint256 nonce = minipoolMgr.getNonce(rialto1);
@@ -50,13 +50,13 @@ contract MinipoolManagerTest is GGPTest {
 
 		// Should fail now that we are not rialtoaddr1
 		vm.stopPrank();
-		vm.expectRevert(IMinipoolManager.InvalidMultisigAddress.selector);
+		vm.expectRevert(MinipoolManager.InvalidMultisigAddress.selector);
 		minipoolMgr.claimAndInitiateStaking(nodeID, sig);
 	}
 
 	function testCancelByMultisig() public {
 		(nodeID, duration, delegationFee) = randMinipool();
-		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		uint256 nonce = minipoolMgr.getNonce(rialto1);
@@ -68,12 +68,12 @@ contract MinipoolManagerTest is GGPTest {
 
 	function testCancelByOwner() public {
 		(nodeID, duration, delegationFee) = randMinipool();
-		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 		minipoolMgr.cancelMinipool(nodeID);
 
 		vm.startPrank(rialto1);
-		vm.expectRevert(IMinipoolManager.OnlyOwnerCanCancel.selector);
+		vm.expectRevert(MinipoolManager.OnlyOwnerCanCancel.selector);
 		minipoolMgr.cancelMinipool(nodeID);
 	}
 
@@ -89,14 +89,14 @@ contract MinipoolManagerTest is GGPTest {
 	function testGasCreateMinipool() public {
 		(nodeID, duration, delegationFee) = randMinipool();
 		startMeasuringGas("testGasCreateMinipool");
-		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		stopMeasuringGas();
 	}
 
 	function testCreateAndGetMany() public {
 		for (uint256 i = 0; i < 100; i++) {
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		}
 		index = minipoolMgr.getIndexOf(nodeID);
 		assertEq(index, 99);

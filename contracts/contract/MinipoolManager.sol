@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "../interface/IStorage.sol";
-import "../interface/IMinipoolManager.sol";
 import "../interface/IMultisigManager.sol";
 import "../interface/IVault.sol";
 import "./tokens/TokenGGP.sol";
@@ -36,11 +35,39 @@ import "./Base.sol";
 	minipool.item<index>.avaxRewardAmt = Actual total avax rewards paid by avalanchego to the TSS P-chain addr
 */
 
-contract MinipoolManager is Base, IMinipoolManager {
+contract MinipoolManager is Base {
 	// Used for signature verifying of Rialto multisig to prevent replay attacks
 	mapping(address => uint256) private nonces;
 
 	ERC20 public immutable ggp;
+
+	/// @notice A minipool with this nodeid has already been registered
+	error MinipoolAlreadyRegistered();
+
+	/// @notice A minipool with this nodeid has not been registered
+	error MinipoolNotFound();
+
+	/// @notice Invalid state transition
+	error InvalidStateTransition();
+
+	/// @notice Validation end time must be after start time
+	error InvalidEndTime();
+
+	/// @notice Only minipool owners can cancel a minipool before validation starts
+	error OnlyOwnerCanCancel();
+
+	/// @notice Only the multisig assigned to a minipool can interact with it
+	error InvalidMultisigAddress();
+
+	/// @notice Invalid signature from the multisig
+	error InvalidMultisigSignature();
+
+	/// @notice An error occured when attempting to issue a validation tx for the nodeID
+	error ErrorIssuingValidationTx();
+
+	error MinipoolMustBeInitialised();
+
+	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
 	constructor(IStorage storageAddress, ERC20 ggp_) Base(storageAddress) {
 		version = 1;
@@ -51,17 +78,26 @@ contract MinipoolManager is Base, IMinipoolManager {
 	function createMinipool(
 		address nodeID,
 		uint256 duration,
-		uint256 delegationFee
+		uint256 delegationFee,
+		uint256 ggpBondAmt
 	) external payable {
 		// TODO check for max node count from dao
-		// TODO check for valid amount (1000 AVAX to start?)
+		// TODO check for valid AVAX and GGP bond amount (1000 AVAX to start?)
 
-		// Deposit avax into Vault
+		// All funds AVAX and GGP will be stored in the Vault contract
 		IVault vault = IVault(getContractAddress("Vault"));
+
+		if (ggpBondAmt > 0) {
+			// Move the GGP funds (assume allowance has been set properly beforehand by the front end)
+			// TODO switch to error objects
+			require(ggp.transferFrom(msg.sender, address(this), ggpBondAmt), "Could not transfer GGP to MiniPool contract");
+			require(ggp.approve(address(vault), ggpBondAmt), "Could not approve vault GGP deposit");
+			// depositToken reverts if not successful
+			vault.depositToken("MinipoolManager", ggp, ggpBondAmt);
+		}
+
 		// TODO if (vault.balanceOf("MinipoolManager").add(msg.value) <= some setting ), "The deposit pool size after depositing exceeds the maximum size");
 		vault.depositAvax{value: msg.value}();
-
-		// TODO deposit ggpBondAmt to vault, ensure correct amounts
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
 		// (completed its validation period and all rewards paid and processing is complete)
@@ -83,6 +119,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		setAddress(keccak256(abi.encodePacked("minipool.item", count, ".owner")), msg.sender);
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".avaxAmt")), msg.value);
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".delegationFee")), delegationFee);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
 		// Zero out any left over data from a previous validation
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".ggpBondAmt")), 0);
 		setUint(keccak256(abi.encodePacked("minipool.item", count, ".startTime")), 0);
@@ -94,37 +131,6 @@ contract MinipoolManager is Base, IMinipoolManager {
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), count + 1);
 		addUint(keccak256("minipool.count"), 1);
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
-	}
-
-	// TODO only allow node owner to bond?
-	function bondMinipool(address nodeID, uint256 ggpBondAmt) external {
-		int256 index = getIndexOf(nodeID);
-		if (index == -1) {
-			revert MinipoolNotFound();
-		}
-		uint256 status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
-		if (status != uint256(MinipoolStatus.Initialised)) {
-			revert MinipoolMustBeInitialised();
-		}
-		// TODO should we have a new status for "Bonded"? Or is the below attr enough?
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
-
-		// Move the GGP funds (assume allowance has been set properly beforehand by the front end)
-		IVault vault = IVault(getContractAddress("Vault"));
-		// TODO switch to error objects
-		require(ggp.transferFrom(msg.sender, address(this), ggpBondAmt), "Could not transfer GGP to MiniPool contract");
-		require(ggp.approve(address(vault), ggpBondAmt), "Could not approve vault GGP deposit");
-		// depositToken reverts if not successful
-		vault.depositToken("MinipoolManager", ggp, ggpBondAmt);
-	}
-
-	// This forces minipool into a state. Do we need this? For tests?
-	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external {
-		int256 index = getIndexOf(nodeID);
-		if (index == -1) {
-			revert MinipoolNotFound();
-		}
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
 
 	//
@@ -157,7 +163,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 	}
 
 	// If correct multisig calls this, xfer funds from vault to their address
-	function claimAndInitiateStaking(address nodeID, bytes memory sig) external override {
+	function claimAndInitiateStaking(address nodeID, bytes memory sig) external {
 		requireValidMultisig(nodeID, sig);
 		// TODO xfer funds
 	}
@@ -167,7 +173,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		address nodeID,
 		bytes memory sig,
 		uint256 startTime
-	) external override {
+	) external {
 		int256 index = requireValidMultisig(nodeID, sig);
 		requireValidStateTransition(index, MinipoolStatus.Staking);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Staking));
@@ -183,7 +189,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		bytes memory sig,
 		uint256 endTime,
 		uint256 avaxRewardAmt
-	) external override {
+	) external {
 		int256 index = requireValidMultisig(nodeID, sig);
 		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
@@ -203,7 +209,7 @@ contract MinipoolManager is Base, IMinipoolManager {
 		bytes memory sig,
 		uint256 endTime,
 		string calldata message
-	) external override {
+	) external {
 		// TODO
 	}
 

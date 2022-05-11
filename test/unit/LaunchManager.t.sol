@@ -25,26 +25,26 @@ contract LaunchManagerTest is GGPTest {
 
 		for (uint256 i = 0; i < 10; i++) {
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Staking);
 
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Withdrawable);
 
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Finished);
 
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Canceled);
 		}
 
@@ -75,7 +75,7 @@ contract LaunchManagerTest is GGPTest {
 		uint256 foundCount = 0;
 		for (uint256 i = 0; i < max; i++) {
 			(nodeID, duration, delegationFee) = randMinipool();
-			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee);
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			// Update every other one to prelaunch status
 			if (i % 2 == 0) {
 				minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
