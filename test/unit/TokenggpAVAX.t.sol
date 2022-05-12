@@ -46,7 +46,6 @@ contract TokenggpAVAXTest is GGPTest {
 	}
 
 	function testSingleDepositWithdrawAVAX(uint128 amount) public {
-		uint128 amount;
 		if (amount == 0) amount = 1;
 
 		uint256 aliceUnderlyingAmount = amount;
@@ -112,7 +111,6 @@ contract TokenggpAVAXTest is GGPTest {
 		if (rewards == 0) rewards = 1;
 
 		uint256 aliceUnderlyingAmount = amount;
-		uint256 alicePreDepositBal = wavax.balanceOf(alice);
 
 		vm.prank(alice);
 		uint256 aliceShareAmount = ggpAVAX.deposit(aliceUnderlyingAmount, alice);
