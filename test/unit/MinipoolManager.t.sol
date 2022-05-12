@@ -8,6 +8,7 @@ import {ECDSA, MinipoolManager, IMultisigManager} from "../../contracts/contract
 contract MinipoolManagerTest is GGPTest {
 	int256 private index;
 	address private nodeID;
+	address private nodeOp;
 	uint256 private status;
 	uint256 private duration;
 	uint256 private delegationFee;
@@ -16,10 +17,10 @@ contract MinipoolManagerTest is GGPTest {
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
+		nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
 	}
 
 	function testBondZeroGGP() public {
-		address nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
 		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
@@ -31,7 +32,6 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testBondWithGGP() public {
-		address nodeOp = getActorWithTokens(1, 10 ether, 10 ether);
 		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 1 ether);
@@ -40,7 +40,23 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(ggpBondAmt, 1 ether);
 	}
 
+	function testCancelAndReBondWithGGP() public {
+		vm.startPrank(nodeOp);
+		(nodeID, duration, delegationFee) = randMinipool();
+		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 1 ether);
+		index = minipoolMgr.getIndexOf(nodeID);
+		ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		assertEq(ggpBondAmt, 1 ether);
+
+		minipoolMgr.cancelMinipool(nodeID);
+		(, status, , , ) = minipoolMgr.getMinipool(index);
+		assertEq(status, uint256(MinipoolStatus.Canceled));
+		assertEq(mockGGP.balanceOf(nodeOp), 10 ether);
+		assertEq(nodeOp.balance, 10 ether);
+	}
+
 	function testClaim() public {
+		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
@@ -48,6 +64,8 @@ contract MinipoolManagerTest is GGPTest {
 		uint256 nonce = minipoolMgr.getNonce(rialto1);
 		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
 		bytes memory sig = signHash(RIALTO1_PK, msgHash);
+		vm.stopPrank();
+
 		vm.startPrank(rialto1);
 		minipoolMgr.claimAndInitiateStaking(nodeID, sig);
 		// Nonce has now been incremented, so the same sig should fail (replay protection)
@@ -67,9 +85,11 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testCancelByMultisig() public {
+		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+		vm.stopPrank();
 
 		uint256 nonce = minipoolMgr.getNonce(rialto1);
 		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
@@ -79,10 +99,12 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testCancelByOwner() public {
+		vm.startPrank(nodeOp);
 		(nodeID, duration, delegationFee) = randMinipool();
 		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 		minipoolMgr.cancelMinipool(nodeID);
+		vm.stopPrank();
 
 		vm.startPrank(rialto1);
 		vm.expectRevert(MinipoolManager.OnlyOwnerCanCancel.selector);
@@ -90,6 +112,7 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testEmptyState() public {
+		vm.startPrank(nodeOp);
 		index = minipoolMgr.getIndexOf(ZERO_ADDRESS);
 		assertEq(index, -1);
 		(nodeID, status, duration, delegationFee, ggpBondAmt) = minipoolMgr.getMinipool(1);
@@ -107,11 +130,12 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testCreateAndGetMany() public {
-		for (uint256 i = 0; i < 100; i++) {
+		vm.startPrank(nodeOp);
+		for (uint256 i = 0; i < 10; i++) {
 			(nodeID, duration, delegationFee) = randMinipool();
 			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 		}
 		index = minipoolMgr.getIndexOf(nodeID);
-		assertEq(index, 99);
+		assertEq(index, 9);
 	}
 }

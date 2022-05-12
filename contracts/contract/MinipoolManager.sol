@@ -67,6 +67,8 @@ contract MinipoolManager is Base {
 
 	error MinipoolMustBeInitialised();
 
+	error ErrorSendingAvax();
+
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
 	constructor(IStorage storageAddress, ERC20 ggp_) Base(storageAddress) {
@@ -108,6 +110,10 @@ contract MinipoolManager is Base {
 			// Existing nodeID
 			requireValidStateTransition(i, MinipoolStatus.Initialised);
 			index = uint256(i);
+			// Zero out any left over data from a previous validation
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), 0);
 		} else {
 			// new nodeID
 			index = getUint(keccak256("minipool.count"));
@@ -126,10 +132,6 @@ contract MinipoolManager is Base {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")), msg.value);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")), delegationFee);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
-		// Zero out any left over data from a previous validation
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), 0);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
@@ -173,8 +175,24 @@ contract MinipoolManager is Base {
 	function _cancelMinipoolAndReturnFunds(int256 index) private {
 		requireValidStateTransition(index, MinipoolStatus.Canceled);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Canceled));
-		// TODO return funds
+		IVault vault = IVault(getContractAddress("Vault"));
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		if (ggpBondAmt > 0) {
+			vault.withdrawToken(owner, ggp, ggpBondAmt);
+		}
+		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		if (avaxAmt > 0) {
+			vault.withdrawAvax(avaxAmt);
+			(bool sent, ) = payable(owner).call{value: avaxAmt}("");
+			if (!sent) {
+				revert ErrorSendingAvax();
+			}
+		}
 	}
+
+	// TODO implement the modifiers
+	function receiveVaultWithdrawalAVAX() external payable {} // onlyThisLatestContract onlyLatestContract("rocketVault", msg.sender) {}
 
 	// If correct multisig calls this, xfer funds from vault to their address
 	function claimAndInitiateStaking(address nodeID, bytes memory sig) external {
@@ -237,7 +255,7 @@ contract MinipoolManager is Base {
 		return int256(getUint(keccak256(abi.encodePacked("minipool.index", nodeID)))) - 1;
 	}
 
-	function getMinipool(uint256 index)
+	function getMinipool(int256 index)
 		public
 		view
 		returns (
