@@ -41,6 +41,8 @@ contract MinipoolManager is Base {
 
 	ERC20 public immutable ggp;
 
+	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
+
 	/// @notice A minipool with this nodeid has already been registered
 	error MinipoolAlreadyRegistered();
 
@@ -68,6 +70,8 @@ contract MinipoolManager is Base {
 	error MinipoolMustBeInitialised();
 
 	error ErrorSendingAvax();
+
+	error InsufficientAvaxForStaking();
 
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
@@ -103,20 +107,18 @@ contract MinipoolManager is Base {
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
 		// (completed its validation period and all rewards paid and processing is complete)
-		uint256 index;
 		// getIndexOf returns -1 if node does not exist, so have to use signed type int256 here
-		int256 i = getIndexOf(nodeID);
-		if (i != -1) {
+		int256 index = getIndexOf(nodeID);
+		if (index != -1) {
 			// Existing nodeID
-			requireValidStateTransition(i, MinipoolStatus.Initialised);
-			index = uint256(i);
+			requireValidStateTransition(index, MinipoolStatus.Initialised);
 			// Zero out any left over data from a previous validation
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), 0);
 		} else {
 			// new nodeID
-			index = getUint(keccak256("minipool.count"));
+			index = int256(getUint(keccak256("minipool.count")));
 		}
 
 		// Get a Rialto multisig to assign for this minipool
@@ -135,7 +137,7 @@ contract MinipoolManager is Base {
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
-		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), index + 1);
+		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), uint256(index + 1));
 		addUint(keccak256("minipool.count"), 1);
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
 	}
@@ -148,10 +150,6 @@ contract MinipoolManager is Base {
 		}
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
-
-	//
-	// RIALTO FUNCTIONS
-	//
 
 	// Owner of a node can call this to cancel the minipool
 	function cancelMinipool(address nodeID) external {
@@ -194,10 +192,30 @@ contract MinipoolManager is Base {
 	// TODO implement the modifiers
 	function receiveVaultWithdrawalAVAX() external payable {} // onlyThisLatestContract onlyLatestContract("rocketVault", msg.sender) {}
 
+	//
+	// RIALTO FUNCTIONS
+	//
+
 	// If correct multisig calls this, xfer funds from vault to their address
 	function claimAndInitiateStaking(address nodeID, bytes memory sig) external {
-		requireValidMultisig(nodeID, sig);
-		// TODO xfer funds
+		int256 index = requireValidMultisig(nodeID, sig);
+		requireValidStateTransition(index, MinipoolStatus.Launched);
+		IVault vault = IVault(getContractAddress("Vault"));
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
+		uint256 totalAvaxAmt = avaxAmt + avaxUserAmt;
+		// TODO get max staking amount from DAO setting? Or do we enforce that when we match funds?
+		if (totalAvaxAmt < MIN_STAKING_AMT) {
+			revert InsufficientAvaxForStaking();
+		}
+		vault.withdrawAvax(totalAvaxAmt);
+		// TODO whats best practice here, .call or .transfer?
+		(bool sent, ) = payable(msg.sender).call{value: totalAvaxAmt}("");
+		if (!sent) {
+			revert ErrorSendingAvax();
+		}
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Launched));
 	}
 
 	// Rialto calls this after a successful minipool launch
@@ -251,6 +269,7 @@ contract MinipoolManager is Base {
 
 	// The index of an item
 	// Returns -1 if the value is not found
+	// TODO I dont love this. Maybe split into getIndexOf that reverts if not found, and maybeGetIndexOf which would return -1 if not found?
 	function getIndexOf(address nodeID) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("minipool.index", nodeID)))) - 1;
 	}
@@ -310,6 +329,8 @@ contract MinipoolManager is Base {
 		if (currentStatus == MinipoolStatus.Initialised) {
 			isValid = (to == MinipoolStatus.Prelaunch || to == MinipoolStatus.Canceled);
 		} else if (currentStatus == MinipoolStatus.Prelaunch) {
+			isValid = (to == MinipoolStatus.Launched || to == MinipoolStatus.Canceled);
+		} else if (currentStatus == MinipoolStatus.Launched) {
 			isValid = (to == MinipoolStatus.Staking || to == MinipoolStatus.Canceled);
 		} else if (currentStatus == MinipoolStatus.Staking) {
 			isValid = (to == MinipoolStatus.Withdrawable);
