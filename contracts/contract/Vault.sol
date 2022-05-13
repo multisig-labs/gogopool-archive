@@ -145,7 +145,7 @@ contract Vault is Base, IVault {
 	}
 
 	// Burns an amount of a token that implements a burn(uint256) method
-	// Only accepts calls from Rocket Pool network contracts
+	// Only accepts calls from network contracts
 	// [GGP] The only place this is used in RP is to fine node ops, and only RPL is burnable.
 	function burnToken(ERC20Burnable _tokenAddress, uint256 _amount) external onlyLatestNetworkContract {
 		// Get contract key
@@ -160,7 +160,7 @@ contract Vault is Base, IVault {
 		emit TokenBurned(contractKey, address(_tokenAddress), _amount, block.timestamp);
 	}
 
-	// Get a contract's ETH balance by address
+	// Get a contract's AVAX balance by address
 	function balanceOf(string memory _networkContractName) external view returns (uint256) {
 		// Return balance
 		return avaxBalances[_networkContractName];

@@ -55,6 +55,8 @@ contract MinipoolManager is Base {
 	/// @notice Validation end time must be after start time
 	error InvalidEndTime();
 
+	error InvalidAmount();
+
 	/// @notice Only minipool owners can cancel a minipool before validation starts
 	error OnlyOwnerCanCancel();
 
@@ -74,6 +76,8 @@ contract MinipoolManager is Base {
 	error InsufficientAvaxForStaking();
 
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
+
+	event ZeroRewardsReceived(address indexed nodeID);
 
 	constructor(IStorage storageAddress, ERC20 ggp_) Base(storageAddress) {
 		version = 1;
@@ -142,7 +146,7 @@ contract MinipoolManager is Base {
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
 	}
 
-	// This forces minipool into a state. Do we need this? For tests?
+	// This forces minipool into a state. Do we need this? For tests? For guardian?
 	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
@@ -152,6 +156,7 @@ contract MinipoolManager is Base {
 	}
 
 	// Owner of a node can call this to cancel the minipool
+	// TODO Should DAO also be able to cancel? Or guardian?
 	function cancelMinipool(address nodeID) external {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
@@ -216,6 +221,7 @@ contract MinipoolManager is Base {
 			revert ErrorSendingAvax();
 		}
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Launched));
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Launched);
 	}
 
 	// Rialto calls this after a successful minipool launch
@@ -225,10 +231,11 @@ contract MinipoolManager is Base {
 		uint256 startTime
 	) external {
 		int256 index = requireValidMultisig(nodeID, sig);
+
 		requireValidStateTransition(index, MinipoolStatus.Staking);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Staking));
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), startTime);
-		// emit StakingStartEvent
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Staking);
 	}
 
 	// Rialto calls this when validation period ends
@@ -239,19 +246,30 @@ contract MinipoolManager is Base {
 		bytes memory sig,
 		uint256 endTime,
 		uint256 avaxRewardAmt
-	) external {
+	) external payable {
 		int256 index = requireValidMultisig(nodeID, sig);
 		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
 
 		uint256 startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
 		if (endTime <= startTime) {
 			revert InvalidEndTime();
 		}
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), endTime);
 
+		// Ensure that we recv back at least what we sent out
+		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
+		uint256 totalAvaxAmt = avaxAmt + avaxUserAmt;
+		if (msg.value < totalAvaxAmt) {
+			revert InvalidAmount();
+		}
+
+		IVault vault = IVault(getContractAddress("Vault"));
+		vault.depositAvax{value: msg.value}();
+
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), endTime);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), avaxRewardAmt);
-		// emit StakingEndEvent
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}
 
 	function recordStakingError(
