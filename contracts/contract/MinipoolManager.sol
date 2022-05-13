@@ -6,6 +6,7 @@ import "../interface/IStorage.sol";
 import "../interface/IMultisigManager.sol";
 import "../interface/IVault.sol";
 import "./tokens/TokenGGP.sol";
+import "./tokens/TokenggpAVAX.sol";
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import "../types/MinipoolStatus.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -40,6 +41,8 @@ contract MinipoolManager is Base {
 	mapping(address => uint256) private nonces;
 
 	ERC20 public immutable ggp;
+
+	TokenggpAVAX public immutable ggAVAX;
 
 	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
 
@@ -79,9 +82,14 @@ contract MinipoolManager is Base {
 
 	event ZeroRewardsReceived(address indexed nodeID);
 
-	constructor(IStorage storageAddress, ERC20 ggp_) Base(storageAddress) {
+	constructor(
+		IStorage storageAddress,
+		ERC20 ggp_,
+		TokenggpAVAX ggAVAX_
+	) Base(storageAddress) {
 		version = 1;
 		ggp = ggp_;
+		ggAVAX = ggAVAX_;
 	}
 
 	// Accept deposit from node operator
@@ -206,7 +214,6 @@ contract MinipoolManager is Base {
 		int256 index = requireValidMultisig(nodeID, sig);
 		requireValidStateTransition(index, MinipoolStatus.Launched);
 		IVault vault = IVault(getContractAddress("Vault"));
-		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
 		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
 		uint256 totalAvaxAmt = avaxAmt + avaxUserAmt;
@@ -263,8 +270,20 @@ contract MinipoolManager is Base {
 			revert InvalidAmount();
 		}
 
+		// Send the liq stakers funds back
+		uint256 nodeOpsTotal;
+		if (avaxUserAmt > 0) {
+			uint256 avaxUserRewards = avaxRewardAmt; // TODO make this appropriate percentage of rewards
+			ggAVAX.depositRewards{value: avaxUserRewards}();
+			ggAVAX.depositFromStaking{value: avaxUserAmt}();
+		} else {
+			// To user funds, nodeop gets the whole reward
+			nodeOpsTotal = avaxAmt + avaxRewardAmt;
+		}
+
 		IVault vault = IVault(getContractAddress("Vault"));
-		vault.depositAvax{value: msg.value}();
+		// Send the nodeOps AVAX + rewards to vault so they can claim later
+		vault.depositAvax{value: nodeOpsTotal}();
 
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), endTime);

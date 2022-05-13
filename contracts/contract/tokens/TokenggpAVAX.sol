@@ -116,30 +116,33 @@ contract TokenggpAVAX is Base, ERC20, ERC4626 {
 		stakingTotalAssets += assets;
 	}
 
-	// Accept raw AVAX deposits from Rialto. Must ONLY be the rewards amount.
+	// Accept raw AVAX deposits from Rialto.
+	// Must ONLY be the rewards amount.
 	// TODO maybe have sanity check to not allow deposit of more than approx rewards expected?
 	function depositRewards() public payable {
+		uint256 assets = msg.value;
 		// Convert avax to wavax (wavax will be owned by this contract not the depositor)
-		IWAVAX(address(asset)).deposit{value: msg.value}();
+		IWAVAX(address(asset)).deposit{value: assets}();
 		// We DONT mint since we are depositing rewards to be shared by all
 		// _mint(receiver, shares);
-		emit DepositRewards(msg.sender, msg.value);
+		emit DepositRewards(msg.sender, assets);
 		// DONT call this either, we ONLY want to increase the balance
 		// afterDeposit(assets, 0);
 	}
 
-	// MUST only be any amounts returned from base staking NOT any rewards
+	// Must ONLY be any amounts returned from base staking NOT any rewards
 	function depositFromStaking() public payable {
-		uint256 assets;
+		uint256 assets = msg.value;
+		if (assets > stakingTotalAssets) {
+			revert TodoBetterMsg();
+		}
+		stakingTotalAssets -= assets;
+
 		// Convert avax to wavax (wavax will be owned by this contract not the depositor)
 		IWAVAX(address(asset)).deposit{value: assets}();
 		// We DONT mint since we are just replacing what we removed
 		// _mint(receiver, shares);
 		emit DepositFromStaking(msg.sender, assets);
-		stakingTotalAssets -= assets;
-		if (stakingTotalAssets < 0) {
-			revert TodoBetterMsg();
-		}
 		// DONT call this either, we ONLY want to increase the balance
 		// afterDeposit(assets, 0);
 	}

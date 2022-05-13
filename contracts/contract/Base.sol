@@ -5,6 +5,9 @@ pragma solidity ^0.8.0;
 import "./Storage.sol";
 import "../interface/IStorage.sol";
 
+// TODO remove this when dev is complete
+import "../../lib/forge-std/src/console2.sol";
+
 /// @title Base settings / modifiers for each contract in GoGoPool
 /// @author Chandler
 // Based on RocketBase by RocketPool

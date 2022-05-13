@@ -53,8 +53,11 @@ contract MinipoolManagerTest is GGPTest {
 		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
 		minipoolMgr.recordStakingEnd{value: 0 ether}(nodeID, sig, block.timestamp, 0 ether);
 
-		minipoolMgr.recordStakingEnd{value: 2000 ether}(nodeID, sig, block.timestamp, 0 ether);
-		assertEq(vault.balanceOf("MinipoolManager"), 2000 ether);
+		// Give rialto the rewards it needs
+		uint256 rewards = 10 ether;
+		deal(rialto1, rialto1.balance + rewards);
+		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, sig, block.timestamp, 10 ether);
+		assertEq(vault.balanceOf("MinipoolManager"), 2010 ether);
 
 		vm.stopPrank();
 	}
@@ -201,9 +204,9 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(index, 9);
 	}
 
-	function updateMinipoolStatus(address nodeID, MinipoolStatus newStatus) public {
-		int256 index = minipoolMgr.getIndexOf(nodeID);
-		assertTrue((index != -1), "Minipool not found");
-		store.setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(newStatus));
+	function updateMinipoolStatus(address nodeID_, MinipoolStatus newStatus) public {
+		int256 i = minipoolMgr.getIndexOf(nodeID_);
+		assertTrue((i != -1), "Minipool not found");
+		store.setUint(keccak256(abi.encodePacked("minipool.item", i, ".status")), uint256(newStatus));
 	}
 }

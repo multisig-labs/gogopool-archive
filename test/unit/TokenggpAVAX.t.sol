@@ -16,6 +16,11 @@ contract TokenggpAVAXTest is GGPTest {
 		deal(rialto, type(uint128).max);
 	}
 
+	function testRevertOnUserMistake() public {
+		vm.prank(alice);
+		ggpAVAX.deposit(1 ether, address(ggpAVAX));
+	}
+
 	function testSingleDepositWithdraw(uint128 amount) public {
 		if (amount == 0) amount = 1;
 

@@ -64,7 +64,7 @@ abstract contract GGPTest is Test {
 		minipoolQueue = new MinipoolQueue(store);
 		registerContract(store, "MinipoolQueue", address(minipoolQueue));
 
-		minipoolMgr = new MinipoolManager(store, mockGGP);
+		minipoolMgr = new MinipoolManager(store, mockGGP, ggpAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
