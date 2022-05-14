@@ -119,6 +119,7 @@ contract TokenggpAVAX is Base, ERC20, ERC4626 {
 	// Accept raw AVAX deposits from Rialto.
 	// Must ONLY be the rewards amount.
 	// TODO maybe have sanity check to not allow deposit of more than approx rewards expected?
+	// TODO can we combine this with below and just have depositFromStaking(baseAmt, rewardAmt) payable
 	function depositRewards() public payable {
 		uint256 assets = msg.value;
 		// Convert avax to wavax (wavax will be owned by this contract not the depositor)

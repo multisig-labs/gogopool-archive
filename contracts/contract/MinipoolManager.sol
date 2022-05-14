@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../interface/IStorage.sol";
 import "../interface/IMultisigManager.sol";
 import "../interface/IVault.sol";
+import "../interface/IMinipoolQueue.sol";
 import "./tokens/TokenGGP.sol";
 import "./tokens/TokenggpAVAX.sol";
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
@@ -151,6 +152,10 @@ contract MinipoolManager is Base {
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), uint256(index + 1));
 		addUint(keccak256("minipool.count"), 1);
+
+		IMinipoolQueue minipoolQueue = IMinipoolQueue(getContractAddress("MinipoolQueue"));
+		minipoolQueue.enqueue(nodeID);
+
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
 	}
 
@@ -174,18 +179,22 @@ contract MinipoolManager is Base {
 		if (msg.sender != owner) {
 			revert OnlyOwnerCanCancel();
 		}
-		_cancelMinipoolAndReturnFunds(index);
+		_cancelMinipoolAndReturnFunds(nodeID, index);
 	}
 
 	// TODO Do we allow Rialto to also cancel a minipool using this func?
 	function cancelMinipool(address nodeID, bytes memory sig) external {
 		int256 index = requireValidMultisig(nodeID, sig);
-		_cancelMinipoolAndReturnFunds(index);
+		_cancelMinipoolAndReturnFunds(nodeID, index);
 	}
 
-	function _cancelMinipoolAndReturnFunds(int256 index) private {
+	function _cancelMinipoolAndReturnFunds(address nodeID, int256 index) private {
 		requireValidStateTransition(index, MinipoolStatus.Canceled);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Canceled));
+		// Also remove from queue, by zeroing out the nodeid. This will leave an empty spot in the queue Rialto will have to handle gracefully.
+		IMinipoolQueue minipoolQueue = IMinipoolQueue(getContractAddress("MinipoolQueue"));
+		minipoolQueue.cancel(nodeID);
+
 		IVault vault = IVault(getContractAddress("Vault"));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
@@ -266,7 +275,7 @@ contract MinipoolManager is Base {
 		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
 		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
 		uint256 totalAvaxAmt = avaxAmt + avaxUserAmt;
-		if (msg.value < totalAvaxAmt) {
+		if (msg.value != totalAvaxAmt + avaxRewardAmt) {
 			revert InvalidAmount();
 		}
 
@@ -277,7 +286,7 @@ contract MinipoolManager is Base {
 			ggAVAX.depositRewards{value: avaxUserRewards}();
 			ggAVAX.depositFromStaking{value: avaxUserAmt}();
 		} else {
-			// To user funds, nodeop gets the whole reward
+			// No user funds, nodeop gets the whole reward
 			nodeOpsTotal = avaxAmt + avaxRewardAmt;
 		}
 

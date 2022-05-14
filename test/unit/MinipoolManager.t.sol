@@ -56,6 +56,10 @@ contract MinipoolManagerTest is GGPTest {
 		// Give rialto the rewards it needs
 		uint256 rewards = 10 ether;
 		deal(rialto1, rialto1.balance + rewards);
+
+		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
+		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, sig, block.timestamp, 9 ether);
+
 		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, sig, block.timestamp, 10 ether);
 		assertEq(vault.balanceOf("MinipoolManager"), 2010 ether);
 

@@ -7,6 +7,8 @@ import "./utils/GGPTest.sol";
 contract MinipoolQueueTest is GGPTest {
 	// test node IDs
 	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
+	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;
+	address public NODE_ID_3 = 0x0000000000000000000000000000000000000003;
 
 	function setUp() public override {
 		super.setUp();
@@ -64,6 +66,21 @@ contract MinipoolQueueTest is GGPTest {
 
 		// check the node ID
 		assertEq(minipoolQueue.getItem(0), NODE_ID_1);
+	}
+
+	function testCancel() public {
+		address addr;
+		minipoolQueue.enqueue(NODE_ID_1);
+		minipoolQueue.enqueue(NODE_ID_2);
+		minipoolQueue.enqueue(NODE_ID_3);
+		assertEq(minipoolQueue.getLength(), 3);
+		minipoolQueue.cancel(NODE_ID_2);
+		addr = minipoolQueue.dequeue();
+		assertEq(addr, NODE_ID_1);
+		addr = minipoolQueue.dequeue();
+		assertEq(addr, address(0));
+		addr = minipoolQueue.dequeue();
+		assertEq(addr, NODE_ID_3);
 	}
 
 	function testManyPools(uint256 x) public {

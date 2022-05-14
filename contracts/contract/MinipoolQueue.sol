@@ -47,6 +47,16 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 		return nodeID;
 	}
 
+	// HACK Zero out the nodeID, but this will leave an empty spot in queue for Rialto to
+	// handle gracefully by dequeueing, then ignoring emptys and dequeueing again
+	function cancel(address nodeID) external {
+		int256 index = getIndexOf(nodeID);
+		if (index != -1) {
+			setUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID)), 0);
+			setAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")), address(0));
+		}
+	}
+
 	// The number of items in a queue
 	function getLength() public view returns (uint256) {
 		uint256 start = getUint(keccak256("minipoolqueue.start"));

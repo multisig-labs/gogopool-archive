@@ -9,4 +9,6 @@ interface IMinipoolQueue {
 
 	// Pop nodeID off the queue. The logic for which nodeID gets selected could include GGP bond, etc.
 	function dequeue() external returns (address nodeID);
+
+	function cancel(address nodeID) external;
 }
