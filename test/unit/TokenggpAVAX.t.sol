@@ -165,14 +165,14 @@ contract TokenggpAVAXTest is GGPTest {
 
 	uint256 AVAX = 1e18;
 
-	function testFloat() public {
-		uint256 float = 1e17; // 1e18 * 10%;
-		uint256 amountDeposited = 2200 * AVAX;
+	// function testFloat() public {
+	// 	uint256 float = 1e17; // 1e18 * 10%;
+	// 	uint256 amountDeposited = 2200 * AVAX;
 
-		vm.prank(alice);
-		ggpAVAX.deposit(amountDeposited, alice);
-		assertEq(ggpAVAX.stakingTotalAssets(), 0);
-		assertEq(ggpAVAX.totalFloat(), amountDeposited);
-		assertEq(ggpAVAX.amountAvailableForStaking(), 200 * AVAX);
-	}
+	// 	vm.prank(alice);
+	// 	ggpAVAX.deposit(amountDeposited, alice);
+	// 	assertEq(ggpAVAX.stakingTotalAssets(), 0);
+	// 	assertEq(ggpAVAX.totalFloat(), amountDeposited);
+	// 	assertEq(ggpAVAX.amountAvailableForStaking(), 200 * AVAX);
+	// }
 }

@@ -55,6 +55,7 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 	function cancel(address nodeID) external {
 		int256 index = getIndexOf(nodeID);
 		if (index != -1) {
+			setUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID)), 0);
 			setAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")), address(0));
 		}
 	}
