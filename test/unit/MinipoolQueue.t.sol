@@ -75,11 +75,14 @@ contract MinipoolQueueTest is GGPTest {
 		minipoolQueue.enqueue(NODE_ID_3);
 		assertEq(minipoolQueue.getLength(), 3);
 		minipoolQueue.cancel(NODE_ID_2);
+		startMeasuringGas("minipoolQueue.dequeue");
 		addr = minipoolQueue.dequeue();
+		stopMeasuringGas();
 		assertEq(addr, NODE_ID_1);
+		// TODO why is this dequeue cheaper than the first by 5x?
+		startMeasuringGas("minipoolQueue.dequeue skip canceled");
 		addr = minipoolQueue.dequeue();
-		assertEq(addr, address(0));
-		addr = minipoolQueue.dequeue();
+		stopMeasuringGas();
 		assertEq(addr, NODE_ID_3);
 	}
 

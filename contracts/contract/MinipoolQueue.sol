@@ -37,22 +37,24 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 	function dequeue() external returns (address) {
 		require(getLength() > 0, "Queue is empty");
 		uint256 index = getUint(keccak256("minipoolqueue.start"));
+		address nodeID;
 
-		address nodeID = getAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
-		index = index + 1;
-		if (index >= CAPACITY) {
-			index = index - CAPACITY;
-		}
+		do {
+			nodeID = getAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")));
+			index = index + 1;
+			if (index >= CAPACITY) {
+				index = index - CAPACITY;
+			}
+		} while (nodeID == address(0));
+
 		setUint(keccak256("minipoolqueue.start"), index);
 		return nodeID;
 	}
 
-	// HACK Zero out the nodeID, but this will leave an empty spot in queue for Rialto to
-	// handle gracefully by dequeueing, then ignoring emptys and dequeueing again
+	// HACK Zero out the nodeID, but this will leave an empty spot in queue for dequeue to handle
 	function cancel(address nodeID) external {
 		int256 index = getIndexOf(nodeID);
 		if (index != -1) {
-			setUint(keccak256(abi.encodePacked("minipoolqueue.index", nodeID)), 0);
 			setAddress(keccak256(abi.encodePacked("minipoolqueue.item", index, ".nodeID")), address(0));
 		}
 	}
