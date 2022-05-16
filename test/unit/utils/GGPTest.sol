@@ -11,7 +11,7 @@ import "../../../contracts/contract/Storage.sol";
 import "../../../contracts/contract/Vault.sol";
 import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
-import "../../../contracts/contract/tokens/TokenggpAVAX.sol";
+import "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import "../../../contracts/contract/tokens/WAVAX.sol";
 import {MockERC20} from "@rari-capital/solmate/src/test/utils/mocks/MockERC20.sol";
 
@@ -37,7 +37,7 @@ abstract contract GGPTest is Test {
 	ProtocolDAO public dao;
 	TokenGGP public ggp;
 	MockERC20 public mockGGP;
-	TokenggpAVAX public ggpAVAX;
+	TokenggAVAX public ggAVAX;
 	WAVAX public wavax;
 
 	function setUp() public virtual {
@@ -64,7 +64,7 @@ abstract contract GGPTest is Test {
 		minipoolQueue = new MinipoolQueue(store);
 		registerContract(store, "MinipoolQueue", address(minipoolQueue));
 
-		minipoolMgr = new MinipoolManager(store, mockGGP, ggpAVAX);
+		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
@@ -81,10 +81,10 @@ abstract contract GGPTest is Test {
 		registerContract(store, "TokenGGP", address(ggp));
 
 		wavax = new WAVAX();
-		ggpAVAX = new TokenggpAVAX(store, wavax);
-		registerContract(store, "TokenggpAVAX", address(ggpAVAX));
+		ggAVAX = new TokenggAVAX(store, wavax);
+		registerContract(store, "TokenggAVAX", address(ggAVAX));
 		// Initialize the rewards cycle
-		ggpAVAX.syncRewards();
+		ggAVAX.syncRewards();
 
 		deal(guardian, 1 << 128);
 
@@ -126,7 +126,7 @@ abstract contract GGPTest is Test {
 		vm.deal(actor, amount);
 		vm.startPrank(actor);
 		wavax.deposit{value: amount}();
-		wavax.approve(address(ggpAVAX), amount);
+		wavax.approve(address(ggAVAX), amount);
 		vm.stopPrank();
 		return actor;
 	}
@@ -150,7 +150,7 @@ abstract contract GGPTest is Test {
 		vm.deal(actor, avaxAmt * 2);
 		vm.startPrank(actor);
 		wavax.deposit{value: avaxAmt}();
-		wavax.approve(address(ggpAVAX), avaxAmt);
+		wavax.approve(address(ggAVAX), avaxAmt);
 		mockGGP.mint(actor, ggpAmt);
 		mockGGP.approve(address(minipoolMgr), ggpAmt);
 		vm.stopPrank();

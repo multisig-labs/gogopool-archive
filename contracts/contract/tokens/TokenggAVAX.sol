@@ -23,7 +23,7 @@ import "../Base.sol";
 	TODO Dont think you can have constructor with the proxys? Need a "setup" func instead?
 */
 
-contract TokenggpAVAX is Base, ERC20, ERC4626 {
+contract TokenggAVAX is Base, ERC20, ERC4626 {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -65,7 +65,7 @@ contract TokenggpAVAX is Base, ERC20, ERC4626 {
 	// Total amount of avax currently out for staking (not including any rewards)
 	uint256 public stakingTotalAssets;
 
-	constructor(Storage storageAddress, ERC20 asset) Base(storageAddress) ERC4626(asset, "GoGoPool Liquid Staking Token", "ggpAVAX") {
+	constructor(Storage storageAddress, ERC20 asset) Base(storageAddress) ERC4626(asset, "GoGoPool Liquid Staking Token", "ggAVAX") {
 		version = 1; // for storage
 		// TODO get this value from storage instead of constructor? DAO decides the cycle? Can it change?
 		rewardsCycleLength = 1 days;
@@ -79,7 +79,7 @@ contract TokenggpAVAX is Base, ERC20, ERC4626 {
 		assert(msg.sender == address(asset)); // only accept AVAX via fallback from the WAVAX contract
 	}
 
-	// Accept raw AVAX from a depositor and mint them ggpAVAX
+	// Accept raw AVAX from a depositor and mint them ggAVAX
 	// TODO allow DAO to pause?
 	function depositAVAX() public payable returns (uint256 shares) {
 		uint256 assets = msg.value;
@@ -93,7 +93,7 @@ contract TokenggpAVAX is Base, ERC20, ERC4626 {
 		afterDeposit(assets, shares);
 	}
 
-	// Allow depositor to burn ggpAVAX and withdraw raw AVAX (subject to reserves)
+	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
 	// TODO allow DAO to pause?
 	function withdrawAVAX(uint256 assets) public returns (uint256 shares) {
 		shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.

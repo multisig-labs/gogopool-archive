@@ -7,7 +7,7 @@ import "../interface/IMultisigManager.sol";
 import "../interface/IVault.sol";
 import "../interface/IMinipoolQueue.sol";
 import "./tokens/TokenGGP.sol";
-import "./tokens/TokenggpAVAX.sol";
+import "./tokens/TokenggAVAX.sol";
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import "../types/MinipoolStatus.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -43,7 +43,7 @@ contract MinipoolManager is Base {
 
 	ERC20 public immutable ggp;
 
-	TokenggpAVAX public immutable ggAVAX;
+	TokenggAVAX public immutable ggAVAX;
 
 	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
 
@@ -86,7 +86,7 @@ contract MinipoolManager is Base {
 	constructor(
 		IStorage storageAddress,
 		ERC20 ggp_,
-		TokenggpAVAX ggAVAX_
+		TokenggAVAX ggAVAX_
 	) Base(storageAddress) {
 		version = 1;
 		ggp = ggp_;

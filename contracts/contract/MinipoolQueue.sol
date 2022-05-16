@@ -34,6 +34,7 @@ contract MinipoolQueue is Base, IMinipoolQueue {
 
 	// Remove an item from the start of a queue and return it
 	// Requires that the queue is not empty
+	// Skip any nodeIDs that were canceled
 	function dequeue() external returns (address) {
 		require(getLength() > 0, "Queue is empty");
 		uint256 index = getUint(keccak256("minipoolqueue.start"));

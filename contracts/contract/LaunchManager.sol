@@ -15,7 +15,7 @@ contract LaunchManager is Base, ILaunchManager {
 
 	function assignDeposits() external {
 		// Whatever checks we need
-		// Mint ggpAVAX to user
+		// Mint ggAVAX to user
 		// RocketTokenRETHInterface rocketTokenRETH = RocketTokenRETHInterface(getContractAddress("rocketTokenRETH"));
 		// rocketTokenRETH.mint(msg.value, msg.sender);
 		// // Emit deposit received event

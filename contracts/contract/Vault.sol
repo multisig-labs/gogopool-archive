@@ -7,7 +7,7 @@ import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
 import "../interface/IVault.sol";
 import "../interface/IWithdrawer.sol";
 
-// AVAX and ggpAVAX are stored here to prevent contract upgrades from affecting balances
+// AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances
 // The Vault contract must not be upgraded
 
 /// @title AVAX Vault
