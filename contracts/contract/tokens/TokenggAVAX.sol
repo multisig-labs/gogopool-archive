@@ -104,12 +104,11 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 		msg.sender.safeTransferETH(assets);
 	}
 
-	// TODO Withdraw excess to Vault
+	// TODO ONLY multisigs can call this, will xfer AVAX to msg.sender
 	function withdrawForStaking(uint256 assets) public {
 		if (assets > amountAvailableForStaking()) {
 			revert WithdrawAmountTooLarge();
 		}
-		// TODO allow only multisigs to call
 		IWAVAX(address(asset)).withdraw(assets);
 		msg.sender.safeTransferETH(assets);
 		emit WithdrawForStaking(msg.sender, assets);
@@ -146,6 +145,15 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 		emit DepositFromStaking(msg.sender, assets);
 		// DONT call this either, we ONLY want to increase the balance
 		// afterDeposit(assets, 0);
+	}
+
+	// TODO Who can call this? Probably anyone can (no security necessary), but make it pauseable.
+	function maintainFloat() external {
+		// Based on the targetFloatPercentage, figure out if we have excess WAVAX to go to the vault,
+		// IWAVAX(address(asset)).transferFrom(address(this), vaultAddr, assets);
+		// or not enough WAVAX and we should get some from the vault
+		// IWAVAX(address(asset)).transferFrom(vaultAddr, address(this), assets);
+		// TODO How do we handle approvals for transferFrom? Need to max approve on contract creation maybe?
 	}
 
 	/*///////////////////////////////////////////////////////////////
