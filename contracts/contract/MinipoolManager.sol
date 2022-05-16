@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../interface/IStorage.sol";
 import "../interface/IMultisigManager.sol";
 import "../interface/IVault.sol";
-import "../interface/IMinipoolQueue.sol";
+import "./BaseQueue.sol";
 import "./tokens/TokenGGP.sol";
 import "./tokens/TokenggAVAX.sol";
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
@@ -153,8 +153,8 @@ contract MinipoolManager is Base {
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), uint256(index + 1));
 		addUint(keccak256("minipool.count"), 1);
 
-		IMinipoolQueue minipoolQueue = IMinipoolQueue(getContractAddress("MinipoolQueue"));
-		minipoolQueue.enqueue(nodeID);
+		BaseQueue minipoolQueue = BaseQueue(getContractAddress("BaseQueue"));
+		minipoolQueue.enqueue("minipoolQueue", nodeID);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
 	}
@@ -192,8 +192,8 @@ contract MinipoolManager is Base {
 		requireValidStateTransition(index, MinipoolStatus.Canceled);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Canceled));
 		// Also remove from queue, by zeroing out the nodeid. This will leave an empty spot in the queue Rialto will have to handle gracefully.
-		IMinipoolQueue minipoolQueue = IMinipoolQueue(getContractAddress("MinipoolQueue"));
-		minipoolQueue.cancel(nodeID);
+		BaseQueue minipoolQueue = BaseQueue(getContractAddress("BaseQueue"));
+		minipoolQueue.cancel("minipoolQueue", nodeID);
 
 		IVault vault = IVault(getContractAddress("Vault"));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
