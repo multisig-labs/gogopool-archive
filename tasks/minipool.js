@@ -109,8 +109,8 @@ task("minipool:claim", "")
 	.addParam("pk", "private key of minipool")
 	.addParam("nodeid", "NodeID")
 	.setAction(async ({ nodeid, pk }) => {
-		const key = new hre.ethers.utils.SigningKey(pk);
-		const addr = hre.ethers.utils.computeAddress(key.publicKey);
+		// const key = new hre.ethers.utils.SigningKey(pk);
+		// const addr = hre.ethers.utils.computeAddress(key.publicKey);
 
 		let minipoolManager = await get("MinipoolManager");
 		const wallet = new hre.ethers.Wallet(pk, minipoolManager.provider);
@@ -121,10 +121,10 @@ task("minipool:claim", "")
 		// 	["address", "address", "uint256"],
 		// 	[addrs.MinipoolManager, addr, nonce.toNumber()]
 		// );
-		const h2 = await minipoolManager.formatClaimMessageHash(addr);
+		// const h2 = await minipoolManager.formatClaimMessageHash(addr);
 		// const msgHash = hre.ethers.utils.hashMessage(h2);
-		const sig = key.signDigest(h2).compact;
-		await minipoolManager.claimAndInitiateStaking(nodeid, sig, {
+		// const sig = key.signDigest(h2).compact;
+		await minipoolManager.claimAndInitiateStaking(nodeid, {
 			gasPrice: 17150404,
 			gasLimit: 3000000,
 		});

@@ -171,7 +171,7 @@ contract MinipoolManager is Base {
 	}
 
 	// Owner of a node can call this to cancel the minipool
-	// TODO Should DAO also be able to cancel? Or guardian?
+	// TODO Should DAO also be able to cancel? Or guardian? or Rialto?
 	function cancelMinipool(address nodeID) external {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
@@ -181,12 +181,6 @@ contract MinipoolManager is Base {
 		if (msg.sender != owner) {
 			revert OnlyOwnerCanCancel();
 		}
-		_cancelMinipoolAndReturnFunds(nodeID, index);
-	}
-
-	// TODO Do we allow Rialto to also cancel a minipool using this func?
-	function cancelMinipool(address nodeID, bytes memory sig) external {
-		int256 index = requireValidMultisig(nodeID, sig);
 		_cancelMinipoolAndReturnFunds(nodeID, index);
 	}
 
@@ -221,8 +215,8 @@ contract MinipoolManager is Base {
 	//
 
 	// If correct multisig calls this, xfer funds from vault to their address
-	function claimAndInitiateStaking(address nodeID, bytes memory sig) external {
-		int256 index = requireValidMultisig(nodeID, sig);
+	function claimAndInitiateStaking(address nodeID) external {
+		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Launched);
 		IVault vault = IVault(getContractAddress("Vault"));
 		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
@@ -243,12 +237,8 @@ contract MinipoolManager is Base {
 	}
 
 	// Rialto calls this after a successful minipool launch
-	function recordStakingStart(
-		address nodeID,
-		bytes memory sig,
-		uint256 startTime
-	) external {
-		int256 index = requireValidMultisig(nodeID, sig);
+	function recordStakingStart(address nodeID, uint256 startTime) external {
+		int256 index = requireValidMultisig(nodeID);
 
 		requireValidStateTransition(index, MinipoolStatus.Staking);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Staking));
@@ -261,11 +251,10 @@ contract MinipoolManager is Base {
 	// TODO is this payable then? accept all funds here and distribute?
 	function recordStakingEnd(
 		address nodeID,
-		bytes memory sig,
 		uint256 endTime,
 		uint256 avaxRewardAmt
 	) external payable {
-		int256 index = requireValidMultisig(nodeID, sig);
+		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
 
 		uint256 startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
@@ -304,7 +293,6 @@ contract MinipoolManager is Base {
 
 	function recordStakingError(
 		address nodeID,
-		bytes memory sig,
 		uint256 endTime,
 		string calldata message
 	) external {
@@ -346,21 +334,23 @@ contract MinipoolManager is Base {
 		owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 	}
 
-	// Given a signer addr, return the hash that should be signed to claim a nodeID
-	// SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
-	function formatClaimMessageHash(address signer) public view returns (bytes32) {
-		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, signer, nonces[signer])));
-	}
+	// Johnny: I am not sure we need these? We can always just look at msg.sender to verify Rialto identity?
+	//
+	// // Given a signer addr, return the hash that should be signed to claim a nodeID
+	// // SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
+	// function formatClaimMessageHash(address signer) public view returns (bytes32) {
+	// 	return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, signer, nonces[signer])));
+	// }
 
-	// Verify that signer is an enabled multisig, and signature is valid for current nonce value, and bump nonce
-	function requireValidSigAndUpdateNonce(address signer, bytes memory sig) private {
-		bytes32 msgHash = formatClaimMessageHash(signer);
-		nonces[signer] += 1;
-		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
-		multisigManager.requireValidSignature(signer, msgHash, sig);
-	}
+	// // Verify that signer is an enabled multisig, and signature is valid for current nonce value, and bump nonce
+	// function requireValidSigAndUpdateNonce(address signer, bytes memory sig) private {
+	// 	bytes32 msgHash = formatClaimMessageHash(signer);
+	// 	nonces[signer] += 1;
+	// 	IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
+	// 	multisigManager.requireValidSignature(signer, msgHash, sig);
+	// }
 
-	function requireValidMultisig(address nodeID, bytes memory sig) private returns (int256) {
+	function requireValidMultisig(address nodeID) private view returns (int256) {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
 			revert MinipoolNotFound();
@@ -370,7 +360,6 @@ contract MinipoolManager is Base {
 		if (msg.sender != assignedMultisig) {
 			revert InvalidMultisigAddress();
 		}
-		requireValidSigAndUpdateNonce(assignedMultisig, sig);
 		return index;
 	}
 

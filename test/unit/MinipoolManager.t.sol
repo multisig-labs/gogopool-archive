@@ -29,38 +29,38 @@ contract MinipoolManagerTest is GGPTest {
 		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		vm.startPrank(rialto1);
-		uint256 nonce = minipoolMgr.getNonce(rialto1);
-		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		bytes memory sig = signHash(RIALTO1_PK, msgHash);
-		minipoolMgr.claimAndInitiateStaking(nodeID, sig);
+		// uint256 nonce = minipoolMgr.getNonce(rialto1);
+		// bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
+		// bytes memory sig = signHash(RIALTO1_PK, msgHash);
+		minipoolMgr.claimAndInitiateStaking(nodeID);
 		assertEq(vault.balanceOf("MinipoolManager"), 0);
 		assertEq(rialto1.balance, 2000 ether);
 
-		nonce = minipoolMgr.getNonce(rialto1);
-		msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		sig = signHash(RIALTO1_PK, msgHash);
-		minipoolMgr.recordStakingStart(nodeID, sig, block.timestamp);
+		// nonce = minipoolMgr.getNonce(rialto1);
+		// msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
+		// sig = signHash(RIALTO1_PK, msgHash);
+		minipoolMgr.recordStakingStart(nodeID, block.timestamp);
 
-		nonce = minipoolMgr.getNonce(rialto1);
-		msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		sig = signHash(RIALTO1_PK, msgHash);
+		// nonce = minipoolMgr.getNonce(rialto1);
+		// msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
+		// sig = signHash(RIALTO1_PK, msgHash);
 
 		vm.expectRevert(MinipoolManager.InvalidEndTime.selector);
-		minipoolMgr.recordStakingEnd{value: 2000 ether}(nodeID, sig, block.timestamp, 0 ether);
+		minipoolMgr.recordStakingEnd{value: 2000 ether}(nodeID, block.timestamp, 0 ether);
 
 		skip(duration);
 
 		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
-		minipoolMgr.recordStakingEnd{value: 0 ether}(nodeID, sig, block.timestamp, 0 ether);
+		minipoolMgr.recordStakingEnd{value: 0 ether}(nodeID, block.timestamp, 0 ether);
 
 		// Give rialto the rewards it needs
 		uint256 rewards = 10 ether;
 		deal(rialto1, rialto1.balance + rewards);
 
 		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
-		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, sig, block.timestamp, 9 ether);
+		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, block.timestamp, 9 ether);
 
-		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, sig, block.timestamp, 10 ether);
+		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, block.timestamp, 10 ether);
 		assertEq(vault.balanceOf("MinipoolManager"), 2010 ether);
 
 		vm.stopPrank();
@@ -109,32 +109,32 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(ggpBondAmt, 1 ether);
 	}
 
-	function testClaimPreventNonceReuse() public {
-		(nodeID, duration, delegationFee) = randMinipool();
+	// function testClaimPreventNonceReuse() public {
+	// 	(nodeID, duration, delegationFee) = randMinipool();
 
-		vm.prank(nodeOp);
-		minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 0);
-		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+	// 	vm.prank(nodeOp);
+	// 	minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 0);
+	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
-		vm.startPrank(rialto1);
-		uint256 nonce = minipoolMgr.getNonce(rialto1);
-		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		bytes memory sig = signHash(RIALTO1_PK, msgHash);
-		minipoolMgr.claimAndInitiateStaking(nodeID, sig);
-		vm.stopPrank();
+	// 	vm.startPrank(rialto1);
+	// 	uint256 nonce = minipoolMgr.getNonce(rialto1);
+	// 	bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
+	// 	bytes memory sig = signHash(RIALTO1_PK, msgHash);
+	// 	minipoolMgr.claimAndInitiateStaking(nodeID, sig);
+	// 	vm.stopPrank();
 
-		// Now create a new minipool
-		(nodeID, duration, delegationFee) = randMinipool();
+	// 	// Now create a new minipool
+	// 	(nodeID, duration, delegationFee) = randMinipool();
 
-		vm.prank(nodeOp);
-		minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 0);
-		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+	// 	vm.prank(nodeOp);
+	// 	minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 0);
+	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
-		// Nonce has now been incremented, so the same sig should fail (replay protection)
-		vm.expectRevert(IMultisigManager.SignatureInvalid.selector);
-		vm.prank(rialto1);
-		minipoolMgr.claimAndInitiateStaking(nodeID, sig);
-	}
+	// 	// Nonce has now been incremented, so the same sig should fail (replay protection)
+	// 	vm.expectRevert(IMultisigManager.SignatureInvalid.selector);
+	// 	vm.prank(rialto1);
+	// 	minipoolMgr.claimAndInitiateStaking(nodeID, sig);
+	// }
 
 	function testClaimNoUserFunds() public {
 		(nodeID, duration, delegationFee) = randMinipool();
@@ -144,27 +144,27 @@ contract MinipoolManagerTest is GGPTest {
 		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		vm.startPrank(rialto1);
-		uint256 nonce = minipoolMgr.getNonce(rialto1);
-		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		bytes memory sig = signHash(RIALTO1_PK, msgHash);
-		minipoolMgr.claimAndInitiateStaking(nodeID, sig);
+		// uint256 nonce = minipoolMgr.getNonce(rialto1);
+		// bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
+		// bytes memory sig = signHash(RIALTO1_PK, msgHash);
+		minipoolMgr.claimAndInitiateStaking(nodeID);
 
 		assertEq(rialto1.balance, 2000 ether);
 	}
 
-	function testCancelByMultisig() public {
-		vm.startPrank(nodeOp);
-		(nodeID, duration, delegationFee) = randMinipool();
-		minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
-		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-		vm.stopPrank();
+	// function testCancelByMultisig() public {
+	// 	vm.startPrank(nodeOp);
+	// 	(nodeID, duration, delegationFee) = randMinipool();
+	// 	minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+	// 	vm.stopPrank();
 
-		uint256 nonce = minipoolMgr.getNonce(rialto1);
-		bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		bytes memory sig = signHash(RIALTO1_PK, msgHash);
-		vm.prank(rialto1);
-		minipoolMgr.cancelMinipool(nodeID, sig);
-	}
+	// 	// uint256 nonce = minipoolMgr.getNonce(rialto1);
+	// 	// bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
+	// 	// bytes memory sig = signHash(RIALTO1_PK, msgHash);
+	// 	vm.prank(rialto1);
+	// 	minipoolMgr.cancelMinipool(nodeID);
+	// }
 
 	function testCancelByOwner() public {
 		vm.startPrank(nodeOp);
