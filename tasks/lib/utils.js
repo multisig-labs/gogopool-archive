@@ -1,12 +1,13 @@
 /* eslint-disable no-undef */
-const fs = require("fs");
 const { sprintf } = require("sprintf-js");
 
 // Only load the deployed contract addrs if they exist
 let addrs = {};
-if (fs.existsSync("../../cache/deployed_addrs.js")) {
+try {
 	// eslint-disable-next-line node/no-missing-require
 	addrs = require("../../cache/deployed_addrs");
+} catch {
+	console.log("Unable to require file cache/deployed_addrs.js");
 }
 
 const get = async (name) => {
