@@ -25,6 +25,7 @@ interface ILaunchManager {
 		returns (
 			uint256 initialisedCount,
 			uint256 prelaunchCount,
+			uint256 launchedCount,
 			uint256 stakingCount,
 			uint256 withdrawableCount,
 			uint256 finishedCount,

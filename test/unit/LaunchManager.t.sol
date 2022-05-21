@@ -20,6 +20,7 @@ contract LaunchManagerTest is GGPTest {
 	function testGetStatusCounts() public {
 		uint256 initialisedCount;
 		uint256 prelaunchCount;
+		uint256 launchedCount;
 		uint256 stakingCount;
 		uint256 withdrawableCount;
 		uint256 finishedCount;
@@ -32,6 +33,10 @@ contract LaunchManagerTest is GGPTest {
 			(nodeID, duration, delegationFee) = randMinipool();
 			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
 			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Launched);
 
 			(nodeID, duration, delegationFee) = randMinipool();
 			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
@@ -51,18 +56,22 @@ contract LaunchManagerTest is GGPTest {
 		}
 
 		// Get all in one page
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = launchMgr.getMinipoolCountPerStatus(0, 0);
+		(initialisedCount, prelaunchCount, launchedCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = launchMgr
+			.getMinipoolCountPerStatus(0, 0);
 		assertEq(initialisedCount, 10);
 		assertEq(prelaunchCount, 10);
+		assertEq(launchedCount, 10);
 		assertEq(stakingCount, 10);
 		assertEq(withdrawableCount, 10);
 		assertEq(finishedCount, 10);
 		assertEq(canceledCount, 10);
 
 		// Test pagination
-		(initialisedCount, prelaunchCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = launchMgr.getMinipoolCountPerStatus(0, 6);
+		(initialisedCount, prelaunchCount, launchedCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = launchMgr
+			.getMinipoolCountPerStatus(0, 7);
 		assertEq(initialisedCount, 1);
 		assertEq(prelaunchCount, 1);
+		assertEq(launchedCount, 1);
 		assertEq(stakingCount, 1);
 		assertEq(withdrawableCount, 1);
 		assertEq(finishedCount, 1);
@@ -86,7 +95,7 @@ contract LaunchManagerTest is GGPTest {
 			}
 		}
 
-		(, prelaunchCount, , , , ) = launchMgr.getMinipoolCountPerStatus(0, 0);
+		(, prelaunchCount, , , , , ) = launchMgr.getMinipoolCountPerStatus(0, 0);
 		assertEq(prelaunchCount, max / 2);
 
 		LaunchManager.Node[] memory nodes = launchMgr.getPrelaunchMinipools(0, 0);

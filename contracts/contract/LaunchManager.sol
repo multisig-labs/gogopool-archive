@@ -2,11 +2,12 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "../interface/IStorage.sol";
-import "../interface/ILaunchManager.sol";
-import "../interface/IVault.sol";
-import "../types/MinipoolStatus.sol";
-import "./Base.sol";
+import {ILaunchManager} from "../interface/ILaunchManager.sol";
+import {IMinipoolQueue} from "../interface/IMinipoolQueue.sol";
+import {IStorage} from "../interface/IStorage.sol";
+import {IVault} from "../interface/IVault.sol";
+import {MinipoolStatus} from "../types/MinipoolStatus.sol";
+import {Base} from "./Base.sol";
 
 contract LaunchManager is Base, ILaunchManager {
 	constructor(IStorage storageAddress) Base(storageAddress) {
@@ -59,6 +60,7 @@ contract LaunchManager is Base, ILaunchManager {
 		returns (
 			uint256 initialisedCount,
 			uint256 prelaunchCount,
+			uint256 launchedCount,
 			uint256 stakingCount,
 			uint256 withdrawableCount,
 			uint256 finishedCount,
@@ -80,6 +82,8 @@ contract LaunchManager is Base, ILaunchManager {
 				initialisedCount++;
 			} else if (status == uint256(MinipoolStatus.Prelaunch)) {
 				prelaunchCount++;
+			} else if (status == uint256(MinipoolStatus.Launched)) {
+				launchedCount++;
 			} else if (status == uint256(MinipoolStatus.Staking)) {
 				stakingCount++;
 			} else if (status == uint256(MinipoolStatus.Withdrawable)) {
