@@ -97,7 +97,7 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(ggpBondAmt, 1 ether);
 
 		minipoolMgr.cancelMinipool(nodeID);
-		(, status, , , ) = minipoolMgr.getMinipool(index);
+		(, status, , , , , , ) = minipoolMgr.getMinipool(index);
 		assertEq(status, uint256(MinipoolStatus.Canceled));
 		assertEq(mockGGP.balanceOf(nodeOp), MAX_AMT);
 		assertEq(nodeOp.balance, MAX_AMT);
@@ -183,7 +183,7 @@ contract MinipoolManagerTest is GGPTest {
 		vm.startPrank(nodeOp);
 		index = minipoolMgr.getIndexOf(ZERO_ADDRESS);
 		assertEq(index, -1);
-		(nodeID, status, duration, delegationFee, ggpBondAmt) = minipoolMgr.getMinipool(1);
+		(nodeID, status, duration, delegationFee, ggpBondAmt, , , ) = minipoolMgr.getMinipool(1);
 		assertEq(nodeID, ZERO_ADDRESS);
 	}
 

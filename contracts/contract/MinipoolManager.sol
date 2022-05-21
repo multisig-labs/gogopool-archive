@@ -137,7 +137,9 @@ contract MinipoolManager is Base {
 		// Get a Rialto multisig to assign for this minipool
 		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
 		address multisig = multisigManager.getNextActiveMultisig();
-
+		if (multisig == address(0)) {
+			revert InvalidMultisigAddress();
+		}
 		// Save the attrs individually in the k/v store
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")), nodeID);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Initialised));
@@ -328,7 +330,10 @@ contract MinipoolManager is Base {
 			uint256 status,
 			uint256 duration,
 			uint256 delegationFee,
-			uint256 ggpBondAmt
+			uint256 ggpBondAmt,
+			uint256 avaxAmt,
+			address owner,
+			address multisigAddr
 		)
 	{
 		nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
@@ -336,11 +341,14 @@ contract MinipoolManager is Base {
 		duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
 		delegationFee = getUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")));
 		ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		multisigAddr = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
+		owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 	}
 
 	// Given a signer addr, return the hash that should be signed to claim a nodeID
 	// SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
-	function formatClaimMessageHash(address signer) private view returns (bytes32) {
+	function formatClaimMessageHash(address signer) public view returns (bytes32) {
 		return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, signer, nonces[signer])));
 	}
 

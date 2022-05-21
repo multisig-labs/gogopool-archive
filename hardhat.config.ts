@@ -1,33 +1,32 @@
 import * as dotenv from "dotenv";
-
-import { HardhatUserConfig, task } from "hardhat/config";
+import * as fs from "fs";
+import { HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+// import "hardhat-ethernal";
 
 dotenv.config();
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
-	const accounts = await hre.ethers.getSigners();
-
-	for (const account of accounts) {
-		console.log(account.address);
-	}
-});
+// Load tasks
+const files = fs.readdirSync("./tasks");
+for (const file of files) {
+	if (!file.endsWith(".js")) continue;
+	require(`./tasks/${file}`);
+}
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
 	solidity: "0.8.13",
+	defaultNetwork: "localhost",
 	networks: {
 		hardhat: {},
 		local: {
-			url: "http://localhost:9650/ext/bc/C/rpc",
+			url: "https://testnet.multisiglabs.org/ext/bc/C/rpc",
 			gasPrice: 225000000000,
 			chainId: 43112,
 			accounts: [
@@ -47,13 +46,19 @@ const config: HardhatUserConfig = {
 			url: "https://api.avax-test.network/ext/bc/C/rpc",
 			gasPrice: 225000000000,
 			chainId: 43113,
-			accounts: [],
+			accounts: [
+				process.env.PRIVATE_KEY ||
+					"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+			],
 		},
 		mainnet: {
 			url: "https://api.avax.network/ext/bc/C/rpc",
 			gasPrice: 225000000000,
 			chainId: 43114,
-			accounts: [],
+			accounts: [
+				process.env.PRIVATE_KEY ||
+					"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+			],
 		},
 	},
 	gasReporter: {
@@ -63,6 +68,14 @@ const config: HardhatUserConfig = {
 	etherscan: {
 		apiKey: process.env.ETHERSCAN_API_KEY,
 	},
+	// ethernal: {
+	// 	disableSync: false, // If set to true, plugin will not sync blocks & txs
+	// 	disableTrace: false, // If set to true, plugin won't trace transaction
+	// 	workspace: undefined, // Set the workspace to use, will default to the default workspace (latest one used in the dashboard). It is also possible to set it through the ETHERNAL_WORKSPACE env variable
+	// 	uploadAst: true, // If set to true, plugin will upload AST, and you'll be able to use the storage feature (longer sync time though)
+	// 	disabled: false, // If set to true, the plugin will be disabled, nohting will be synced, ethernal.push won't do anything either
+	// 	resetOnStart: "GoGo", // Pass a workspace name to reset it automatically when restarting the node, note that if the workspace doesn't exist it won't error
+	// },
 };
 
 export default config;

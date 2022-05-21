@@ -6,7 +6,7 @@ import "./Storage.sol";
 import "../interface/IStorage.sol";
 
 // TODO remove this when dev is complete
-import "../../lib/forge-std/src/console2.sol";
+import "../../lib/forge-std/src/console.sol";
 
 /// @title Base settings / modifiers for each contract in GoGoPool
 /// @author Chandler

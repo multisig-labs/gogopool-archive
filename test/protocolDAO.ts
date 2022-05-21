@@ -1,7 +1,6 @@
 import { assert, expect } from "chai";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
-import web3 from "web3";
 
 const deployTestProtocolDAO = async () => {
 	const Storage = await ethers.getContractFactory("Storage");
@@ -12,18 +11,20 @@ const deployTestProtocolDAO = async () => {
 	const protocolDAO = await ProtocolDAO.deploy(storage.address);
 	await protocolDAO.deployed();
 
-	const boolStorageKey = web3.utils.soliditySha3(
-		web3.utils.encodePacked("contract.exists", protocolDAO.address) as string
+	const boolStorageKey = ethers.utils.solidityKeccak256(
+		["string", "address"],
+		["contract.exists", protocolDAO.address]
 	);
 
-	const addressStorageKey = web3.utils.soliditySha3(
-		web3.utils.encodePacked("contract.address", "protocolDAO") as string
+	const addressStorageKey = ethers.utils.solidityKeccak256(
+		["string", "string"],
+		["contract.address", "protocolDAO"]
 	);
 
 	// set the protocol address to exist
 	// and set its address in storage.
-	await storage.setBool(boolStorageKey as string, true);
-	await storage.setAddress(addressStorageKey as string, protocolDAO.address);
+	await storage.setBool(boolStorageKey, true);
+	await storage.setAddress(addressStorageKey, protocolDAO.address);
 
 	// run the initializer function on the dao
 	await protocolDAO.initialize();

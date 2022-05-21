@@ -10,19 +10,31 @@ set dotenv-load
 default:
 	@just --list --unsorted
 
+# Install dependencies
 install:
 	yarn install
 
+# Delete compilation artifacts
 clean:
 	npx hardhat clean
 	forge clean
 
+# Compile the project with hardhat
 compile:
   npx hardhat compile
 
+# Clean and compile the project
 build: clean compile
 
-# Run all tests
+# Deploy contracts
+deploy-local network="localhost":
+	npx hardhat run --network {{network}} scripts/deploy-local.ts
+
+# Start a local hardhat EVM node
+node:
+	npx hardhat node
+
+# Run all tests (hh/forge)
 test: test-forge test-hh
 
 # Run forge unit tests
@@ -37,12 +49,19 @@ test-forge-watch *FLAGS:
 
 # Run hardhat tests
 test-hh:
-	npx hardhat test
+	npx hardhat test --network hardhat
+
+# Run cast command
+# just cast send MultisigManager "registerMultisig(address)" 0xf39f...
+cast cmd contractName sig *args:
+	#!/usr/bin/env bash
+	source -- "cache/deployed_addrs.bash"
+	if ([ "{{cmd}}" == "send" ]); then legacy="--legacy"; else legacy=""; fi;
+	cast {{cmd}} ${legacy} --private-key $PRIVATE_KEY ${addrs[{{contractName}}]} "{{sig}}" {{args}}
 
 # Run solhint linter and output table of results
 solhint:
 	npx solhint -f table contracts/**/*.sol
-
 
 # Allow the Remix ide to connect to your local files
 remix:
@@ -51,7 +70,10 @@ remix:
 # Generate Go code interface for contracts
 gen:
 	#!/bin/bash
-	THATDIR=$PWD && cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.6 && cat $THATDIR/artifacts/contracts/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/_oracle.go
+	THATDIR=$PWD
+	mkdir -p $THATDIR/gen
+	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.6
+	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/_MinipoolManager.go
 	echo "Complete!"
 
 # Update foundry binaries to the nightly version

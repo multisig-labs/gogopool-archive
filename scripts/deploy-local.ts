@@ -1,29 +1,101 @@
+import { writeFile } from "node:fs/promises";
+
 const hre = require("hardhat");
+
+if (process.env.ETHERNAL_EMAIL !== "") {
+	require("hardhat-ethernal");
+	hre.ethernalUploadAst = true;
+}
 
 // DO NOT USE FOR PRODUCTION
 // This will deploy the contracts to the local network
+
+type IFU = { [key: string]: any };
+
+const addresses: IFU = {};
+const instances: IFU = {};
+
+// ContractName: [constructorArgs...]
+const contracts: IFU = {
+	Multicall: [],
+	WAVAX: [],
+	Storage: [],
+	Vault: ["Storage"],
+	MultisigManager: ["Storage"],
+	MinipoolQueue: ["Storage"],
+	TokenGGP: ["Storage"],
+	TokenggAVAX: ["Storage", "WAVAX"],
+	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
+};
+
+const hash = (types: any, vals: any) => {
+	const h = hre.ethers.utils.solidityKeccak256(types, vals);
+	// console.log(types, vals, h);
+	return h;
+};
 
 const deploy = async () => {
 	// Uncomment if running directly with node
 	// await hre.run("compile");
 
-	console.log("Deploying Multicall...");
-	const Multicall = await hre.ethers.getContractFactory("Multicall");
-	const multicall = await Multicall.deploy();
-	await multicall.deployed();
-	console.log("Multicall deployed to: ", multicall.address);
+	for (const contract in contracts) {
+		const args = [];
+		for (const name of contracts[contract]) {
+			args.push(addresses[name]);
+		}
+		console.log(`Deploying ${contract} with args ${args}...`);
+		const C = await hre.ethers.getContractFactory(contract);
+		const c = await C.deploy(...args);
+		const inst = await c.deployed();
+		instances[contract] = inst;
+		addresses[contract] = c.address;
+		console.log(`${contract} deployed to: ${c.address}`);
+	}
 
-	console.log("Deploying Storage...");
-	const Storage = await hre.ethers.getContractFactory("Storage");
-	const storage = await Storage.deploy();
-	await storage.deployed();
-	console.log("Storage deployed to: ", storage.address);
+	// Register any contract with Storage as first constructor param
+	for (const contract in contracts) {
+		const store = instances.Storage;
+		if (contracts[contract][0] === "Storage") {
+			console.log(`Registering ${contract}`);
+			await store.setAddress(
+				hash(["string", "string"], ["contract.address", contract]),
+				addresses[contract]
+			);
+			await store.setBool(
+				hash(["string", "address"], ["contract.exists", addresses[contract]]),
+				true
+			);
+			await store.setString(
+				hash(["string", "address"], ["contract.name", addresses[contract]]),
+				contract
+			);
+		}
+	}
 
-	console.log("Deploying Vault...");
-	const Vault = await hre.ethers.getContractFactory("Vault");
-	const vault = await Vault.deploy(storage.address);
-	await vault.deployed();
-	console.log("Vault deployed to: ", vault.address);
+	// Write out the deployed addresses to a format easily loaded by bash for use by cast
+	let data = "declare -A addrs=(";
+	for (const name in addresses) {
+		data = data + `[${name}]="${addresses[name]}" `;
+	}
+	data = data + ")";
+	await writeFile("cache/deployed_addrs.bash", data);
+
+	// Write out the deployed addresses to a format easily loaded by javascript
+	data = `module.exports = ${JSON.stringify(addresses)}`;
+	await writeFile("cache/deployed_addrs.js", data);
+
+	// This takes a while so allow us to skip it if we want
+	if (
+		process.env.ETHERNAL_EMAIL !== "" &&
+		process.env.ETHERNAL_PUSH === "true"
+	) {
+		for (const contract in contracts) {
+			await hre.ethernal.push({
+				name: contract,
+				address: addresses[contract],
+			});
+		}
+	}
 };
 
 deploy()

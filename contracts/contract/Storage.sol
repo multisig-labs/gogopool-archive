@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "../interface/IStorage.sol";
-import "../../lib/forge-std/src/console2.sol";
+
+// import "../../lib/forge-std/src/console2.sol";
 
 /// @title The primary persistent storage for GoGoPool
 /// @author Chandler
@@ -118,8 +119,6 @@ contract Storage is IStorage {
 
 	/// @param _key The key for the record
 	function setInt(bytes32 _key, int256 _value) external override onlyLatestGoGoNetworkContract {
-		console2.log(msg.sender);
-		console2.log(tx.origin);
 		intStorage[_key] = _value;
 	}
 

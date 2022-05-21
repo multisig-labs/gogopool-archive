@@ -13,6 +13,8 @@ contract LaunchManagerTest is GGPTest {
 
 	function setUp() public override {
 		super.setUp();
+		address rialto1Addr = vm.addr(RIALTO1_PK);
+		registerMultisig(rialto1Addr);
 	}
 
 	function testGetStatusCounts() public {
