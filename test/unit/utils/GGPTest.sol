@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../contracts/contract/LaunchManager.sol";
 import "../../../contracts/contract/MinipoolManager.sol";
-import "../../../contracts/contract/MinipoolQueue.sol";
+import "../../../contracts/contract/BaseQueue.sol";
 import "../../../contracts/contract/MultisigManager.sol";
 import "../../../contracts/contract/Storage.sol";
 import "../../../contracts/contract/Vault.sol";
@@ -30,7 +30,7 @@ abstract contract GGPTest is Test {
 	// Contracts
 	Storage public store;
 	Vault public vault;
-	MinipoolQueue public minipoolQueue;
+  BaseQueue public baseQueue;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	LaunchManager public launchMgr;
@@ -61,8 +61,8 @@ abstract contract GGPTest is Test {
 		vault = new Vault(store);
 		registerContract(store, "Vault", address(vault));
 
-		minipoolQueue = new MinipoolQueue(store);
-		registerContract(store, "MinipoolQueue", address(minipoolQueue));
+    baseQueue = new BaseQueue(store);
+		registerContract(store, "BaseQueue", address(baseQueue));
 
 		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));

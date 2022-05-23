@@ -4,40 +4,41 @@ pragma solidity ^0.8.0;
 
 import "./utils/GGPTest.sol";
 
-contract MinipoolQueueTest is GGPTest {
+contract BaseQueueTest is GGPTest {
 	// test node IDs
 	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
 	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;
 	address public NODE_ID_3 = 0x0000000000000000000000000000000000000003;
+  bytes32 private key = "minipoolQueue";
 
 	function setUp() public override {
 		super.setUp();
 	}
 
 	function testEmpty() public {
-		assertEq(minipoolQueue.getLength(), 0);
+		assertEq(baseQueue.getLength(key), 0);
 	}
 
 	function testEnqueue() public {
 		// enqueue the first node
-		minipoolQueue.enqueue(NODE_ID_1);
+		baseQueue.enqueue(key, NODE_ID_1);
 
 		// check the length
-		assertEq(minipoolQueue.getLength(), 1);
+		assertEq(baseQueue.getLength(key), 1);
 	}
 
 	function testDequeue() public {
 		// enqueue the first node
-		minipoolQueue.enqueue(NODE_ID_1);
+		baseQueue.enqueue(key, NODE_ID_1);
 
 		// check the length
-		assertEq(minipoolQueue.getLength(), 1);
+		assertEq(baseQueue.getLength(key), 1);
 
 		// dequeue the first node
-		address nodeId = minipoolQueue.dequeue();
+		address nodeId = baseQueue.dequeue(key);
 
 		// check the length
-		assertEq(minipoolQueue.getLength(), 0);
+		assertEq(baseQueue.getLength(key), 0);
 
 		// check the node ID
 		assertEq(nodeId, NODE_ID_1);
@@ -45,43 +46,43 @@ contract MinipoolQueueTest is GGPTest {
 
 	function testIndexOf() public {
 		// enqueue the first node
-		minipoolQueue.enqueue(NODE_ID_1);
+		baseQueue.enqueue(key, NODE_ID_1);
 
 		// check the length
-		assertEq(minipoolQueue.getLength(), 1);
+		assertEq(baseQueue.getLength(key), 1);
 
 		// check the index of the first node
-		assertEq(minipoolQueue.getIndexOf(NODE_ID_1), 0);
+		assertEq(baseQueue.getIndexOf(key, NODE_ID_1), 0);
 	}
 
 	function testGetItem() public {
 		// enqueue the first node
-		minipoolQueue.enqueue(NODE_ID_1);
+		baseQueue.enqueue(key, NODE_ID_1);
 
 		// check the length
-		assertEq(minipoolQueue.getLength(), 1);
+		assertEq(baseQueue.getLength(key), 1);
 
 		// check the index of the first node
-		assertEq(minipoolQueue.getIndexOf(NODE_ID_1), 0);
+		assertEq(baseQueue.getIndexOf(key, NODE_ID_1), 0);
 
 		// check the node ID
-		assertEq(minipoolQueue.getItem(0), NODE_ID_1);
+		assertEq(baseQueue.getItem(key, 0), NODE_ID_1);
 	}
 
 	function testCancel() public {
 		address addr;
-		minipoolQueue.enqueue(NODE_ID_1);
-		minipoolQueue.enqueue(NODE_ID_2);
-		minipoolQueue.enqueue(NODE_ID_3);
-		assertEq(minipoolQueue.getLength(), 3);
-		minipoolQueue.cancel(NODE_ID_2);
-		startMeasuringGas("minipoolQueue.dequeue");
-		addr = minipoolQueue.dequeue();
+		baseQueue.enqueue(key, NODE_ID_1);
+		baseQueue.enqueue(key, NODE_ID_2);
+		baseQueue.enqueue(key, NODE_ID_3);
+		assertEq(baseQueue.getLength(key), 3);
+		baseQueue.cancel(key, NODE_ID_2);
+		startMeasuringGas("baseQueue.dequeue");
+		addr = baseQueue.dequeue(key);
 		stopMeasuringGas();
 		assertEq(addr, NODE_ID_1);
 		// TODO why is this dequeue cheaper than the first by 5x?
-		startMeasuringGas("minipoolQueue.dequeue skip canceled");
-		addr = minipoolQueue.dequeue();
+		startMeasuringGas("baseQueue.dequeue skip canceled");
+		addr = baseQueue.dequeue(key);
 		stopMeasuringGas();
 		assertEq(addr, NODE_ID_3);
 	}
@@ -91,19 +92,19 @@ contract MinipoolQueueTest is GGPTest {
 		vm.assume(x > 0);
 		// add x pools to the queue
 		for (uint256 i = 0; i < x; i++) {
-			minipoolQueue.enqueue(randAddress());
+			baseQueue.enqueue(key, randAddress());
 		}
 
 		// check the length
-		assertEq(minipoolQueue.getLength(), x);
+		assertEq(baseQueue.getLength(key), x);
 
 		// get a random uint
 		uint256 index = randUint(x);
 
 		// try to access it
-		address nodeId = minipoolQueue.getItem(index);
+		address nodeId = baseQueue.getItem(key, index);
 
 		// check its index
-		assertEq(minipoolQueue.getIndexOf(nodeId), int256(index));
+		assertEq(baseQueue.getIndexOf(key, nodeId), int256(index));
 	}
 }
