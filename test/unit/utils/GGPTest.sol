@@ -5,6 +5,7 @@ pragma solidity ^0.8.13;
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../contracts/contract/MinipoolManager.sol";
 import "../../../contracts/contract/BaseQueue.sol";
+import "../../../contracts/contract/DelegationManager.sol";
 import "../../../contracts/contract/MultisigManager.sol";
 import "../../../contracts/contract/Storage.sol";
 import "../../../contracts/contract/Vault.sol";
@@ -42,6 +43,7 @@ abstract contract GGPTest is Test {
 	Vault public vault;
 	Oracle public oracle;
 	BaseQueue public baseQueue;
+	DelegationManager public delegationMgr;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	ProtocolDAO public dao;
@@ -95,6 +97,9 @@ abstract contract GGPTest is Test {
 
 		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
+
+		delegationMgr = new DelegationManager(store, mockGGP, ggAVAX);
+		registerContract(store, "DelegationManager", address(delegationMgr));
 
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
@@ -158,6 +163,7 @@ abstract contract GGPTest is Test {
 		vm.startPrank(actor);
 		mockGGP.mint(actor, amount);
 		mockGGP.approve(address(minipoolMgr), amount);
+		mockGGP.approve(address(delegationMgr), amount);
 		vm.stopPrank();
 		return actor;
 	}
@@ -175,6 +181,7 @@ abstract contract GGPTest is Test {
 		vm.deal(actor, avaxAmt);
 		mockGGP.mint(actor, ggpAmt);
 		mockGGP.approve(address(minipoolMgr), ggpAmt);
+		mockGGP.approve(address(delegationMgr), ggpAmt);
 		vm.stopPrank();
 		return actor;
 	}
@@ -187,6 +194,13 @@ abstract contract GGPTest is Test {
 	function randUint(uint256 _modulus) internal returns (uint256) {
 		randNonce++;
 		return uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)))) % _modulus;
+	}
+
+	function randUintBetween(uint256 lowerBound, uint256 upperBound) internal returns (uint256) {
+		randNonce++;
+		uint256 bound = uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)))) % (upperBound - lowerBound);
+		uint256 randomNum = bound + lowerBound;
+		return randomNum;
 	}
 
 	// Generate data to create a random minipool for tests
@@ -203,6 +217,25 @@ abstract contract GGPTest is Test {
 		uint256 duration = randUint(2000000);
 		uint256 delegationFee = uint256(0); // TODO make this better
 		return (nodeID, duration, delegationFee);
+	}
+
+	// Generate data to create a random delegation node for tests
+	function randDelegationNode()
+		internal
+		returns (
+			address,
+			uint256,
+			uint256,
+			uint256
+		)
+	{
+		randNonce++;
+		address nodeID = randAddress();
+		uint256 requestedDelegationAmt = randUint(3000000);
+		uint256 tenPercentDelegation = (requestedDelegationAmt * 10) / 100;
+		uint256 ggpBondAmt = randUintBetween(tenPercentDelegation, requestedDelegationAmt);
+		uint256 duration = randUintBetween(1209600, 5097600);
+		return (nodeID, requestedDelegationAmt, ggpBondAmt, duration);
 	}
 
 	// Copy over some funcs from DSTestPlus

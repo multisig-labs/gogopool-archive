@@ -143,7 +143,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		msg.sender.safeTransferETH(assets);
 	}
 
-	// TODO ONLY minipoolmanager can call this, will xfer AVAX to msg.sender
+	// TODO ONLY minipoolmanager and delegationManager? can call this, will xfer AVAX to msg.sender
 	function withdrawForStaking(uint256 assets) public {
 		if (assets > amountAvailableForStaking()) {
 			revert WithdrawAmountTooLarge();
