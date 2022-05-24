@@ -1,18 +1,33 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
-const { get, hash, formatAddr, log } = require("./lib/utils");
+const {
+	get,
+	hash,
+	formatAddr,
+	log,
+	logf,
+	nodeIDs,
+	getNamedAccounts,
+} = require("./lib/utils");
 const MAX_ENTRIES = 10;
 
 task("minipool:list", "List all minipools").setAction(async () => {
+	const accounts = await getNamedAccounts();
 	const minipoolManager = await get("MinipoolManager");
-	log(
-		"%-42s %-6s %-8s %-8s %-7s %-7s %-12s %-12s",
+	logf(
+		"%-13s %-6s %-8s %-8s %-8s %-8s %-15s %-15s %-15s %-18s %-19s %-19s %-8s %-8s",
 		"nodeID",
 		"status",
 		"dur",
+		"start",
+		"end",
 		"fee",
-		"ggp",
-		"avax",
+		"ggpBondAmt",
+		"avaxNodeOpAmt",
+		"avaxUserAmt",
+		"avaxTotalRewardAmt",
+		"avaxNodeOpRewardAmt",
+		"avaxUserRewardAmt",
 		"owner",
 		"multisig"
 	);
@@ -22,23 +37,35 @@ task("minipool:list", "List all minipools").setAction(async () => {
 				nodeID,
 				status,
 				duration,
+				startTime,
+				endTime,
 				delegationFee,
 				ggpBondAmt,
-				avaxAmt,
+				avaxNodeOpAmt,
+				avaxUserAmt,
+				avaxTotalRewardAmt,
+				avaxNodeOpRewardAmt,
+				avaxUserRewardAmt,
 				owner,
 				multisigAddr,
 			} = await minipoolManager.getMinipool(i);
 			if (nodeID === hre.ethers.constants.AddressZero) break;
-			log(
-				"%-42s %-6d %-8d %-8d %-7s %-7s %-12s %-12s",
-				nodeID,
+			logf(
+				"%-13s %-6s %-8s %-8s %-8s %-8s %-15s %-15s %-15s %-18s %-19s %-19s %-8s %-8s",
+				formatAddr(nodeID),
 				status.toNumber(),
 				duration.toNumber(),
+				startTime.toNumber(),
+				endTime.toNumber(),
 				delegationFee.toNumber(),
 				ethers.utils.formatUnits(ggpBondAmt),
-				ethers.utils.formatUnits(avaxAmt),
-				formatAddr(owner),
-				formatAddr(multisigAddr)
+				ethers.utils.formatUnits(avaxNodeOpAmt),
+				ethers.utils.formatUnits(avaxUserAmt),
+				ethers.utils.formatUnits(avaxTotalRewardAmt),
+				ethers.utils.formatUnits(avaxNodeOpRewardAmt),
+				ethers.utils.formatUnits(avaxUserRewardAmt),
+				formatAddr(owner, accounts),
+				formatAddr(multisigAddr, accounts)
 			);
 		} catch (e) {
 			console.log("error", e);
@@ -55,78 +82,119 @@ task("minipool:queue", "List all minipools in the queue").setAction(
 		const end = await storage.getUint(hash(["string"], ["minipoolqueue.end"]));
 		const minipoolQueue = await get("MinipoolQueue");
 		const len = await minipoolQueue.getLength();
-		console.log(`Queue start: ${start}  end: ${end}  len: ${len}`);
+		log(`Queue start: ${start}  end: ${end}  len: ${len}`);
 		for (let i = start; i < end; i++) {
 			try {
 				const nodeID = await minipoolQueue.getItem(i);
 				if (nodeID === hre.ethers.constants.AddressZero) break;
-				console.log(`[${i}] ${nodeID}`);
+				log(`[${i}] ${nodeID}`);
 			} catch (e) {
-				console.log("error", e);
+				log("error", e);
 			}
 		}
 	}
 );
 
 task("minipool:create", "")
-	.addParam("nodeid", "NodeID")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
 	.addParam("duration", "Duration (in seconds)", 100000, types.int)
 	.addParam("fee", "", 0, types.int)
-	.addParam("ggp", "", 0, types.int)
-	.addParam("avax", "Amt of AVAX to send (units are AVAX)", 2000, types.int)
-	.setAction(async ({ nodeid, duration, fee, ggp, avax }) => {
-		const minipoolManager = await get("MinipoolManager");
+	.addParam("ggp", "", "0")
+	.addParam("avax", "Amt of AVAX to send (units are AVAX)", "2000")
+	.setAction(async ({ actor, node, duration, fee, ggp, avax }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
 		await minipoolManager.createMinipool(
-			nodeid,
+			nodeIDs[node],
 			duration,
 			fee,
-			hre.ethers.utils.parseEther(ggp.toString()),
+			hre.ethers.utils.parseEther(ggp),
 			{
-				value: hre.ethers.utils.parseEther(avax.toString()),
+				value: hre.ethers.utils.parseEther(avax),
 			}
 		);
-		log(`Minipool created for nodeID: ${nodeid}`);
+		log(`Minipool created for node ${node}: ${nodeIDs[node]}`);
 	});
 
 task("minipool:add_avax", "")
-	.addParam("nodeid", "NodeID")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
 	.addParam("amt", "AVAX amount")
-	.setAction(async ({ nodeid, amt }) => {
-		const minipoolManager = await get("MinipoolManager");
-		await minipoolManager.updateMinipoolStatus(nodeid, status);
+	.setAction(async ({ actor, node, amt }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.updateMinipoolStatus(nodeIDs[node], status);
 	});
 
 task("minipool:update_status", "")
-	.addParam("nodeid", "NodeID")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
 	.addParam("status", "", 0, types.int)
-	.setAction(async ({ nodeid, status }) => {
-		const minipoolManager = await get("MinipoolManager");
-		await minipoolManager.updateMinipoolStatus(nodeid, status);
-		log(`Minipool status updated to ${status} for ${nodeid}`);
+	.setAction(async ({ actor, node, status }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.updateMinipoolStatus(nodeIDs[node], status);
+		log(`Minipool status updated to ${status} for ${node}`);
+	});
+
+task("minipool:cancel", "")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
+	.setAction(async ({ actor, node }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.cancelMinipool(nodeIDs[node]);
+		log(`Minipool canceled`);
 	});
 
 task("minipool:claim", "")
-	.addParam("pk", "private key of minipool")
-	.addParam("nodeid", "NodeID")
-	.setAction(async ({ nodeid, pk }) => {
-		// const key = new hre.ethers.utils.SigningKey(pk);
-		// const addr = hre.ethers.utils.computeAddress(key.publicKey);
-
-		let minipoolManager = await get("MinipoolManager");
-		const wallet = new hre.ethers.Wallet(pk, minipoolManager.provider);
-		minipoolManager = minipoolManager.connect(wallet);
-		// const nonce = await minipoolManager.getNonce(addr);
-		// TODO This is diff than what the solidity func returns?
-		// const h = hash(
-		// 	["address", "address", "uint256"],
-		// 	[addrs.MinipoolManager, addr, nonce.toNumber()]
-		// );
-		// const h2 = await minipoolManager.formatClaimMessageHash(addr);
-		// const msgHash = hre.ethers.utils.hashMessage(h2);
-		// const sig = key.signDigest(h2).compact;
-		await minipoolManager.claimAndInitiateStaking(nodeid, {
-			gasPrice: 17150404,
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
+	.setAction(async ({ actor, node }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.claimAndInitiateStaking(nodeIDs[node], {
+			gasPrice: 18000000,
 			gasLimit: 3000000,
 		});
-		log(`Minipool claimed for ${nodeid}`);
+		log(`Minipool claimed for ${node}`);
+	});
+
+task("minipool:recordStakingStart", "")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
+	.addParam("start", "staking start time")
+	.setAction(async ({ actor, node, start }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.recordStakingStart(nodeIDs[node], start);
+	});
+
+task("minipool:recordStakingEnd", "")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
+	.addParam("end", "staking end time")
+	.addParam("avax", "AVAX amount to return (excluding rewards)", 0, types.int)
+	.addParam("reward", "AVAX Reward amount", 0, types.int)
+	.setAction(async ({ actor, node, end, avax, reward }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.recordStakingEnd(
+			nodeIDs[node],
+			end,
+			hre.ethers.utils.parseEther(reward.toString()),
+			{
+				value: hre.ethers.utils.parseEther((avax + reward).toString()),
+			}
+		);
+	});
+
+task("minipool:withdrawMinipoolFunds", "")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
+	.setAction(async ({ actor, node }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.withdrawMinipoolFunds(nodeIDs[node]);
 	});

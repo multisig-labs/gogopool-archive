@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 
 const hre = require("hardhat");
+const { getNamedAccounts } = require("../tasks/lib/utils");
 
 if (process.env.ETHERNAL_EMAIL !== "") {
 	require("hardhat-ethernal");
@@ -38,13 +39,15 @@ const deploy = async () => {
 	// Uncomment if running directly with node
 	// await hre.run("compile");
 
+	const { deployer } = await getNamedAccounts();
+	console.log(`Deploying contracts as (${deployer.address})`);
 	for (const contract in contracts) {
 		const args = [];
 		for (const name of contracts[contract]) {
 			args.push(addresses[name]);
 		}
 		console.log(`Deploying ${contract} with args ${args}...`);
-		const C = await hre.ethers.getContractFactory(contract);
+		const C = await hre.ethers.getContractFactory(contract, deployer);
 		const c = await C.deploy(...args);
 		const inst = await c.deployed();
 		instances[contract] = inst;

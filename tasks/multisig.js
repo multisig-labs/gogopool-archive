@@ -1,19 +1,24 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
-const { get, log, logf } = require("./lib/utils");
+const { get, log, logf, getNamedAccounts } = require("./lib/utils");
 
 const MAX_ENTRIES = 10;
 
 task("multisig:list", "List all registered multisigs").setAction(async () => {
 	const multisigManager = await get("MultisigManager");
-	logf("%-45s %-10s %-10s", "Address", "Enabled", "C-Chain AVAX Balance");
+	logf(
+		"%-45s %-10s %-10s",
+		"Multisig Address",
+		"Enabled",
+		"C-Chain AVAX Balance"
+	);
 	for (let i = 0; i < MAX_ENTRIES; i++) {
 		try {
 			const { addr, enabled } = await multisigManager.getMultisig(i);
 			if (addr === hre.ethers.constants.AddressZero) break;
 			const bal = await hre.ethers.provider.getBalance(addr);
 			logf(
-				"%-45s %-10s %-10s",
+				"%-45s %-10s %-10.4d",
 				addr,
 				enabled,
 				hre.ethers.utils.formatUnits(bal)
@@ -25,13 +30,16 @@ task("multisig:list", "List all registered multisigs").setAction(async () => {
 });
 
 task("multisig:register", "Register and enable a multisig address")
-	.addParam("addr", "Multisig address")
-	.setAction(async ({ addr }) => {
+	.addParam("name", "Named account")
+	.setAction(async ({ name }) => {
+		const addr = (await getNamedAccounts())[name].address;
 		const multisigManager = await get("MultisigManager");
 		try {
 			await multisigManager.registerMultisig(addr);
 			await multisigManager.enableMultisig(addr);
-		} catch {}
+		} catch (e) {
+			log(`Error: ${e}`);
+		}
 		const ms = await multisigManager.getNextActiveMultisig();
 		log(`Multisig Registered: ${ms}`);
 	});

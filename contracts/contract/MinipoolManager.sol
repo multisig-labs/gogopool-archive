@@ -27,14 +27,17 @@ import "./Base.sol";
 	minipool.item<index>.duration = requested validation duration in seconds
 	minipool.item<index>.owner = owner address
 	minipool.item<index>.delegationFee = node operator specified fee
-	minipool.item<index>.avaxAmt = avax deposited by node op (1000 avax for now)
+	minipool.item<index>.avaxNodeOpAmt = avax deposited by node op (1000 avax for now)
 	minipool.item<index>.avaxUserAmt = avax deposited by users (1000 avax for now)
 	minipool.item<index>.ggpBondAmt = amt ggp deposited by node op for bond
 	minipool.item<index>.multisigAddr = which Rialto multisig is assigned to manage this validation (in future could be multiple)
 	// Below are submitted by Rialto oracle
 	minipool.item<index>.startTime = actual time validation was started
 	minipool.item<index>.endTime = actual time validation was finished
-	minipool.item<index>.avaxRewardAmt = Actual total avax rewards paid by avalanchego to the TSS P-chain addr
+	minipool.item<index>.avaxTotalRewardAmt = Actual total avax rewards paid by avalanchego to the TSS P-chain addr
+	// These are calculated in recordStakingEnd
+	minipool.item<index>.avaxNodeOpRewardAmt
+	minipool.item<index>.avaxUserRewardAmt
 */
 
 contract MinipoolManager is Base {
@@ -46,6 +49,23 @@ contract MinipoolManager is Base {
 	TokenggAVAX public immutable ggAVAX;
 
 	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
+
+	struct Minipool {
+		address nodeID;
+		uint256 status;
+		uint256 duration;
+		uint256 startTime;
+		uint256 endTime;
+		uint256 delegationFee;
+		uint256 ggpBondAmt;
+		uint256 avaxNodeOpAmt;
+		uint256 avaxUserAmt;
+		uint256 avaxTotalRewardAmt;
+		uint256 avaxNodeOpRewardAmt;
+		uint256 avaxUserRewardAmt;
+		address owner;
+		address multisigAddr;
+	}
 
 	/// @notice A minipool with this nodeid has already been registered
 	error MinipoolAlreadyRegistered();
@@ -63,6 +83,9 @@ contract MinipoolManager is Base {
 
 	/// @notice Only minipool owners can cancel a minipool before validation starts
 	error OnlyOwnerCanCancel();
+
+	/// @notice Only minipool owners can withdraw minipool funds
+	error OnlyOwnerCanWithdraw();
 
 	/// @notice Only the multisig assigned to a minipool can interact with it
 	error InvalidMultisigAddress();
@@ -128,7 +151,9 @@ contract MinipoolManager is Base {
 			// Zero out any left over data from a previous validation
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), 0);
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), 0);
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), 0);
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserRewardAmt")), 0);
 		} else {
 			// new nodeID
 			index = int256(getUint(keccak256("minipool.count")));
@@ -146,7 +171,7 @@ contract MinipoolManager is Base {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")), duration);
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")), multisig);
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")), msg.sender);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")), msg.value);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")), msg.value);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")), delegationFee);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
 
@@ -168,6 +193,34 @@ contract MinipoolManager is Base {
 			revert MinipoolNotFound();
 		}
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
+	}
+
+	// Node op calls this to withdraw all funds they are due (orig plus any rewards)
+	function withdrawMinipoolFunds(address nodeID) external {
+		int256 index = getIndexOf(nodeID);
+		if (index == -1) {
+			revert MinipoolNotFound();
+		}
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+		if (msg.sender != owner) {
+			revert OnlyOwnerCanWithdraw();
+		}
+		requireValidStateTransition(index, MinipoolStatus.Finished);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Finished));
+
+		IVault vault = IVault(getContractAddress("Vault"));
+		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		if (ggpBondAmt > 0) {
+			vault.withdrawToken(owner, ggp, ggpBondAmt);
+		}
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
+		uint256 avaxNodeOpRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")));
+		uint256 totalAvax = avaxNodeOpAmt + avaxNodeOpRewardAmt;
+		vault.withdrawAvax(totalAvax);
+		(bool sent, ) = payable(owner).call{value: totalAvax}("");
+		if (!sent) {
+			revert ErrorSendingAvax();
+		}
 	}
 
 	// Owner of a node can call this to cancel the minipool
@@ -197,10 +250,10 @@ contract MinipoolManager is Base {
 		if (ggpBondAmt > 0) {
 			vault.withdrawToken(owner, ggp, ggpBondAmt);
 		}
-		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
-		if (avaxAmt > 0) {
-			vault.withdrawAvax(avaxAmt);
-			(bool sent, ) = payable(owner).call{value: avaxAmt}("");
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
+		if (avaxNodeOpAmt > 0) {
+			vault.withdrawAvax(avaxNodeOpAmt);
+			(bool sent, ) = payable(owner).call{value: avaxNodeOpAmt}("");
 			if (!sent) {
 				revert ErrorSendingAvax();
 			}
@@ -219,9 +272,9 @@ contract MinipoolManager is Base {
 		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Launched);
 		IVault vault = IVault(getContractAddress("Vault"));
-		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
-		uint256 totalAvaxAmt = avaxAmt + avaxUserAmt;
+		uint256 totalAvaxAmt = avaxNodeOpAmt + avaxUserAmt;
 		// TODO get max staking amount from DAO setting? Or do we enforce that when we match funds?
 		if (totalAvaxAmt < MIN_STAKING_AMT) {
 			revert InsufficientAvaxForStaking();
@@ -237,6 +290,7 @@ contract MinipoolManager is Base {
 	}
 
 	// Rialto calls this after a successful minipool launch
+	// TODO Is it worth it to validate startTime? Or just depend on rialto to do the right thing?
 	function recordStakingStart(address nodeID, uint256 startTime) external {
 		int256 index = requireValidMultisig(nodeID);
 
@@ -248,11 +302,10 @@ contract MinipoolManager is Base {
 
 	// Rialto calls this when validation period ends
 	// Rialto will also xfer back all avax + avax rewards to vault
-	// TODO is this payable then? accept all funds here and distribute?
 	function recordStakingEnd(
 		address nodeID,
 		uint256 endTime,
-		uint256 avaxRewardAmt
+		uint256 avaxTotalRewardAmt
 	) external payable {
 		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
@@ -262,32 +315,35 @@ contract MinipoolManager is Base {
 			revert InvalidEndTime();
 		}
 
-		// Ensure that we recv back at least what we sent out
-		uint256 avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
-		uint256 totalAvaxAmt = avaxAmt + avaxUserAmt;
-		if (msg.value != totalAvaxAmt + avaxRewardAmt) {
+		uint256 totalAvaxAmt = avaxNodeOpAmt + avaxUserAmt;
+		if (msg.value != totalAvaxAmt + avaxTotalRewardAmt) {
 			revert InvalidAmount();
 		}
 
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), endTime);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), avaxTotalRewardAmt);
+
 		// Send the liq stakers funds back
-		uint256 nodeOpsTotal;
+		// TODO work on these var names to be more clear
+		uint256 avaxUserRewardAmt;
 		if (avaxUserAmt > 0) {
-			uint256 avaxUserRewards = avaxRewardAmt; // TODO make this appropriate percentage of rewards
-			ggAVAX.depositRewards{value: avaxUserRewards}();
+			avaxUserRewardAmt = avaxTotalRewardAmt / 2; // TODO make this appropriate percentage of rewards
+			ggAVAX.depositRewards{value: avaxUserRewardAmt}();
 			ggAVAX.depositFromStaking{value: avaxUserAmt}();
-		} else {
-			// No user funds, nodeop gets the whole reward
-			nodeOpsTotal = avaxAmt + avaxRewardAmt;
 		}
+		// If no user funds were used, nodeop gets the whole reward
+		uint256 avaxNodeOpRewardAmt = avaxTotalRewardAmt - avaxUserRewardAmt;
+
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), avaxNodeOpRewardAmt);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserRewardAmt")), avaxUserRewardAmt);
 
 		IVault vault = IVault(getContractAddress("Vault"));
 		// Send the nodeOps AVAX + rewards to vault so they can claim later
-		vault.depositAvax{value: nodeOpsTotal}();
+		vault.depositAvax{value: avaxNodeOpAmt + avaxNodeOpRewardAmt}();
 
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), endTime);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxRewardAmt")), avaxRewardAmt);
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}
 
@@ -310,28 +366,21 @@ contract MinipoolManager is Base {
 		return int256(getUint(keccak256(abi.encodePacked("minipool.index", nodeID)))) - 1;
 	}
 
-	function getMinipool(int256 index)
-		public
-		view
-		returns (
-			address nodeID,
-			uint256 status,
-			uint256 duration,
-			uint256 delegationFee,
-			uint256 ggpBondAmt,
-			uint256 avaxAmt,
-			address owner,
-			address multisigAddr
-		)
-	{
-		nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
-		status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
-		duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
-		delegationFee = getUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")));
-		ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
-		avaxAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
-		multisigAddr = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
-		owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+	function getMinipool(int256 index) public view returns (Minipool memory mp) {
+		mp.nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
+		mp.status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
+		mp.duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
+		mp.startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
+		mp.endTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")));
+		mp.delegationFee = getUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")));
+		mp.ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		mp.avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
+		mp.avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
+		mp.avaxTotalRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")));
+		mp.avaxNodeOpRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")));
+		mp.avaxUserRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserRewardAmt")));
+		mp.multisigAddr = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
+		mp.owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 	}
 
 	// Johnny: I am not sure we need these? We can always just look at msg.sender to verify Rialto identity?

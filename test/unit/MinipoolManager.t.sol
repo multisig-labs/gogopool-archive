@@ -75,7 +75,7 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(nodeID_, nodeID);
 		ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 		assertEq(ggpBondAmt, 0);
-		uint256 avaxAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxAmt")));
+		uint256 avaxAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		assertEq(avaxAmt, 1 ether);
 	}
 
@@ -97,8 +97,10 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(ggpBondAmt, 1 ether);
 
 		minipoolMgr.cancelMinipool(nodeID);
-		(, status, , , , , , ) = minipoolMgr.getMinipool(index);
-		assertEq(status, uint256(MinipoolStatus.Canceled));
+		MinipoolManager.Minipool memory mp;
+		mp = minipoolMgr.getMinipool(index);
+
+		assertEq(mp.status, uint256(MinipoolStatus.Canceled));
 		assertEq(mockGGP.balanceOf(nodeOp), MAX_AMT);
 		assertEq(nodeOp.balance, MAX_AMT);
 
@@ -183,8 +185,9 @@ contract MinipoolManagerTest is GGPTest {
 		vm.startPrank(nodeOp);
 		index = minipoolMgr.getIndexOf(ZERO_ADDRESS);
 		assertEq(index, -1);
-		(nodeID, status, duration, delegationFee, ggpBondAmt, , , ) = minipoolMgr.getMinipool(1);
-		assertEq(nodeID, ZERO_ADDRESS);
+		MinipoolManager.Minipool memory mp;
+		mp = minipoolMgr.getMinipool(index);
+		assertEq(mp.nodeID, ZERO_ADDRESS);
 	}
 
 	// Maybe we have testGas... tests that just do a single important operation
