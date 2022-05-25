@@ -6,14 +6,19 @@ import "./utils/GGPTest.sol";
 
 contract TokenggAVAXTest is GGPTest {
 	address alice;
+	address bob;
 	address rialto;
 
 	function setUp() public override {
 		super.setUp();
+
 		alice = getActorWithWAVAX(0, type(uint128).max);
 		deal(alice, type(uint128).max);
+
 		rialto = getActor(1);
 		deal(rialto, type(uint128).max);
+
+		bob = getActor(2);
 	}
 
 	function testRevertOnUserMistake() public {
@@ -163,6 +168,108 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(ggAVAX.totalAssets(), aliceUnderlyingAmount + rialtoRewardsAmount);
 	}
 
+	function testDepositStakingRewards() public {
+		// Scenario:
+		// 1. Bob mints 4000 shares (costs 4000 tokens)
+		// 2. 1000 tokens are withdrawn for staking
+		// 3. 1000 rewards deposited
+		// 4. 1 rewards cycle pass, no rewards are distributed to
+		// 		totalReleasedAssets
+		// 5. Sync rewards
+		// 6. Skip ahead 1/3 a cycle, bob's 4000 shares convert to
+		//		4333 assets.
+		// 7. Skip ahead remaining 2/3 of the rewards cycle,
+		//		all rewards should be distributed
+
+		uint depositAmount = 4000;
+		uint stakingWithdrawAmount = 1000;
+		uint rewardsAmount = 1000;
+
+		// 1. Bob mints 4000 shares
+		vm.deal(bob, depositAmount);
+		vm.startPrank(bob);
+		wavax.deposit{value: depositAmount}();
+		wavax.approve(address(ggAVAX), depositAmount);
+		ggAVAX.mint(depositAmount, bob);
+		vm.stopPrank();
+
+		assertEq(wavax.balanceOf(bob), 0);
+		assertEq(ggAVAX.balanceOf(bob), depositAmount);
+		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
+
+
+		// 2. 1000 tokens are withdrawn for staking
+		vm.prank(rialto);
+		ggAVAX.withdrawForStaking(stakingWithdrawAmount);
+		assertEq(ggAVAX.totalAssets(), depositAmount);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount);
+		assertEq(ggAVAX.stakingTotalAssets(), stakingWithdrawAmount);
+
+
+		// 3. 1000 rewards are deposited
+		// None of these rewards should be distributed yet
+		vm.prank(rialto);
+		ggAVAX.depositRewards{value: 1000}();
+
+		assertEq(ggAVAX.totalAssets(), depositAmount);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
+
+
+		// 4. Skip ahead one rewards cycle
+		// Still no rewards should be distributed
+		skip(ggAVAX.rewardsCycleEnd() - block.timestamp);
+		assertEq(ggAVAX.totalAssets(), depositAmount);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
+
+
+		// 5. Sync rewards and see an update to half the rewards
+		ggAVAX.syncRewards();
+		assertEq(ggAVAX.totalAssets(), depositAmount);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
+		assertEq(ggAVAX.lastRewardAmount(), rewardsAmount);
+
+
+		// 6. Skip 1/3 of rewards length and see 1/3 rewards in totalReleasedAssets
+		skip(ggAVAX.rewardsCycleLength() / 3);
+		uint oneThirdRewards = rewardsAmount / 3;
+		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + oneThirdRewards);
+		assertEq(ggAVAX.lastRewardAmount(), rewardsAmount);
+
+
+		// 7. Skip 2/3 of rewards length
+		// Rewards should be fully distributed
+		skip(ggAVAX.rewardsCycleLength() * 2 / 3);
+		assertEq(ggAVAX.totalAssets(), depositAmount + rewardsAmount);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + rewardsAmount);
+	}
+
+	function printState(string memory message) internal view {
+		console.log("");
+		console.log("STEP", message);
+		console.log("---timestamps---");
+		console.log("block timestamp", block.timestamp);
+		console.log("rewards cycle end", ggAVAX.rewardsCycleEnd());
+		console.log("last sync", ggAVAX.lastSync());
+
+		console.log("---assets---");
+		console.log("total assets", ggAVAX.totalAssets());
+		console.log("total float", ggAVAX.totalFloat());
+		console.log("staking assets", ggAVAX.stakingTotalAssets());
+
+		console.log("---rewards---");
+		console.log("last reward amount", ggAVAX.lastRewardAmount());
+	}
+
+	function ggAVAXStateAsserts(uint depositAmount, uint stakingWithdrawAmount, uint rewardsAmount) internal {
+		assertEq(ggAVAX.totalAssets(), depositAmount);
+		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+	}
 	uint256 AVAX = 1e18;
 
 	// function testFloat() public {

@@ -60,7 +60,7 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	uint192 public lastRewardAmount;
 
 	/// @notice the total amount of avax (including avax sent out for staking and all incoming rewards)
-	uint256 public networkTotalAssets;
+	uint256 public totalReleasedAssets;
 
 	// Total amount of avax currently out for staking (not including any rewards)
 	uint256 public stakingTotalAssets;
@@ -189,8 +189,7 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	}
 
 	function amountAvailableForStaking() public view returns (uint256) {
-		uint256 targetAmount = networkTotalAssets.mulDivDown(1, 100000);
-		return targetAmount;
+		return totalFloat();
 	}
 
 	// REWARDS SYNC LOGIC
@@ -199,7 +198,7 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	///         Increases linearly during a reward distribution period from the sync call, not the cycle start.
 	function totalAssets() public view override returns (uint256) {
 		// cache global vars
-		uint256 networkTotalAssets_ = networkTotalAssets;
+		uint256 totalReleasedAssets_ = totalReleasedAssets;
 		uint192 lastRewardAmount_ = lastRewardAmount;
 		uint32 rewardsCycleEnd_ = rewardsCycleEnd;
 		uint32 lastSync_ = lastSync;
@@ -207,24 +206,24 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 		if (block.timestamp >= rewardsCycleEnd_) {
 			// no rewards or rewards fully unlocked
 			// entire reward amount is available
-			return networkTotalAssets_ + lastRewardAmount_;
+			return totalReleasedAssets_ + lastRewardAmount_;
 		}
 
 		// rewards not fully unlocked
 		// add unlocked rewards to stored total
 		uint256 unlockedRewards = (lastRewardAmount_ * (block.timestamp - lastSync_)) / (rewardsCycleEnd_ - lastSync_);
-		return networkTotalAssets_ + unlockedRewards;
+		return totalReleasedAssets_ + unlockedRewards;
 	}
 
-	// Update networkTotalAssets on withdraw/redeem
+	// Update totalReleasedAssets on withdraw/redeem
 	function beforeWithdraw(uint256 amount, uint256 shares) internal virtual override {
 		super.beforeWithdraw(amount, shares);
-		networkTotalAssets -= amount;
+		totalReleasedAssets -= amount;
 	}
 
-	// Update networkTotalAssets on deposit/mint
+	// Update totalReleasedAssets on deposit/mint
 	function afterDeposit(uint256 amount, uint256 shares) internal virtual override {
-		networkTotalAssets += amount;
+		totalReleasedAssets += amount;
 		super.afterDeposit(amount, shares);
 	}
 
@@ -236,10 +235,11 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 
 		if (timestamp < rewardsCycleEnd) revert SyncError();
 
-		uint256 networkTotalAssets_ = networkTotalAssets;
-		uint256 nextRewards = asset.balanceOf(address(this)) - networkTotalAssets_ - lastRewardAmount_;
+		uint256 totalReleasedAssets_ = totalReleasedAssets;
+		uint256 stakingTotalAssets_ = stakingTotalAssets;
+		uint256 nextRewards = (asset.balanceOf(address(this)) + stakingTotalAssets_) - totalReleasedAssets_ - lastRewardAmount_;
 
-		networkTotalAssets = networkTotalAssets_ + lastRewardAmount_; // SSTORE
+		totalReleasedAssets = totalReleasedAssets_ + lastRewardAmount_; // SSTORE
 
 		uint32 end = ((timestamp + rewardsCycleLength) / rewardsCycleLength) * rewardsCycleLength;
 
