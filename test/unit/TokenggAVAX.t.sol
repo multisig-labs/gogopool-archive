@@ -1,4 +1,4 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
@@ -181,9 +181,9 @@ contract TokenggAVAXTest is GGPTest {
 		// 7. Skip ahead remaining 2/3 of the rewards cycle,
 		//		all rewards should be distributed
 
-		uint depositAmount = 4000;
-		uint stakingWithdrawAmount = 1000;
-		uint rewardsAmount = 1000;
+		uint256 depositAmount = 4000;
+		uint256 stakingWithdrawAmount = 1000;
+		uint256 rewardsAmount = 1000;
 
 		// 1. Bob mints 4000 shares
 		vm.deal(bob, depositAmount);
@@ -197,14 +197,12 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
 
-
 		// 2. 1000 tokens are withdrawn for staking
 		vm.prank(rialto);
 		ggAVAX.withdrawForStaking(stakingWithdrawAmount);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount);
 		assertEq(ggAVAX.stakingTotalAssets(), stakingWithdrawAmount);
-
 
 		// 3. 1000 rewards are deposited
 		// None of these rewards should be distributed yet
@@ -215,14 +213,12 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
-
 		// 4. Skip ahead one rewards cycle
 		// Still no rewards should be distributed
 		skip(ggAVAX.rewardsCycleEnd() - block.timestamp);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
-
 
 		// 5. Sync rewards and see an update to half the rewards
 		ggAVAX.syncRewards();
@@ -231,19 +227,17 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 		assertEq(ggAVAX.lastRewardAmount(), rewardsAmount);
 
-
 		// 6. Skip 1/3 of rewards length and see 1/3 rewards in totalReleasedAssets
 		skip(ggAVAX.rewardsCycleLength() / 3);
-		uint oneThirdRewards = rewardsAmount / 3;
+		uint256 oneThirdRewards = rewardsAmount / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + oneThirdRewards);
 		assertEq(ggAVAX.lastRewardAmount(), rewardsAmount);
 
-
 		// 7. Skip 2/3 of rewards length
 		// Rewards should be fully distributed
-		skip(ggAVAX.rewardsCycleLength() * 2 / 3);
+		skip((ggAVAX.rewardsCycleLength() * 2) / 3);
 		assertEq(ggAVAX.totalAssets(), depositAmount + rewardsAmount);
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + rewardsAmount);
@@ -266,10 +260,15 @@ contract TokenggAVAXTest is GGPTest {
 		console.log("last reward amount", ggAVAX.lastRewardAmount());
 	}
 
-	function ggAVAXStateAsserts(uint depositAmount, uint stakingWithdrawAmount, uint rewardsAmount) internal {
+	function ggAVAXStateAsserts(
+		uint256 depositAmount,
+		uint256 stakingWithdrawAmount,
+		uint256 rewardsAmount
+	) internal {
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 	}
+
 	uint256 AVAX = 1e18;
 
 	// function testFloat() public {

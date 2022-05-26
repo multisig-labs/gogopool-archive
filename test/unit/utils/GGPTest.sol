@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../contracts/contract/LaunchManager.sol";
@@ -30,7 +30,7 @@ abstract contract GGPTest is Test {
 	// Contracts
 	Storage public store;
 	Vault public vault;
-  BaseQueue public baseQueue;
+	BaseQueue public baseQueue;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	LaunchManager public launchMgr;
@@ -61,7 +61,7 @@ abstract contract GGPTest is Test {
 		vault = new Vault(store);
 		registerContract(store, "Vault", address(vault));
 
-    baseQueue = new BaseQueue(store);
+		baseQueue = new BaseQueue(store);
 		registerContract(store, "BaseQueue", address(baseQueue));
 
 		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);

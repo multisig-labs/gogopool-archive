@@ -1,4 +1,4 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
@@ -9,7 +9,7 @@ contract BaseQueueTest is GGPTest {
 	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
 	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;
 	address public NODE_ID_3 = 0x0000000000000000000000000000000000000003;
-  bytes32 private key = "minipoolQueue";
+	bytes32 private key = "minipoolQueue";
 
 	function setUp() public override {
 		super.setUp();

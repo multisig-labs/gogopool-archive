@@ -1,10 +1,12 @@
 pragma solidity ^0.8.13;
+
+// SPDX-License-Identifier: GPL-3.0-only
+
 import "./Base.sol";
 import "./BaseQueue.sol";
 import "../interface/IVault.sol";
 import "../interface/IStorage.sol";
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
-
 
 /*
 	Data Storage Schema
@@ -24,8 +26,7 @@ import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 */
 
 contract DelegationManager is Base {
-
-  ERC20 public immutable ggp;
+	ERC20 public immutable ggp;
 	/// @notice Validation end time must be after start time
 	error InvalidTimeZone();
 
@@ -44,12 +45,9 @@ contract DelegationManager is Base {
 	/// @notice Validation node id already exists
 	error InvalidNodeId();
 
-  event NodeRegistered(address indexed nodeID);
+	event NodeRegistered(address indexed nodeID);
 
-	constructor(
-		IStorage storageAddress,
-		ERC20 ggp_
-	) Base(storageAddress) {
+	constructor(IStorage storageAddress, ERC20 ggp_) Base(storageAddress) {
 		version = 1;
 		ggp = ggp_;
 	}
@@ -65,7 +63,6 @@ contract DelegationManager is Base {
 		uint256 delegationFee,
 		uint256 ggpBondAmt
 	) public payable returns (bool successfulRegistration) {
-
 		uint256 duration;
 		duration = endTime - startTime;
 		//TODO: check that node registration is enabled in the protocol
@@ -80,7 +77,7 @@ contract DelegationManager is Base {
 		requireDelegationFee(delegationFee);
 		requireGGPBondAmt(ggpBondAmt);
 
-    IVault vault = IVault(getContractAddress("Vault"));
+		IVault vault = IVault(getContractAddress("Vault"));
 
 		if (ggpBondAmt > 0) {
 			// Move the GGP funds (assume allowance has been set properly beforehand by the front end)
@@ -111,12 +108,12 @@ contract DelegationManager is Base {
 		setUint(keccak256(abi.encodePacked("nodeOperator.item", index, ".delegationFee")), delegationFee);
 		setUint(keccak256(abi.encodePacked("nodeOperator.item", index, ".ggpBondAmt")), ggpBondAmt);
 
-    BaseQueue delegationQueue = BaseQueue(getContractAddress("BaseQueue"));
-		delegationQueue.enqueue("delegationQueue", nodeID);    
+		BaseQueue delegationQueue = BaseQueue(getContractAddress("BaseQueue"));
+		delegationQueue.enqueue("delegationQueue", nodeID);
 
 		//should we return or emit back to FE?
 		successfulRegistration = getBool(keccak256(abi.encodePacked("nodeOperator.item", index, ".exists")));
-    emit NodeRegistered(nodeID);
+		emit NodeRegistered(nodeID);
 		return successfulRegistration;
 	}
 
@@ -139,9 +136,9 @@ contract DelegationManager is Base {
 	}
 
 	function requireDuration(uint256 duration) public pure {
-    if (duration < 1209600 || duration > 31536000){
-      revert InvalidDuration();
-    } 
+		if (duration < 1209600 || duration > 31536000) {
+			revert InvalidDuration();
+		}
 	}
 
 	function requireGGPBondAmt(uint256 ggpBondAmt) public pure {

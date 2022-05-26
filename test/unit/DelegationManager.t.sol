@@ -1,4 +1,6 @@
-// pragma solidity ^0.8.13;
+pragma solidity ^0.8.13;
+
+// SPDX-License-Identifier: GPL-3.0-only
 
 // import "./utils/GGPTest.sol";
 // import "../../contracts/contract/DelegationManager.sol";
