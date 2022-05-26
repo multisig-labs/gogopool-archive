@@ -75,17 +75,21 @@ task("minipool:list", "List all minipools").setAction(async () => {
 
 task("minipool:queue", "List all minipools in the queue").setAction(
 	async () => {
+		const MINIPOOL_QUEUE_KEY = hash(["string"], ["minipoolQueue"]);
+
 		const storage = await get("Storage");
 		const start = await storage.getUint(
-			hash(["string"], ["minipoolqueue.start"])
+			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".start"])
 		);
-		const end = await storage.getUint(hash(["string"], ["minipoolqueue.end"]));
-		const minipoolQueue = await get("MinipoolQueue");
-		const len = await minipoolQueue.getLength();
+		const end = await storage.getUint(
+			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".end"])
+		);
+		const minipoolQueue = await get("BaseQueue");
+		const len = await minipoolQueue.getLength(MINIPOOL_QUEUE_KEY);
 		log(`Queue start: ${start}  end: ${end}  len: ${len}`);
 		for (let i = start; i < end; i++) {
 			try {
-				const nodeID = await minipoolQueue.getItem(i);
+				const nodeID = await minipoolQueue.getItem(MINIPOOL_QUEUE_KEY, i);
 				if (nodeID === hre.ethers.constants.AddressZero) break;
 				log(`[${i}] ${nodeID}`);
 			} catch (e) {

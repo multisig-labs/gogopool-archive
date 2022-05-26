@@ -49,6 +49,7 @@ contract MinipoolManager is Base {
 	TokenggAVAX public immutable ggAVAX;
 
 	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
+	bytes32 public immutable MINIPOOL_QUEUE_KEY;
 
 	struct Minipool {
 		address nodeID;
@@ -114,6 +115,7 @@ contract MinipoolManager is Base {
 		version = 1;
 		ggp = ggp_;
 		ggAVAX = ggAVAX_;
+		MINIPOOL_QUEUE_KEY = keccak256("minipoolQueue");
 	}
 
 	// Accept deposit from node operator
@@ -181,7 +183,7 @@ contract MinipoolManager is Base {
 		addUint(keccak256("minipool.count"), 1);
 
 		BaseQueue minipoolQueue = BaseQueue(getContractAddress("BaseQueue"));
-		minipoolQueue.enqueue("minipoolQueue", nodeID);
+		minipoolQueue.enqueue(MINIPOOL_QUEUE_KEY, nodeID);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
 	}
@@ -242,7 +244,7 @@ contract MinipoolManager is Base {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Canceled));
 		// Also remove from queue, by zeroing out the nodeid. This will leave an empty spot in the queue Rialto will have to handle gracefully.
 		BaseQueue minipoolQueue = BaseQueue(getContractAddress("BaseQueue"));
-		minipoolQueue.cancel("minipoolQueue", nodeID);
+		minipoolQueue.cancel(MINIPOOL_QUEUE_KEY, nodeID);
 
 		IVault vault = IVault(getContractAddress("Vault"));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));

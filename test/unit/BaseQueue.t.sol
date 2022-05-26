@@ -9,10 +9,11 @@ contract BaseQueueTest is GGPTest {
 	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
 	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;
 	address public NODE_ID_3 = 0x0000000000000000000000000000000000000003;
-	bytes32 private key = "minipoolQueue";
+	bytes32 private key;
 
 	function setUp() public override {
 		super.setUp();
+		key = keccak256("minipoolQueue");
 	}
 
 	function testEmpty() public {

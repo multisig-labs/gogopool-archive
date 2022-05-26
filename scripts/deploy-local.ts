@@ -23,7 +23,7 @@ const contracts: IFU = {
 	Storage: [],
 	Vault: ["Storage"],
 	MultisigManager: ["Storage"],
-	MinipoolQueue: ["Storage"],
+	BaseQueue: ["Storage"],
 	TokenGGP: ["Storage"],
 	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
