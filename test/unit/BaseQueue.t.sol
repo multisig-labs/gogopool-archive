@@ -9,11 +9,10 @@ contract BaseQueueTest is GGPTest {
 	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
 	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;
 	address public NODE_ID_3 = 0x0000000000000000000000000000000000000003;
-	bytes32 private key;
+	bytes32 private key = keccak256("minipoolQueue");
 
 	function setUp() public override {
 		super.setUp();
-		key = keccak256("minipoolQueue");
 	}
 
 	function testEmpty() public {
@@ -77,15 +76,18 @@ contract BaseQueueTest is GGPTest {
 		baseQueue.enqueue(key, NODE_ID_3);
 		assertEq(baseQueue.getLength(key), 3);
 		baseQueue.cancel(key, NODE_ID_2);
-		startMeasuringGas("baseQueue.dequeue");
+		assertEq(baseQueue.getLength(key), 2);
+		startMeasuringGas("baseQueue.dequeue first");
 		addr = baseQueue.dequeue(key);
 		stopMeasuringGas();
 		assertEq(addr, NODE_ID_1);
+		assertEq(baseQueue.getLength(key), 1);
 		// TODO why is this dequeue cheaper than the first by 5x?
-		startMeasuringGas("baseQueue.dequeue skip canceled");
+		startMeasuringGas("baseQueue.dequeue second");
 		addr = baseQueue.dequeue(key);
 		stopMeasuringGas();
 		assertEq(addr, NODE_ID_3);
+		assertEq(baseQueue.getLength(key), 0);
 	}
 
 	function testManyPools(uint256 x) public {
