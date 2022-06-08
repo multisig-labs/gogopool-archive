@@ -4,6 +4,9 @@
 	"[solidity]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
+	"files.exclude": {
+		"node_modules/": true
+	},
 	"todo-tree.general.tags": [
 		"BUG",
 		"HACK",
