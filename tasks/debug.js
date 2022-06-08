@@ -6,74 +6,32 @@ const {
 	hash,
 	log,
 	logf,
-	formatAddr,
 	getNamedAccounts,
 } = require("./lib/utils");
-
-task(
-	"debug:setup",
-	"Set up a multisig and a minipool, then claim it"
-).setAction(async () => {
-	await hre.run("multisig:register", { addr: process.env.RIALTO1 });
-	await hre.run("minipool:create", {
-		nodeid: process.env.NODEID1,
-		duration: 10000000,
-		fee: 0,
-		ggp: 0,
-		avax: 2000,
-	});
-	await hre.run("minipool:update_status", {
-		nodeid: process.env.NODEID1,
-		status: 1,
-	});
-	await hre.run("minipool:claim", {
-		nodeid: process.env.NODEID1,
-		pk: process.env.RIALTO1_PRIVATE_KEY,
-	});
-	log("Setup complete");
-});
-
-task("debug:liqstaker_deposit_avax")
-	.addParam("actor", "")
-	.addParam("amt", "")
-	.setAction(async ({ actor, amt }) => {
-		const addr = (await getNamedAccounts())[actor];
-		const ggAVAX = await get("TokenggAVAX", addr);
-		await ggAVAX.depositAVAX({ value: ethers.utils.parseEther(amt, "ether") });
-	});
-
-task("debug:liqstaker_withdraw_avax")
-	.addParam("actor", "")
-	.addParam("amt", "")
-	.setAction(async ({ actor, amt }) => {
-		const addr = (await getNamedAccounts())[actor];
-		const ggAVAX = await get("TokenggAVAX", addr);
-		await ggAVAX.withdrawAVAX(ethers.utils.parseEther(amt, "ether"));
-	});
 
 task("debug:list_actor_balances").setAction(async () => {
 	const actors = await getNamedAccounts();
 	const ggAVAX = await get("TokenggAVAX");
 
 	log("");
-	logf("%-15s %-20s %-20s", "User", "AVAX", "ggAVAX");
+	logf("%-15s %-20s %-20s %-20s", "User", "AVAX", "ggAVAX", "equivAVAX");
 	for (actor in actors) {
 		const balAVAX = await hre.ethers.provider.getBalance(actors[actor].address);
 		const balGGAVAX = await ggAVAX.balanceOf(actors[actor].address);
+		const balEQAVAX = await ggAVAX.previewRedeem(balGGAVAX);
 		logf(
-			"%-15s %-20.6f %-20.6f",
+			"%-15s %-20.6f %-20.6f %-20.6f",
 			actor,
 			hre.ethers.utils.formatUnits(balAVAX),
-			hre.ethers.utils.formatUnits(balGGAVAX)
+			hre.ethers.utils.formatUnits(balGGAVAX),
+			hre.ethers.utils.formatUnits(balEQAVAX)
 		);
 	}
 });
 
 task("debug:list_vars", "List important system variables").setAction(
 	async () => {
-		const storage = await get("Storage");
 		const vault = await get("Vault");
-		const wavax = await get("WAVAX");
 		const ggAVAX = await get("TokenggAVAX");
 
 		await hre.run("multisig:list");
@@ -90,28 +48,25 @@ task("debug:list_vars", "List important system variables").setAction(
 		log("ggAVAX Variables:");
 		const rewardsCycleEnd = await ggAVAX.rewardsCycleEnd();
 		const lastRewardAmount = await ggAVAX.lastRewardAmount();
-		const networkTotalAssets = await ggAVAX.networkTotalAssets();
+		const networkTotalAssets = await ggAVAX.totalReleasedAssets();
 		const stakingTotalAssets = await ggAVAX.stakingTotalAssets();
-		const totalFloat = await ggAVAX.totalFloat();
 		const amountAvailableForStaking = await ggAVAX.amountAvailableForStaking();
 		const totalAssets = await ggAVAX.totalAssets();
 		logf(
-			"%-15s %-15s %-15s %-15s %-15s %-15s %-15s",
+			"%-15s %-15s %-15s %-15s %-15s %-15s",
 			"rwdCycEnd",
 			"lstRwdAmt",
-			"netTotAss",
+			"totRelAss",
 			"stakTotAss",
-			"totFloat",
 			"AmtAvlStak",
 			"totAssets"
 		);
 		logf(
-			"%-15s %-15.2f %-15.2f %-15.2f %-15.2f %-15.2f %-15.2f",
+			"%-15s %-15.2f %-15.2f %-15.2f %-15.2f %-15.2f",
 			rewardsCycleEnd,
 			hre.ethers.utils.formatUnits(lastRewardAmount),
 			hre.ethers.utils.formatUnits(networkTotalAssets),
 			hre.ethers.utils.formatUnits(stakingTotalAssets),
-			hre.ethers.utils.formatUnits(totalFloat),
 			hre.ethers.utils.formatUnits(amountAvailableForStaking),
 			hre.ethers.utils.formatUnits(totalAssets)
 		);

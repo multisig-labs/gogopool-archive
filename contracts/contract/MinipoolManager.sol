@@ -2,15 +2,15 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "../interface/IStorage.sol";
-import "../interface/IMultisigManager.sol";
-import "../interface/IVault.sol";
-import "./BaseQueue.sol";
-import "./tokens/TokenGGP.sol";
-import "./tokens/TokenggAVAX.sol";
+import {Storage} from "./Storage.sol";
+import {Vault} from "./Vault.sol";
+import {MinipoolStatus} from "../types/MinipoolStatus.sol";
+import {MultisigManager} from "./MultisigManager.sol";
+import {TokenggAVAX} from "./tokens/TokenggAVAX.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
+import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
-import "../types/MinipoolStatus.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import "./Base.sol";
 
@@ -41,16 +41,16 @@ import "./Base.sol";
 */
 
 contract MinipoolManager is Base {
-	// Used for signature verifying of Rialto multisig to prevent replay attacks
-	mapping(address => uint256) private nonces;
+	using SafeTransferLib for ERC20;
+	using SafeTransferLib for address;
 
 	ERC20 public immutable ggp;
-
 	TokenggAVAX public immutable ggAVAX;
 
 	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
-	bytes32 public immutable MINIPOOL_QUEUE_KEY;
+	bytes32 public immutable MINIPOOL_QUEUE_KEY = keccak256("minipoolQueue");
 
+	// Not used for storage, just for returning data from view functions
 	struct Minipool {
 		address nodeID;
 		uint256 status;
@@ -103,19 +103,20 @@ contract MinipoolManager is Base {
 
 	error InsufficientAvaxForStaking();
 
+	error InsufficientAvaxVaultBalance();
+
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
 	event ZeroRewardsReceived(address indexed nodeID);
 
 	constructor(
-		IStorage storageAddress,
+		Storage storageAddress,
 		ERC20 ggp_,
 		TokenggAVAX ggAVAX_
 	) Base(storageAddress) {
 		version = 1;
 		ggp = ggp_;
 		ggAVAX = ggAVAX_;
-		MINIPOOL_QUEUE_KEY = keccak256("minipoolQueue");
 	}
 
 	// Accept deposit from node operator
@@ -129,7 +130,7 @@ contract MinipoolManager is Base {
 		// TODO check for valid AVAX and GGP bond amount (1000 AVAX to start?)
 
 		// All funds AVAX and GGP will be stored in the Vault contract
-		IVault vault = IVault(getContractAddress("Vault"));
+		Vault vault = Vault(getContractAddress("Vault"));
 
 		if (ggpBondAmt > 0) {
 			// Move the GGP funds (assume allowance has been set properly beforehand by the front end)
@@ -149,10 +150,11 @@ contract MinipoolManager is Base {
 		int256 index = getIndexOf(nodeID);
 		if (index != -1) {
 			// Existing nodeID
-			requireValidStateTransition(index, MinipoolStatus.Initialised);
+			requireValidStateTransition(index, MinipoolStatus.Prelaunch);
 			// Zero out any left over data from a previous validation
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserRewardAmt")), 0);
@@ -162,14 +164,14 @@ contract MinipoolManager is Base {
 		}
 
 		// Get a Rialto multisig to assign for this minipool
-		IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
+		MultisigManager multisigManager = MultisigManager(getContractAddress("MultisigManager"));
 		address multisig = multisigManager.getNextActiveMultisig();
 		if (multisig == address(0)) {
 			revert InvalidMultisigAddress();
 		}
 		// Save the attrs individually in the k/v store
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")), nodeID);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Initialised));
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Prelaunch));
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")), duration);
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")), multisig);
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")), msg.sender);
@@ -182,13 +184,10 @@ contract MinipoolManager is Base {
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), uint256(index + 1));
 		addUint(keccak256("minipool.count"), 1);
 
-		BaseQueue minipoolQueue = BaseQueue(getContractAddress("BaseQueue"));
-		minipoolQueue.enqueue(MINIPOOL_QUEUE_KEY, nodeID);
-
-		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Initialised);
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
 	}
 
-	// This forces minipool into a state. Do we need this? For tests? For guardian?
+	// TODO This forces a minipool into a specific state. Do we need this? For tests? For guardian?
 	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
@@ -210,7 +209,7 @@ contract MinipoolManager is Base {
 		requireValidStateTransition(index, MinipoolStatus.Finished);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Finished));
 
-		IVault vault = IVault(getContractAddress("Vault"));
+		Vault vault = Vault(getContractAddress("Vault"));
 		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 		if (ggpBondAmt > 0) {
 			vault.withdrawToken(owner, ggp, ggpBondAmt);
@@ -242,11 +241,8 @@ contract MinipoolManager is Base {
 	function _cancelMinipoolAndReturnFunds(address nodeID, int256 index) private {
 		requireValidStateTransition(index, MinipoolStatus.Canceled);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Canceled));
-		// Also remove from queue, by zeroing out the nodeid. This will leave an empty spot in the queue Rialto will have to handle gracefully.
-		BaseQueue minipoolQueue = BaseQueue(getContractAddress("BaseQueue"));
-		minipoolQueue.cancel(MINIPOOL_QUEUE_KEY, nodeID);
 
-		IVault vault = IVault(getContractAddress("Vault"));
+		Vault vault = Vault(getContractAddress("Vault"));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 		if (ggpBondAmt > 0) {
@@ -260,35 +256,63 @@ contract MinipoolManager is Base {
 				revert ErrorSendingAvax();
 			}
 		}
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);
 	}
 
 	// TODO implement the modifiers
-	function receiveVaultWithdrawalAVAX() external payable {} // onlyThisLatestContract onlyLatestContract("rocketVault", msg.sender) {}
+	function receiveWithdrawalAVAX() external payable {} // onlyThisLatestContract onlyLatestContract("rocketVault", msg.sender) {}
 
 	//
 	// RIALTO FUNCTIONS
 	//
 
-	// If correct multisig calls this, xfer funds from vault to their address
+	// Rialto calls this to see if a claim would succeed. Does not change state.
+	function canClaimAndInitiateStaking(address nodeID) external view returns (bool) {
+		// TODO Ugh is this OK for the front end if we revert instead of returning false?
+		int256 index = requireValidMultisig(nodeID);
+		requireValidStateTransition(index, MinipoolStatus.Launched);
+
+		uint256 avaxUserAmt;
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
+		if (avaxNodeOpAmt < MIN_STAKING_AMT) {
+			avaxUserAmt = MIN_STAKING_AMT - avaxNodeOpAmt;
+		}
+		// Make sure we have enough liq staker funds
+		if (avaxUserAmt > ggAVAX.amountAvailableForStaking()) {
+			return false;
+		}
+		return true;
+	}
+
+	// If correct multisig calls this, xfer funds from vault to msg.sender
 	function claimAndInitiateStaking(address nodeID) external {
 		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Launched);
-		IVault vault = IVault(getContractAddress("Vault"));
+		Vault vault = Vault(getContractAddress("Vault"));
+
+		uint256 avaxUserAmt;
 		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
-		uint256 avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
+		// TODO Do we let folks request *more* user funds than the min? How to handle GGP bond if thats the case?
+		if (avaxNodeOpAmt < MIN_STAKING_AMT) {
+			avaxUserAmt = MIN_STAKING_AMT - avaxNodeOpAmt;
+		}
+
+		if (avaxUserAmt > 0) {
+			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")), avaxUserAmt);
+			// Transfer the user funds to this contract
+			ggAVAX.withdrawForStaking(avaxUserAmt);
+		}
+		vault.withdrawAvax(avaxNodeOpAmt);
+
 		uint256 totalAvaxAmt = avaxNodeOpAmt + avaxUserAmt;
-		// TODO get max staking amount from DAO setting? Or do we enforce that when we match funds?
+		// TODO also get MAX_STAKING_AMT from DAO setting?
 		if (totalAvaxAmt < MIN_STAKING_AMT) {
 			revert InsufficientAvaxForStaking();
 		}
-		vault.withdrawAvax(totalAvaxAmt);
-		// TODO whats best practice here, .call or .transfer?
-		(bool sent, ) = payable(msg.sender).call{value: totalAvaxAmt}("");
-		if (!sent) {
-			revert ErrorSendingAvax();
-		}
+
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Launched));
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Launched);
+		msg.sender.safeTransferETH(totalAvaxAmt);
 	}
 
 	// Rialto calls this after a successful minipool launch
@@ -313,7 +337,7 @@ contract MinipoolManager is Base {
 		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
 
 		uint256 startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
-		if (endTime <= startTime) {
+		if (endTime <= startTime || endTime > block.timestamp) {
 			revert InvalidEndTime();
 		}
 
@@ -333,8 +357,7 @@ contract MinipoolManager is Base {
 		uint256 avaxUserRewardAmt;
 		if (avaxUserAmt > 0) {
 			avaxUserRewardAmt = avaxTotalRewardAmt / 2; // TODO make this appropriate percentage of rewards
-			ggAVAX.depositRewards{value: avaxUserRewardAmt}();
-			ggAVAX.depositFromStaking{value: avaxUserAmt}();
+			ggAVAX.depositFromStaking{value: avaxUserAmt + avaxUserRewardAmt}(avaxUserAmt, avaxUserRewardAmt);
 		}
 		// If no user funds were used, nodeop gets the whole reward
 		uint256 avaxNodeOpRewardAmt = avaxTotalRewardAmt - avaxUserRewardAmt;
@@ -342,7 +365,7 @@ contract MinipoolManager is Base {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), avaxNodeOpRewardAmt);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserRewardAmt")), avaxUserRewardAmt);
 
-		IVault vault = IVault(getContractAddress("Vault"));
+		Vault vault = Vault(getContractAddress("Vault"));
 		// Send the nodeOps AVAX + rewards to vault so they can claim later
 		vault.depositAvax{value: avaxNodeOpAmt + avaxNodeOpRewardAmt}();
 
@@ -357,15 +380,16 @@ contract MinipoolManager is Base {
 		// TODO
 	}
 
-	function getNonce(address signer) public view returns (uint256) {
-		return nonces[signer];
-	}
-
 	// The index of an item
 	// Returns -1 if the value is not found
 	// TODO I dont love this. Maybe split into getIndexOf that reverts if not found, and maybeGetIndexOf which would return -1 if not found?
 	function getIndexOf(address nodeID) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("minipool.index", nodeID)))) - 1;
+	}
+
+	function getAvailableUserFunds() public view returns (uint256) {
+		Vault vault = Vault(getContractAddress("Vault"));
+		return vault.balanceOf("TokenggAVAX");
 	}
 
 	function getMinipool(int256 index) public view returns (Minipool memory mp) {
@@ -385,21 +409,75 @@ contract MinipoolManager is Base {
 		mp.owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 	}
 
-	// Johnny: I am not sure we need these? We can always just look at msg.sender to verify Rialto identity?
-	//
-	// // Given a signer addr, return the hash that should be signed to claim a nodeID
-	// // SECURITY the client should not depend on this func to know what to sign, they should always do it themselves
-	// function formatClaimMessageHash(address signer) public view returns (bytes32) {
-	// 	return ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(this, signer, nonces[signer])));
-	// }
+	// Get minipools in a certain status (limit=0 means no pagination)
+	function getMinipools(
+		MinipoolStatus status,
+		uint256 offset,
+		uint256 limit
+	) external view returns (Minipool[] memory minipools) {
+		uint256 totalMinipools = getUint(keccak256("minipool.count"));
+		uint256 max = offset + limit;
+		if (max > totalMinipools || limit == 0) {
+			max = totalMinipools;
+		}
+		minipools = new Minipool[](max - offset);
+		uint256 total = 0;
+		for (uint256 i = offset; i < max; i++) {
+			Minipool memory mp = getMinipool(int256(i));
+			if (mp.status == uint256(status)) {
+				minipools[total] = mp;
+				total++;
+			}
+		}
+		// Dirty hack to cut unused elements off end of return value (from RP)
+		// solhint-disable-next-line no-inline-assembly
+		assembly {
+			mstore(minipools, total)
+		}
+	}
 
-	// // Verify that signer is an enabled multisig, and signature is valid for current nonce value, and bump nonce
-	// function requireValidSigAndUpdateNonce(address signer, bytes memory sig) private {
-	// 	bytes32 msgHash = formatClaimMessageHash(signer);
-	// 	nonces[signer] += 1;
-	// 	IMultisigManager multisigManager = IMultisigManager(getContractAddress("MultisigManager"));
-	// 	multisigManager.requireValidSignature(signer, msgHash, sig);
-	// }
+	function getMinipoolCount() external view returns (uint256) {
+		return getUint(keccak256("minipool.count"));
+	}
+
+	// Get the number of minipools in each status.
+	function getMinipoolCountPerStatus(uint256 offset, uint256 limit)
+		external
+		view
+		returns (
+			uint256 prelaunchCount,
+			uint256 launchedCount,
+			uint256 stakingCount,
+			uint256 withdrawableCount,
+			uint256 finishedCount,
+			uint256 canceledCount
+		)
+	{
+		// Iterate over the requested minipool range
+		uint256 totalMinipools = getUint(keccak256("minipool.count"));
+		uint256 max = offset + limit;
+		if (max > totalMinipools || limit == 0) {
+			max = totalMinipools;
+		}
+		for (uint256 i = offset; i < max; i++) {
+			// Get the minipool at index i
+			Minipool memory mp = getMinipool(int256(i));
+			// Get the minipool's status, and update the appropriate counter
+			if (mp.status == uint256(MinipoolStatus.Prelaunch)) {
+				prelaunchCount++;
+			} else if (mp.status == uint256(MinipoolStatus.Launched)) {
+				launchedCount++;
+			} else if (mp.status == uint256(MinipoolStatus.Staking)) {
+				stakingCount++;
+			} else if (mp.status == uint256(MinipoolStatus.Withdrawable)) {
+				withdrawableCount++;
+			} else if (mp.status == uint256(MinipoolStatus.Finished)) {
+				finishedCount++;
+			} else if (mp.status == uint256(MinipoolStatus.Canceled)) {
+				canceledCount++;
+			}
+		}
+	}
 
 	function requireValidMultisig(address nodeID) private view returns (int256) {
 		int256 index = getIndexOf(nodeID);
@@ -420,9 +498,7 @@ contract MinipoolManager is Base {
 		MinipoolStatus currentStatus = MinipoolStatus(getUint(statusKey));
 		bool isValid;
 
-		if (currentStatus == MinipoolStatus.Initialised) {
-			isValid = (to == MinipoolStatus.Prelaunch || to == MinipoolStatus.Canceled);
-		} else if (currentStatus == MinipoolStatus.Prelaunch) {
+		if (currentStatus == MinipoolStatus.Prelaunch) {
 			isValid = (to == MinipoolStatus.Launched || to == MinipoolStatus.Canceled);
 		} else if (currentStatus == MinipoolStatus.Launched) {
 			isValid = (to == MinipoolStatus.Staking || to == MinipoolStatus.Canceled);
@@ -432,7 +508,7 @@ contract MinipoolManager is Base {
 			isValid = (to == MinipoolStatus.Finished);
 		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
 			// Once a node is finished or canceled, if they re-validate they go back to beginning state
-			isValid = (to == MinipoolStatus.Initialised);
+			isValid = (to == MinipoolStatus.Prelaunch);
 		} else {
 			isValid = false;
 		}

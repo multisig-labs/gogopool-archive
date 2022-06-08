@@ -2,10 +2,9 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./ERC20Burnable.sol";
-
+import {ERC20, ERC20Burnable} from "./ERC20Burnable.sol";
+import {Vault} from "../Vault.sol";
 import "../Base.sol";
-import "../Vault.sol";
 
 // GGP Governance and utility token
 // Inflationary with rate determined by DAO
@@ -163,6 +162,7 @@ contract TokenGGP is Base, ERC20Burnable {
 			// Mint to itself, then allocate tokens for transfer to rewards contract, this will update balance & supply
 			_mint(address(this), newTokens);
 			// Let vault know it can move these tokens to itself now and credit the balance to the GGP rewards pool contract
+			// TODO Fix this to work for GoGo
 			vaultContract.depositToken("rocketRewardsPool", ERC20(address(this)), newTokens);
 		}
 		// Log it

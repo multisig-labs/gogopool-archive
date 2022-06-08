@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 
 import "./Base.sol";
 import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
-import "../interface/IVault.sol";
-import "../interface/IWithdrawer.sol";
+import {IVault} from "../interface/IVault.sol";
+import {IWithdrawer} from "../interface/IWithdrawer.sol";
 
 // AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances
 // The Vault contract must not be upgraded
@@ -22,6 +22,7 @@ contract Vault is Base, IVault {
 	// Events
 	event AvaxDeposited(string indexed by, uint256 amount, uint256 time);
 	event AvaxWithdrawn(string indexed by, uint256 amount, uint256 time);
+	event AvaxTransfer(string indexed from, string indexed to, uint256 amount, uint256 time);
 	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
 	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
 	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
@@ -63,9 +64,32 @@ contract Vault is Base, IVault {
 		avaxBalances[contractName] = avaxBalances[contractName] - _amount;
 		// Withdraw
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
-		withdrawer.receiveVaultWithdrawalAVAX{value: _amount}();
+		withdrawer.receiveWithdrawalAVAX{value: _amount}();
 		// Emit ether withdrawn event
 		emit AvaxWithdrawn(contractName, _amount, block.timestamp);
+	}
+
+	// Transfer AVAX from one contract to another
+	// No funds actually move, just bookeeping
+	// Only accepts calls from Rocket Pool network contracts
+	function transferAvax(
+		string memory fromContractName,
+		string memory toContractName,
+		uint256 amount
+	) external onlyLatestNetworkContract {
+		if (amount == 0) {
+			revert InvalidAmount();
+		}
+		// Make sure the network contract is valid (will throw if not)
+		if (getContractAddress(fromContractName) == address(0x0)) {
+			revert InvalidNetworkContract();
+		}
+		if (getContractAddress(toContractName) == address(0x0)) {
+			revert InvalidNetworkContract();
+		}
+		avaxBalances[fromContractName] = avaxBalances[fromContractName] - amount;
+		avaxBalances[toContractName] = avaxBalances[toContractName] + amount;
+		emit AvaxTransfer(fromContractName, toContractName, amount, block.timestamp);
 	}
 
 	// Accept an token deposit and assign its balance to a network contract (saves a large amount of gas this way through not needing a double token transfer via a network contract first)

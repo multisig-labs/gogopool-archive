@@ -10,6 +10,8 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 import {IWAVAX} from "../../interface/IWAVAX.sol";
+import {IWithdrawer} from "../../interface/IWithdrawer.sol";
+
 import "../Base.sol";
 
 // [GGP] Notes
@@ -38,14 +40,11 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	/// @dev emit every time a new rewards cycle starts
 	event NewRewardsCycle(uint32 indexed cycleEnd, uint256 rewardAmount);
 
-	/// @notice the amount of avax rewards deposited by a multisig
-	event DepositRewards(address indexed caller, uint256 assets);
-
 	/// @notice the amount of avax removed for staking by a multisig
 	event WithdrawForStaking(address indexed caller, uint256 assets);
 
 	/// @notice the amount of (non-rewards) avax deposited from staking by a multisig
-	event DepositFromStaking(address indexed caller, uint256 assets);
+	event DepositFromStaking(address indexed caller, uint256 baseAmt, uint256 rewardAmt);
 
 	/// @notice the maximum length of a rewards cycle
 	uint32 public rewardsCycleLength;
@@ -68,7 +67,7 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	constructor(Storage storageAddress, ERC20 asset) Base(storageAddress) ERC4626(asset, "GoGoPool Liquid Staking Token", "ggAVAX") {
 		version = 1; // for storage
 		// TODO get this value from storage instead of constructor? DAO decides the cycle? Can it change?
-		rewardsCycleLength = 1 days;
+		rewardsCycleLength = 14 days;
 		// seed initial rewardsCycleEnd
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
 		targetFloatPercent = 1e17; // 1e18 * 10%;
@@ -78,6 +77,10 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	receive() external payable {
 		assert(msg.sender == address(asset)); // only accept AVAX via fallback from the WAVAX contract
 	}
+
+	// TODO In addition to the ERC4626 which has deposit()/redeem() for WAVAX, we
+	// also add the ability to deposit/redeem raw AVAX. If we add any modifiers (pauseable?) make sure we also
+	// add them to the ERC4626 by overriding here and calling super()?
 
 	// Accept raw AVAX from a depositor and mint them ggAVAX
 	// TODO allow DAO to pause?
@@ -95,65 +98,51 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 
 	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
 	// TODO allow DAO to pause?
+	// TODO most people will want to redeem shares, not withdraw avax, right? So can we rm this method?
 	function withdrawAVAX(uint256 assets) public returns (uint256 shares) {
 		shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
 		beforeWithdraw(assets, shares);
 		_burn(msg.sender, shares);
 		emit Withdraw(msg.sender, msg.sender, msg.sender, assets, shares);
 		IWAVAX(address(asset)).withdraw(assets);
+		// TODO will this work for smart contract wallets? like a gnosis multisig?
 		msg.sender.safeTransferETH(assets);
 	}
 
-	// TODO ONLY multisigs can call this, will xfer AVAX to msg.sender
+	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
+	// TODO allow DAO to pause?
+	function redeemAVAX(uint256 shares) public returns (uint256 assets) {
+		// Check for rounding error since we round down in previewRedeem.
+		require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
+		beforeWithdraw(assets, shares);
+		_burn(msg.sender, shares);
+		emit Withdraw(msg.sender, msg.sender, msg.sender, assets, shares);
+		IWAVAX(address(asset)).withdraw(assets);
+		// TODO will this work for smart contract wallets? like a gnosis multisig?
+		msg.sender.safeTransferETH(assets);
+	}
+
+	// TODO ONLY minipoolmanager can call this, will xfer AVAX to msg.sender
 	function withdrawForStaking(uint256 assets) public {
 		if (assets > amountAvailableForStaking()) {
 			revert WithdrawAmountTooLarge();
 		}
-		IWAVAX(address(asset)).withdraw(assets);
-		msg.sender.safeTransferETH(assets);
-		emit WithdrawForStaking(msg.sender, assets);
 		stakingTotalAssets += assets;
+		emit WithdrawForStaking(msg.sender, assets);
+		IWAVAX(address(asset)).withdraw(assets);
+		IWithdrawer withdrawer = IWithdrawer(msg.sender);
+		withdrawer.receiveWithdrawalAVAX{value: assets}();
 	}
 
-	// Accept raw AVAX deposits from Rialto.
-	// Must ONLY be the rewards amount.
-	// TODO maybe have sanity check to not allow deposit of more than approx rewards expected?
-	// TODO can we combine this with below and just have depositFromStaking(baseAmt, rewardAmt) payable
-	function depositRewards() public payable {
-		uint256 assets = msg.value;
-		// Convert avax to wavax (wavax will be owned by this contract not the depositor)
-		IWAVAX(address(asset)).deposit{value: assets}();
-		// We DONT mint since we are depositing rewards to be shared by all
-		// _mint(receiver, shares);
-		emit DepositRewards(msg.sender, assets);
-		// DONT call this either, we ONLY want to increase the balance
-		// afterDeposit(assets, 0);
-	}
-
-	// Must ONLY be any amounts returned from base staking NOT any rewards
-	function depositFromStaking() public payable {
-		uint256 assets = msg.value;
-		if (assets > stakingTotalAssets) {
+	// TODO ONLY minipoolmanager can call this, recvs avax from staking + rewards
+	function depositFromStaking(uint256 baseAmt, uint256 rewardAmt) public payable {
+		uint256 totalAmt = msg.value;
+		if (totalAmt != (baseAmt + rewardAmt) || baseAmt > stakingTotalAssets) {
 			revert TodoBetterMsg();
 		}
-		stakingTotalAssets -= assets;
-
-		// Convert avax to wavax (wavax will be owned by this contract not the depositor)
-		IWAVAX(address(asset)).deposit{value: assets}();
-		// We DONT mint since we are just replacing what we removed
-		// _mint(receiver, shares);
-		emit DepositFromStaking(msg.sender, assets);
-		// DONT call this either, we ONLY want to increase the balance
-		// afterDeposit(assets, 0);
-	}
-
-	// TODO Who can call this? Probably anyone can (no security necessary), but make it pauseable.
-	function maintainFloat() external {
-		// Based on the targetFloatPercentage, figure out if we have excess WAVAX to go to the vault,
-		// IWAVAX(address(asset)).transferFrom(address(this), vaultAddr, assets);
-		// or not enough WAVAX and we should get some from the vault
-		// IWAVAX(address(asset)).transferFrom(vaultAddr, address(this), assets);
-		// TODO How do we handle approvals for transferFrom? Need to max approve on contract creation maybe?
+		stakingTotalAssets -= baseAmt;
+		IWAVAX(address(asset)).deposit{value: totalAmt}();
+		emit DepositFromStaking(msg.sender, baseAmt, rewardAmt);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -182,14 +171,21 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 		emit TargetFloatPercentUpdated(msg.sender, newTargetFloatPercent);
 	}
 
-	/// @notice Returns the amount of WAVAX that sit idle in this contract.
-	/// @return The amount of WAVAX that sit idle in the contract.
+	// TODO delete this everwhere and just use amountAvailableForStaking
 	function totalFloat() public view returns (uint256) {
-		return asset.balanceOf(address(this));
+		return amountAvailableForStaking();
 	}
 
 	function amountAvailableForStaking() public view returns (uint256) {
-		return totalFloat();
+		// TODO make this work
+		// uint256 targetAmt = totalReleasedAssets * targetFloatPercent;
+		uint256 cashOnHand = asset.balanceOf(address(this));
+		// if (cashOnHand < targetAmt) {
+		// 	return 0;
+		// } else {
+		// 	return cashOnHand - targetAmt;
+		// }
+		return cashOnHand;
 	}
 
 	// REWARDS SYNC LOGIC

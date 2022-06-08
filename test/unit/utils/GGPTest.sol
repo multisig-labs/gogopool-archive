@@ -3,7 +3,6 @@
 pragma solidity ^0.8.13;
 
 import "../../../lib/forge-std/src/Test.sol";
-import "../../../contracts/contract/LaunchManager.sol";
 import "../../../contracts/contract/MinipoolManager.sol";
 import "../../../contracts/contract/BaseQueue.sol";
 import "../../../contracts/contract/MultisigManager.sol";
@@ -33,7 +32,6 @@ abstract contract GGPTest is Test {
 	BaseQueue public baseQueue;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
-	LaunchManager public launchMgr;
 	ProtocolDAO public dao;
 	TokenGGP public ggp;
 	MockERC20 public mockGGP;
@@ -69,9 +67,6 @@ abstract contract GGPTest is Test {
 
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
-
-		launchMgr = new LaunchManager(store);
-		registerContract(store, "LaunchManager", address(launchMgr));
 
 		dao = new ProtocolDAO(store);
 		registerContract(store, "ProtocolDAO", address(dao));
@@ -147,10 +142,11 @@ abstract contract GGPTest is Test {
 		uint128 ggpAmt
 	) public returns (address) {
 		address actor = getActor(i);
-		vm.deal(actor, avaxAmt * 2);
+		vm.deal(actor, avaxAmt);
 		vm.startPrank(actor);
 		wavax.deposit{value: avaxAmt}();
 		wavax.approve(address(ggAVAX), avaxAmt);
+		vm.deal(actor, avaxAmt);
 		mockGGP.mint(actor, ggpAmt);
 		mockGGP.approve(address(minipoolMgr), ggpAmt);
 		vm.stopPrank();

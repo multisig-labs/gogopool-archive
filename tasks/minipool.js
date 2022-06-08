@@ -3,75 +3,31 @@
 const {
 	get,
 	hash,
-	formatAddr,
 	log,
-	logf,
-	nodeIDs,
+	nodeID,
 	getNamedAccounts,
+	getMinipoolsFor,
+	logMinipools,
+	parseDelta,
+	now,
 } = require("./lib/utils");
-const MAX_ENTRIES = 10;
 
 task("minipool:list", "List all minipools").setAction(async () => {
-	const accounts = await getNamedAccounts();
-	const minipoolManager = await get("MinipoolManager");
-	logf(
-		"%-13s %-6s %-8s %-8s %-8s %-8s %-15s %-15s %-15s %-18s %-19s %-19s %-8s %-8s",
-		"nodeID",
-		"status",
-		"dur",
-		"start",
-		"end",
-		"fee",
-		"ggpBondAmt",
-		"avaxNodeOpAmt",
-		"avaxUserAmt",
-		"avaxTotalRewardAmt",
-		"avaxNodeOpRewardAmt",
-		"avaxUserRewardAmt",
-		"owner",
-		"multisig"
-	);
-	for (let i = 0; i < MAX_ENTRIES; i++) {
-		try {
-			const {
-				nodeID,
-				status,
-				duration,
-				startTime,
-				endTime,
-				delegationFee,
-				ggpBondAmt,
-				avaxNodeOpAmt,
-				avaxUserAmt,
-				avaxTotalRewardAmt,
-				avaxNodeOpRewardAmt,
-				avaxUserRewardAmt,
-				owner,
-				multisigAddr,
-			} = await minipoolManager.getMinipool(i);
-			if (nodeID === hre.ethers.constants.AddressZero) break;
-			logf(
-				"%-13s %-6s %-8s %-8s %-8s %-8s %-15s %-15s %-15s %-18s %-19s %-19s %-8s %-8s",
-				formatAddr(nodeID),
-				status.toNumber(),
-				duration.toNumber(),
-				startTime.toNumber(),
-				endTime.toNumber(),
-				delegationFee.toNumber(),
-				ethers.utils.formatUnits(ggpBondAmt),
-				ethers.utils.formatUnits(avaxNodeOpAmt),
-				ethers.utils.formatUnits(avaxUserAmt),
-				ethers.utils.formatUnits(avaxTotalRewardAmt),
-				ethers.utils.formatUnits(avaxNodeOpRewardAmt),
-				ethers.utils.formatUnits(avaxUserRewardAmt),
-				formatAddr(owner, accounts),
-				formatAddr(multisigAddr, accounts)
-			);
-		} catch (e) {
-			console.log("error", e);
-		}
+	for (let status = 0; status < 5; status++) {
+		const mps = await getMinipoolsFor(status);
+		if (mps.length > 0) logMinipools(mps);
 	}
 });
+
+task("minipool:list_claimable", "List all claimable minipools")
+	.addParam("actor", "multisig name")
+	.setAction(async ({ actor }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipools = await getMinipoolsFor(0, signer.address);
+
+		// Somehow Rialto will sort these by priority
+		logMinipools(minipools);
+	});
 
 task("minipool:queue", "List all minipools in the queue").setAction(
 	async () => {
@@ -102,7 +58,7 @@ task("minipool:queue", "List all minipools in the queue").setAction(
 task("minipool:create", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
-	.addParam("duration", "Duration (in seconds)", 100000, types.int)
+	.addParam("duration", "Duration", "14d", types.string)
 	.addParam("fee", "", 0, types.int)
 	.addParam("ggp", "", "0")
 	.addParam("avax", "Amt of AVAX to send (units are AVAX)", "2000")
@@ -110,15 +66,15 @@ task("minipool:create", "")
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
 		await minipoolManager.createMinipool(
-			nodeIDs[node],
-			duration,
+			nodeID(node),
+			parseDelta(duration),
 			fee,
 			hre.ethers.utils.parseEther(ggp),
 			{
 				value: hre.ethers.utils.parseEther(avax),
 			}
 		);
-		log(`Minipool created for node ${node}: ${nodeIDs[node]}`);
+		log(`Minipool created for node ${node}: ${nodeID(node)}`);
 	});
 
 task("minipool:add_avax", "")
@@ -128,7 +84,7 @@ task("minipool:add_avax", "")
 	.setAction(async ({ actor, node, amt }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.updateMinipoolStatus(nodeIDs[node], status);
+		await minipoolManager.updateMinipoolStatus(nodeID(node), status);
 	});
 
 task("minipool:update_status", "")
@@ -138,7 +94,7 @@ task("minipool:update_status", "")
 	.setAction(async ({ actor, node, status }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.updateMinipoolStatus(nodeIDs[node], status);
+		await minipoolManager.updateMinipoolStatus(nodeID(node), status);
 		log(`Minipool status updated to ${status} for ${node}`);
 	});
 
@@ -148,17 +104,51 @@ task("minipool:cancel", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.cancelMinipool(nodeIDs[node]);
+		await minipoolManager.cancelMinipool(nodeID(node));
 		log(`Minipool canceled`);
 	});
 
-task("minipool:claim", "")
+task("minipool:can_claim", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.claimAndInitiateStaking(nodeIDs[node], {
+		const res = await minipoolManager.canClaimAndInitiateStaking(nodeID(node), {
+			gasPrice: 18000000,
+			gasLimit: 3000000,
+		});
+		log(`Can claim ${node}: ${res}`);
+	});
+
+task("minipool:claim", "Claim minipools until funds run out")
+	.addParam("actor", "Account used to send tx")
+	.setAction(async ({ actor }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		const minipools = await getMinipoolsFor(0, signer.address); // 0=Prelaunch
+
+		// Somehow Rialto will sort these by priority
+		for (mp of minipools) {
+			const canClaim = await minipoolManager.canClaimAndInitiateStaking(
+				mp.nodeID
+			);
+			if (canClaim) {
+				log(`Claiming ${mp.nodeID}`);
+				await minipoolManager.claimAndInitiateStaking(mp.nodeID);
+			} else {
+				log("Nothing to do or not enough user funds");
+			}
+		}
+	});
+
+task("minipool:claim_one", "")
+	.addParam("actor", "Account used to send tx")
+	.addParam("node", "NodeID name")
+	.setAction(async ({ actor, node }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		await minipoolManager.claimAndInitiateStaking(nodeID(node), {
 			gasPrice: 18000000,
 			gasLimit: 3000000,
 		});
@@ -168,30 +158,43 @@ task("minipool:claim", "")
 task("minipool:recordStakingStart", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
-	.addParam("start", "staking start time")
+	.addParam("start", "staking start time", 0, types.int)
 	.setAction(async ({ actor, node, start }) => {
+		if (start === 0) {
+			start = await now();
+		}
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.recordStakingStart(nodeIDs[node], start);
+		await minipoolManager.recordStakingStart(nodeID(node), start);
 	});
 
 task("minipool:recordStakingEnd", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
-	.addParam("end", "staking end time")
-	.addParam("avax", "AVAX amount to return (excluding rewards)", 0, types.int)
 	.addParam("reward", "AVAX Reward amount", 0, types.int)
-	.setAction(async ({ actor, node, end, avax, reward }) => {
+	.setAction(async ({ actor, node, reward }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.recordStakingEnd(
-			nodeIDs[node],
-			end,
-			hre.ethers.utils.parseEther(reward.toString()),
-			{
-				value: hre.ethers.utils.parseEther((avax + reward).toString()),
-			}
-		);
+		const i = await minipoolManager.getIndexOf(nodeID(node));
+		const mp = await minipoolManager.getMinipool(i);
+		const end = mp.startTime.add(mp.duration);
+
+		const avax = mp.avaxNodeOpAmt.add(mp.avaxUserAmt);
+
+		reward = hre.ethers.utils.parseEther(reward.toString());
+		// Send rialto the reward funds from some other address to simulate Avalanche rewards,
+		// so we can see rialtos actual balance
+		const rewarder = (await getNamedAccounts()).rewarder;
+		const tx = {
+			to: signer.address,
+			value: reward,
+		};
+		await rewarder.sendTransaction(tx);
+		total = avax.add(reward);
+
+		await minipoolManager.recordStakingEnd(nodeID(node), end, reward, {
+			value: total,
+		});
 	});
 
 task("minipool:withdrawMinipoolFunds", "")
@@ -200,5 +203,5 @@ task("minipool:withdrawMinipoolFunds", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.withdrawMinipoolFunds(nodeIDs[node]);
+		await minipoolManager.withdrawMinipoolFunds(nodeID(node));
 	});

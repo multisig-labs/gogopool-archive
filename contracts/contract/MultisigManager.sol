@@ -2,11 +2,8 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
+import {IStorage} from "../interface/IStorage.sol";
 import "./Base.sol";
-import "../interface/IStorage.sol";
-import "../interface/IMultisigManager.sol";
 
 /*
 	Data Storage Schema
@@ -18,13 +15,32 @@ import "../interface/IMultisigManager.sol";
 	multisig.item<index>.avaxTotal = total avax on active validators
 */
 
-contract MultisigManager is Base, IMultisigManager {
+contract MultisigManager is Base {
+	/// @notice A multisig with this address has already been registered
+	error MultisigAlreadyRegistered();
+
+	/// @notice A multisig with this address has not been registered
+	error MultisigNotFound();
+
+	/// @notice Multisig has been disabled
+	error MultisigDisabled();
+
+	/// @notice Signature is invalid
+	error SignatureInvalid();
+
+	// Events
+	event RegisteredMultisig(address indexed addr);
+	event EnabledMultisig(address indexed addr);
+	event DisabledMultisig(address indexed addr);
+
 	constructor(IStorage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 
+	// TODO modifiers for who can call all these functions
+
 	// Register a multisig. Defaults to disabled when first registered.
-	function registerMultisig(address addr) external override {
+	function registerMultisig(address addr) external {
 		int256 index = getIndexOf(addr);
 		if (index != -1) {
 			revert MultisigAlreadyRegistered();
@@ -39,7 +55,7 @@ contract MultisigManager is Base, IMultisigManager {
 		emit RegisteredMultisig(addr);
 	}
 
-	function enableMultisig(address addr) external override {
+	function enableMultisig(address addr) external {
 		int256 index = getIndexOf(addr);
 		if (index == -1) {
 			revert MultisigNotFound();
@@ -48,53 +64,33 @@ contract MultisigManager is Base, IMultisigManager {
 		emit EnabledMultisig(addr);
 	}
 
-	function disableMultisig(address addr) external override {
-		int256 index = requireEnabledMultisig(addr);
+	// TODO What does this mean? If they have existing validations then they MUST be able to finalize them
+	// so this probably means they cant get assigned any NEW nodes
+	function disableMultisig(address addr) external {
+		int256 index = getIndexOf(addr);
+		if (index == -1) {
+			revert MultisigNotFound();
+		}
 		setBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")), false);
 		emit DisabledMultisig(addr);
 	}
 
 	// In future, have a way to choose which multisig gets used for each validator
 	// i.e. round-robin, or based on GGP staked, etc
-	function getNextActiveMultisig() external view override returns (address) {
+	function getNextActiveMultisig() external view returns (address) {
 		uint256 index = 0; // In future some other method of selecting multisig
 		(address multisigAddress, ) = getMultisig(index);
 		return multisigAddress;
 	}
 
-	// Verifies that an active Rialto multisig signed the msgHash
-	function requireValidSignature(
-		address addr,
-		bytes32 msgHash,
-		bytes memory sig
-	) public view {
-		requireEnabledMultisig(addr);
-		address recovered = ECDSA.recover(msgHash, sig);
-		if (addr != recovered) {
-			revert SignatureInvalid();
-		}
-	}
-
 	// The index of an item
 	// Returns -1 if the value is not found
-	function getIndexOf(address addr) public view override returns (int256) {
+	function getIndexOf(address addr) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("multisig.index", addr)))) - 1;
 	}
 
-	function getMultisig(uint256 index) public view override returns (address addr, bool enabled) {
+	function getMultisig(uint256 index) public view returns (address addr, bool enabled) {
 		addr = getAddress(keccak256(abi.encodePacked("multisig.item", index, ".address")));
 		enabled = getBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")));
-	}
-
-	function requireEnabledMultisig(address addr) private view returns (int256) {
-		int256 index = getIndexOf(addr);
-		if (index == -1) {
-			revert MultisigNotFound();
-		}
-		(, bool enabled) = getMultisig(uint256(index));
-		if (!enabled) {
-			revert MultisigDisabled();
-		}
-		return index;
 	}
 }

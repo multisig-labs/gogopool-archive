@@ -46,6 +46,15 @@ contract BaseQueue is Base {
 		return nodeID;
 	}
 
+	// Peeks next item from the start of a queue (does not modify state)
+	// Requires that the queue is not empty
+	function peek(bytes32 key) external view returns (address) {
+		uint256 start = getUint(keccak256(abi.encodePacked(key, ".start")));
+		address nodeID = getAddress(keccak256(abi.encodePacked(key, ".item", start)));
+		return nodeID;
+	}
+
+	// Swaps the item with the last item in the queue and truncates it; computationally cheap
 	function cancel(bytes32 key, address nodeID) external {
 		uint256 index = getUint(keccak256(abi.encodePacked(key, ".index", nodeID)));
 		require(index-- > 0, "NodeID does not exist in queue");

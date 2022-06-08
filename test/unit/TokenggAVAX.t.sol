@@ -5,20 +5,24 @@ pragma solidity ^0.8.13;
 import "./utils/GGPTest.sol";
 
 contract TokenggAVAXTest is GGPTest {
-	address alice;
-	address bob;
-	address rialto;
+	uint128 private immutable MAX_AMT = type(uint128).max;
+	address private alice;
+	address private bob;
+	address private nodeOp;
+	address private nodeID;
+	uint256 private duration;
 
 	function setUp() public override {
 		super.setUp();
+		registerMultisig(rialto1);
 
-		alice = getActorWithWAVAX(0, type(uint128).max);
-		deal(alice, type(uint128).max);
-
-		rialto = getActor(1);
-		deal(rialto, type(uint128).max);
-
-		bob = getActor(2);
+		alice = getActorWithWAVAX(0, MAX_AMT);
+		bob = getActor(1);
+		nodeOp = getActorWithTokens(2, MAX_AMT, MAX_AMT);
+		(nodeID, , ) = randMinipool();
+		uint256 duration = 14 days;
+		vm.prank(nodeOp);
+		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, 0, 1000 ether);
 	}
 
 	function testRevertOnUserMistake() public {
@@ -26,7 +30,7 @@ contract TokenggAVAXTest is GGPTest {
 		ggAVAX.deposit(1 ether, address(ggAVAX));
 	}
 
-	function testSingleDepositWithdraw(uint128 amount) public {
+	function testSingleDepositWithdrawWAVAX(uint128 amount) public {
 		if (amount == 0) amount = 1;
 
 		uint256 aliceUnderlyingAmount = amount;
@@ -113,61 +117,6 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(wavax.balanceOf(alice), alicePreDepositBal);
 	}
 
-	function testSingleDepositThenRewards(uint128 amount, uint128 rewards) public {
-		// function testSingleDepositThenRewards() public {
-		// uint128 amount = 100;
-		// uint128 rewards = 10;
-		if (amount == 0) amount = 1;
-		if (rewards == 0) rewards = 1;
-
-		uint256 aliceUnderlyingAmount = amount;
-
-		vm.prank(alice);
-		uint256 aliceShareAmount = ggAVAX.deposit(aliceUnderlyingAmount, alice);
-		assertEq(aliceUnderlyingAmount, aliceShareAmount);
-
-		console.log("block.timestamp", block.timestamp);
-		console.log("rewardsCycleEnd", ggAVAX.rewardsCycleEnd());
-		console.log("lastSync", ggAVAX.lastSync());
-		console.log("lastRewardAmount", ggAVAX.lastRewardAmount());
-		console.log("totalAssets", ggAVAX.totalAssets());
-		console.log("totalFloat", ggAVAX.totalFloat());
-
-		// Deposit some rewards from rialto
-		uint256 rialtoRewardsAmount = rewards;
-		vm.prank(rialto);
-		ggAVAX.depositRewards{value: rialtoRewardsAmount}();
-		// Rewards dont show up in totalAssets yet
-		assertEq(ggAVAX.totalAssets(), aliceUnderlyingAmount);
-
-		console.log("skip 1 reward cycle");
-		skip(ggAVAX.rewardsCycleEnd() - block.timestamp);
-		console.log("syncRewards");
-		ggAVAX.syncRewards();
-		// Rewards still dont show up in totalAssets yet, but will accrue over the next cycle
-		assertEq(ggAVAX.totalAssets(), aliceUnderlyingAmount);
-
-		console.log("block.timestamp", block.timestamp);
-		console.log("rewardsCycleEnd", ggAVAX.rewardsCycleEnd());
-		console.log("lastSync", ggAVAX.lastSync());
-		console.log("lastRewardAmount", ggAVAX.lastRewardAmount());
-		console.log("totalAssets", ggAVAX.totalAssets());
-		console.log("totalFloat", ggAVAX.totalFloat());
-
-		console.log("skip ahead half of a reward cycle");
-		skip(ggAVAX.rewardsCycleLength() / 2);
-		console.log("block.timestamp", block.timestamp);
-		console.log("rewardsCycleEnd", ggAVAX.rewardsCycleEnd());
-		console.log("lastSync", ggAVAX.lastSync());
-		console.log("lastRewardAmount", ggAVAX.lastRewardAmount());
-		console.log("totalAssets", ggAVAX.totalAssets());
-		console.log("totalFloat", ggAVAX.totalFloat());
-		assertEq(ggAVAX.totalAssets(), aliceUnderlyingAmount + rialtoRewardsAmount / 2);
-		console.log("skip ahead to end of reward cycle");
-		skip(ggAVAX.rewardsCycleLength() / 2);
-		assertEq(ggAVAX.totalAssets(), aliceUnderlyingAmount + rialtoRewardsAmount);
-	}
-
 	function testDepositStakingRewards() public {
 		// Scenario:
 		// 1. Bob mints 4000 shares (costs 4000 tokens)
@@ -181,49 +130,55 @@ contract TokenggAVAXTest is GGPTest {
 		// 7. Skip ahead remaining 2/3 of the rewards cycle,
 		//		all rewards should be distributed
 
-		uint256 depositAmount = 4000;
-		uint256 stakingWithdrawAmount = 1000;
-		uint256 rewardsAmount = 1000;
+		uint256 depositAmount = 1000 ether;
+		uint256 stakingWithdrawAmount = 1000 ether;
+		uint256 rewardsAmount = 100 ether;
+		uint256 rialtoInitBal = rialto1.balance;
 
-		// 1. Bob mints 4000 shares
+		// 1. Bob mints 1000 shares
 		vm.deal(bob, depositAmount);
-		vm.startPrank(bob);
-		wavax.deposit{value: depositAmount}();
-		wavax.approve(address(ggAVAX), depositAmount);
-		ggAVAX.mint(depositAmount, bob);
-		vm.stopPrank();
+		vm.prank(bob);
+		ggAVAX.depositAVAX{value: depositAmount}();
 
-		assertEq(wavax.balanceOf(bob), 0);
+		assertEq(bob.balance, 0);
+		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
 
 		// 2. 1000 tokens are withdrawn for staking
-		vm.prank(rialto);
-		ggAVAX.withdrawForStaking(stakingWithdrawAmount);
+		vm.prank(rialto1);
+		minipoolMgr.claimAndInitiateStaking(nodeID);
+		assertEq(rialto1.balance, rialtoInitBal + stakingWithdrawAmount);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - stakingWithdrawAmount);
 		assertEq(ggAVAX.stakingTotalAssets(), stakingWithdrawAmount);
 
 		// 3. 1000 rewards are deposited
 		// None of these rewards should be distributed yet
-		vm.prank(rialto);
-		ggAVAX.depositRewards{value: 1000}();
-
+		vm.startPrank(rialto1);
+		minipoolMgr.recordStakingStart(nodeID, block.timestamp);
+		int256 idx = minipoolMgr.getIndexOf(nodeID);
+		MinipoolManager.Minipool memory mp = minipoolMgr.getMinipool(idx);
+		uint256 endTime = block.timestamp + mp.duration;
+		skip(mp.duration);
+		minipoolMgr.recordStakingEnd{value: stakingWithdrawAmount + rewardsAmount}(nodeID, endTime, rewardsAmount);
+		vm.stopPrank();
+		assertEq(rialto1.balance, rialtoInitBal - rewardsAmount);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
 		// 4. Skip ahead one rewards cycle
 		// Still no rewards should be distributed
 		skip(ggAVAX.rewardsCycleEnd() - block.timestamp);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
 		// 5. Sync rewards and see an update to half the rewards
 		ggAVAX.syncRewards();
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 		assertEq(ggAVAX.lastRewardAmount(), rewardsAmount);
 
@@ -231,7 +186,7 @@ contract TokenggAVAXTest is GGPTest {
 		skip(ggAVAX.rewardsCycleLength() / 3);
 		uint256 oneThirdRewards = rewardsAmount / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + oneThirdRewards);
 		assertEq(ggAVAX.lastRewardAmount(), rewardsAmount);
 
@@ -239,7 +194,7 @@ contract TokenggAVAXTest is GGPTest {
 		// Rewards should be fully distributed
 		skip((ggAVAX.rewardsCycleLength() * 2) / 3);
 		assertEq(ggAVAX.totalAssets(), depositAmount + rewardsAmount);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + rewardsAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + rewardsAmount);
 	}
 

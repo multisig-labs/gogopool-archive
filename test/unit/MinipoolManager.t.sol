@@ -3,7 +3,8 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "./utils/GGPTest.sol";
-import {ECDSA, MinipoolManager, IMultisigManager} from "../../contracts/contract/MinipoolManager.sol";
+import {MinipoolManager} from "../../contracts/contract/MinipoolManager.sol";
+import {MultisigManager} from "../../contracts/contract/MultisigManager.sol";
 
 contract MinipoolManagerTest is GGPTest {
 	int256 private index;
@@ -77,6 +78,7 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(ggpBondAmt, 0);
 		uint256 avaxAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		assertEq(avaxAmt, 1 ether);
+		vm.stopPrank();
 	}
 
 	function testBondWithGGP() public {
@@ -86,6 +88,7 @@ contract MinipoolManagerTest is GGPTest {
 		index = minipoolMgr.getIndexOf(nodeID);
 		ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 		assertEq(ggpBondAmt, 1 ether);
+		vm.stopPrank();
 	}
 
 	function testCancelAndReBondWithGGP() public {
@@ -109,34 +112,8 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(new_index, index);
 		ggpBondAmt = store.getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 		assertEq(ggpBondAmt, 1 ether);
+		vm.stopPrank();
 	}
-
-	// function testClaimPreventNonceReuse() public {
-	// 	(nodeID, duration, delegationFee) = randMinipool();
-
-	// 	vm.prank(nodeOp);
-	// 	minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 0);
-	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-
-	// 	vm.startPrank(rialto1);
-	// 	uint256 nonce = minipoolMgr.getNonce(rialto1);
-	// 	bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-	// 	bytes memory sig = signHash(RIALTO1_PK, msgHash);
-	// 	minipoolMgr.claimAndInitiateStaking(nodeID, sig);
-	// 	vm.stopPrank();
-
-	// 	// Now create a new minipool
-	// 	(nodeID, duration, delegationFee) = randMinipool();
-
-	// 	vm.prank(nodeOp);
-	// 	minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 0);
-	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-
-	// 	// Nonce has now been incremented, so the same sig should fail (replay protection)
-	// 	vm.expectRevert(IMultisigManager.SignatureInvalid.selector);
-	// 	vm.prank(rialto1);
-	// 	minipoolMgr.claimAndInitiateStaking(nodeID, sig);
-	// }
 
 	function testClaimNoUserFunds() public {
 		(nodeID, duration, delegationFee) = randMinipool();
@@ -146,27 +123,11 @@ contract MinipoolManagerTest is GGPTest {
 		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
 		vm.startPrank(rialto1);
-		// uint256 nonce = minipoolMgr.getNonce(rialto1);
-		// bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-		// bytes memory sig = signHash(RIALTO1_PK, msgHash);
 		minipoolMgr.claimAndInitiateStaking(nodeID);
 
 		assertEq(rialto1.balance, 2000 ether);
+		vm.stopPrank();
 	}
-
-	// function testCancelByMultisig() public {
-	// 	vm.startPrank(nodeOp);
-	// 	(nodeID, duration, delegationFee) = randMinipool();
-	// 	minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
-	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-	// 	vm.stopPrank();
-
-	// 	// uint256 nonce = minipoolMgr.getNonce(rialto1);
-	// 	// bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-	// 	// bytes memory sig = signHash(RIALTO1_PK, msgHash);
-	// 	vm.prank(rialto1);
-	// 	minipoolMgr.cancelMinipool(nodeID);
-	// }
 
 	function testCancelByOwner() public {
 		vm.startPrank(nodeOp);
@@ -179,6 +140,7 @@ contract MinipoolManagerTest is GGPTest {
 		vm.startPrank(rialto1);
 		vm.expectRevert(MinipoolManager.OnlyOwnerCanCancel.selector);
 		minipoolMgr.cancelMinipool(nodeID);
+		vm.stopPrank();
 	}
 
 	function testEmptyState() public {
@@ -188,6 +150,7 @@ contract MinipoolManagerTest is GGPTest {
 		MinipoolManager.Minipool memory mp;
 		mp = minipoolMgr.getMinipool(index);
 		assertEq(mp.nodeID, ZERO_ADDRESS);
+		vm.stopPrank();
 	}
 
 	// Maybe we have testGas... tests that just do a single important operation
@@ -199,6 +162,7 @@ contract MinipoolManagerTest is GGPTest {
 		minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 2000 ether);
 		stopMeasuringGas();
 		index = minipoolMgr.getIndexOf(nodeID);
+		vm.stopPrank();
 	}
 
 	function testCreateAndGetMany() public {
@@ -209,6 +173,59 @@ contract MinipoolManagerTest is GGPTest {
 		}
 		index = minipoolMgr.getIndexOf(nodeID);
 		assertEq(index, 9);
+		vm.stopPrank();
+	}
+
+	function testGetStatusCounts() public {
+		uint256 prelaunchCount;
+		uint256 launchedCount;
+		uint256 stakingCount;
+		uint256 withdrawableCount;
+		uint256 finishedCount;
+		uint256 canceledCount;
+
+		for (uint256 i = 0; i < 10; i++) {
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Launched);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Staking);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Withdrawable);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Finished);
+
+			(nodeID, duration, delegationFee) = randMinipool();
+			minipoolMgr.createMinipool{value: 1 ether}(nodeID, duration, delegationFee, 0);
+			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Canceled);
+		}
+
+		// Get all in one page
+		(prelaunchCount, launchedCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = minipoolMgr.getMinipoolCountPerStatus(0, 0);
+		assertEq(prelaunchCount, 10);
+		assertEq(launchedCount, 10);
+		assertEq(stakingCount, 10);
+		assertEq(withdrawableCount, 10);
+		assertEq(finishedCount, 10);
+		assertEq(canceledCount, 10);
+
+		// Test pagination
+		(prelaunchCount, launchedCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = minipoolMgr.getMinipoolCountPerStatus(0, 6);
+		assertEq(prelaunchCount, 1);
+		assertEq(launchedCount, 1);
+		assertEq(stakingCount, 1);
+		assertEq(withdrawableCount, 1);
+		assertEq(finishedCount, 1);
+		assertEq(canceledCount, 1);
 	}
 
 	function updateMinipoolStatus(address nodeID_, MinipoolStatus newStatus) public {

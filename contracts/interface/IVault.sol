@@ -24,6 +24,12 @@ interface IVault {
 
 	function withdrawAvax(uint256 amount) external;
 
+	function transferAvax(
+		string memory fromContractName,
+		string memory toContractName,
+		uint256 amount
+	) external;
+
 	function depositToken(
 		string memory networkContractName,
 		ERC20 tokenAddress,

@@ -1,7 +1,7 @@
 {
 	"name": "gogopool-contracts",
 	"version": "0.0.1",
-	"devDependencies": {
+	"dependencies": {
 		"@nomiclabs/hardhat-ethers": "^2.0.5",
 		"@nomiclabs/hardhat-etherscan": "^3.0.3",
 		"@nomiclabs/hardhat-waffle": "^2.0.3",
@@ -34,15 +34,15 @@
 		"solidity-coverage": "^0.7.20",
 		"ts-node": "^10.7.0",
 		"typechain": "^8.0.0",
-		"typescript": "^4.6.3"
+		"typescript": "^4.6.3",
+		"@atixlabs/hardhat-time-n-mine": "^0.0.5",
+		"ms": "^2.1.3",
+		"sprintf-js": "^1.1.2"
 	},
 	"scripts": {
 		"test": "npx hardhat test --network hardhat"
 	},
 	"engines": {
 		"node": ">=13.0.0"
-	},
-	"dependencies": {
-		"sprintf-js": "^1.1.2"
 	}
 }
