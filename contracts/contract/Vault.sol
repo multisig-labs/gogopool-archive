@@ -95,7 +95,7 @@ contract Vault is Base, IVault {
 	}
 
 	// Withdraw an amount of a ERC20 token to an address
-	// Only accepts calls from Rocket Pool network contracts
+	// Only accepts calls from GoGoPool network contracts
 	function withdrawToken(
 		address _withdrawalAddress,
 		ERC20 _tokenAddress,
@@ -120,7 +120,7 @@ contract Vault is Base, IVault {
 	}
 
 	// Transfer token from one contract to another
-	// Only accepts calls from Rocket Pool network contracts
+	// Only accepts calls from GoGoPool network contracts
 	function transferToken(
 		string memory _networkContractName,
 		ERC20 _tokenAddress,
@@ -146,7 +146,7 @@ contract Vault is Base, IVault {
 
 	// Burns an amount of a token that implements a burn(uint256) method
 	// Only accepts calls from network contracts
-	// [GGP] The only place this is used in RP is to fine node ops, and only RPL is burnable.
+	// [GGP] The only place this is used in GGP is to fine node ops, and only GGPToken is burnable.
 	function burnToken(ERC20Burnable _tokenAddress, uint256 _amount) external onlyLatestNetworkContract {
 		// Get contract key
 		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
