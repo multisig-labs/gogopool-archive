@@ -31,7 +31,7 @@ contract TokenggAVAXTest is GGPTest {
 	}
 
 	function testSingleDepositWithdrawWAVAX(uint128 amount) public {
-		if (amount == 0) amount = 1;
+		vm.assume(amount != 0);
 
 		uint256 aliceUnderlyingAmount = amount;
 
@@ -89,7 +89,7 @@ contract TokenggAVAXTest is GGPTest {
 	}
 
 	function testSingleMintRedeem(uint128 amount) public {
-		if (amount == 0) amount = 1;
+		vm.assume(amount != 0);
 
 		uint256 aliceShareAmount = amount;
 
