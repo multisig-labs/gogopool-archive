@@ -62,6 +62,9 @@ abstract contract GGPTest is Test {
 		baseQueue = new BaseQueue(store);
 		registerContract(store, "BaseQueue", address(baseQueue));
 
+		wavax = new WAVAX();
+		ggAVAX = new TokenggAVAX(store, wavax);
+		registerContract(store, "TokenggAVAX", address(ggAVAX));
 		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
@@ -75,9 +78,6 @@ abstract contract GGPTest is Test {
 		ggp = new TokenGGP(store);
 		registerContract(store, "TokenGGP", address(ggp));
 
-		wavax = new WAVAX();
-		ggAVAX = new TokenggAVAX(store, wavax);
-		registerContract(store, "TokenggAVAX", address(ggAVAX));
 		// Initialize the rewards cycle
 		ggAVAX.syncRewards();
 

@@ -237,7 +237,7 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 
 		totalReleasedAssets = totalReleasedAssets_ + lastRewardAmount_; // SSTORE
 
-		uint32 end = ((timestamp + rewardsCycleLength) / rewardsCycleLength) * rewardsCycleLength;
+		uint32 end = timestamp + rewardsCycleLength;
 
 		// Combined single SSTORE
 		lastRewardAmount = nextRewards.safeCastTo192();
