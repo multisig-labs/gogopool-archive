@@ -9,6 +9,7 @@ import {MultisigManager} from "./MultisigManager.sol";
 import {TokenggAVAX} from "./tokens/TokenggAVAX.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+import {IWithdrawer} from "../interface/IWithdrawer.sol";
 
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
@@ -40,7 +41,7 @@ import "./Base.sol";
 	minipool.item<index>.avaxUserRewardAmt
 */
 
-contract MinipoolManager is Base {
+contract MinipoolManager is Base, IWithdrawer {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 
