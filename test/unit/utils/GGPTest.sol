@@ -8,6 +8,7 @@ import "../../../contracts/contract/BaseQueue.sol";
 import "../../../contracts/contract/MultisigManager.sol";
 import "../../../contracts/contract/Storage.sol";
 import "../../../contracts/contract/Vault.sol";
+import "../../../contracts/contract/Oracle.sol";
 import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 import "../../../contracts/contract/tokens/TokenggAVAX.sol";
@@ -29,6 +30,7 @@ abstract contract GGPTest is Test {
 	// Contracts
 	Storage public store;
 	Vault public vault;
+	Oracle public oracle;
 	BaseQueue public baseQueue;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
@@ -58,6 +60,9 @@ abstract contract GGPTest is Test {
 
 		vault = new Vault(store);
 		registerContract(store, "Vault", address(vault));
+
+		oracle = new Oracle(store);
+		registerContract(store, "Oracle", address(oracle));
 
 		baseQueue = new BaseQueue(store);
 		registerContract(store, "BaseQueue", address(baseQueue));

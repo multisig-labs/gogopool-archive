@@ -65,12 +65,13 @@ const logf = (...args) => console.log(sprintf(...args));
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-12s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+		"%-12s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
 		"nodeID",
 		"status",
 		"owner",
 		"multisig",
 		"avaxNopAmt",
+		"ggpBondAmt",
 		"avaxUsrAmt",
 		"delFee",
 		"dur",
@@ -78,16 +79,18 @@ function logMinipools(minipools) {
 		"end",
 		"totRwds",
 		"nopRwds",
-		"usrRwds"
+		"usrRwds",
+		"ggpSlashAmt"
 	);
 	for (mp of minipools) {
 		logf(
-			"%-12s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+			"%-12s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
 			formatAddr(mp.nodeID),
 			mp.status,
 			formatAddr(mp.owner),
 			formatAddr(mp.multisigAddr),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpAmt),
+			hre.ethers.utils.formatUnits(mp.ggpBondAmt),
 			hre.ethers.utils.formatUnits(mp.avaxUserAmt),
 			mp.delegationFee,
 			mp.duration,
@@ -95,7 +98,8 @@ function logMinipools(minipools) {
 			mp.endTime,
 			hre.ethers.utils.formatUnits(mp.avaxTotalRewardAmt),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpRewardAmt),
-			hre.ethers.utils.formatUnits(mp.avaxUserRewardAmt)
+			hre.ethers.utils.formatUnits(mp.avaxUserRewardAmt),
+			hre.ethers.utils.formatUnits(mp.ggpSlashAmt)
 		);
 	}
 }

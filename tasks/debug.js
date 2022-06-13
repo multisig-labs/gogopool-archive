@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
+const { task } = require("hardhat/config");
 const {
 	addrs,
 	get,
@@ -7,30 +8,62 @@ const {
 	log,
 	logf,
 	getNamedAccounts,
+	now,
 } = require("./lib/utils");
+
+task(
+	"debug:setup",
+	"Run after a local deploy to init necessary configs"
+).setAction(async () => {
+	log("ProtocolDAO initialize()");
+	const dao = await get("ProtocolDAO");
+	await dao.initialize();
+	await hre.run("oracle:set_ggp", { price: "1" });
+	await hre.run("multisig:register", { name: "rialto1" });
+});
+
+task("debug:skip", "Skip forward a duration")
+	.addParam("duration", "")
+	.setAction(async ({ duration }) => {
+		await hre.run("setTimeIncrease", { delta: duration });
+		await hre.run("mine");
+	});
 
 task("debug:list_actor_balances").setAction(async () => {
 	const actors = await getNamedAccounts();
 	const ggAVAX = await get("TokenggAVAX");
+	const ggp = await get("TokenGGP");
 
 	log("");
-	logf("%-15s %-20s %-20s %-20s", "User", "AVAX", "ggAVAX", "equivAVAX");
+	logf(
+		"%-15s %-20s %-20s %-20s %-20s",
+		"User",
+		"AVAX",
+		"ggAVAX",
+		"equivAVAX",
+		"GGP"
+	);
 	for (actor in actors) {
 		const balAVAX = await hre.ethers.provider.getBalance(actors[actor].address);
 		const balGGAVAX = await ggAVAX.balanceOf(actors[actor].address);
 		const balEQAVAX = await ggAVAX.previewRedeem(balGGAVAX);
+		const balGGP = await ggp.balanceOf(actors[actor].address);
 		logf(
-			"%-15s %-20.6f %-20.6f %-20.6f",
+			"%-15s %-20.2f %-20.2f %-20.2f %-20.2f",
 			actor,
 			hre.ethers.utils.formatUnits(balAVAX),
 			hre.ethers.utils.formatUnits(balGGAVAX),
-			hre.ethers.utils.formatUnits(balEQAVAX)
+			hre.ethers.utils.formatUnits(balEQAVAX),
+			hre.ethers.utils.formatUnits(balGGP)
 		);
 	}
 });
 
 task("debug:list_vars", "List important system variables").setAction(
 	async () => {
+		const curTs = await now();
+		log(`Current block.timestamp: ${curTs}`);
+
 		const vault = await get("Vault");
 		const ggAVAX = await get("TokenggAVAX");
 
@@ -69,6 +102,15 @@ task("debug:list_vars", "List important system variables").setAction(
 			hre.ethers.utils.formatUnits(stakingTotalAssets),
 			hre.ethers.utils.formatUnits(amountAvailableForStaking),
 			hre.ethers.utils.formatUnits(totalAssets)
+		);
+
+		log("");
+		const oracle = await get("Oracle");
+		const oracleResults = await oracle.getGGP();
+		const ggpPrice = await oracleResults.price;
+		const ggpTs = await oracleResults.timestamp;
+		log(
+			`Oracle GGP Price: ${hre.ethers.utils.formatUnits(ggpPrice)} at ${ggpTs}`
 		);
 	}
 );

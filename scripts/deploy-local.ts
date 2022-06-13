@@ -22,6 +22,8 @@ const contracts: IFU = {
 	WAVAX: [],
 	Storage: [],
 	Vault: ["Storage"],
+	Oracle: ["Storage"],
+	ProtocolDAO: ["Storage"],
 	MultisigManager: ["Storage"],
 	BaseQueue: ["Storage"],
 	TokenGGP: ["Storage"],

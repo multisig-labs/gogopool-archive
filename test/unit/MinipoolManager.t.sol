@@ -3,8 +3,6 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "./utils/GGPTest.sol";
-import {MinipoolManager} from "../../contracts/contract/MinipoolManager.sol";
-import {MultisigManager} from "../../contracts/contract/MultisigManager.sol";
 
 contract MinipoolManagerTest is GGPTest {
 	int256 private index;
@@ -14,12 +12,42 @@ contract MinipoolManagerTest is GGPTest {
 	uint256 private duration;
 	uint256 private delegationFee;
 	uint256 private ggpBondAmt;
-	uint128 private immutable MAX_AMT = 20000 ether;
+	uint128 private immutable MAX_AMT = 20_000 ether;
 
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
 		nodeOp = getActorWithTokens(1, MAX_AMT, MAX_AMT);
+	}
+
+	function testExpectedReward() public {
+		uint256 amt = minipoolMgr.expectedRewardAmt(365 days, 1_000 ether);
+		assertEq(amt, 100 ether);
+		amt = minipoolMgr.expectedRewardAmt((365 days / 2), 1_000 ether);
+		assertEq(amt, 50 ether);
+		amt = minipoolMgr.expectedRewardAmt((365 days / 3), 1_000 ether);
+		assertEq(amt, 33333333333333333000);
+
+		// Set 5% annual expected reward rate
+		dao.setSettingUint("avalanche.expectedRewardRate", 5e16);
+		amt = minipoolMgr.expectedRewardAmt(365 days, 1_000 ether);
+		assertEq(amt, 50 ether);
+		amt = minipoolMgr.expectedRewardAmt((365 days / 3), 1_000 ether);
+		assertEq(amt, 16.666666666666666 ether);
+	}
+
+	function testCalculateSlashAmt() public {
+		oracle.setGGP(1 ether, block.timestamp);
+		uint256 slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
+		assertEq(slashAmt, 100 ether);
+
+		oracle.setGGP(0.5 ether, block.timestamp);
+		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
+		assertEq(slashAmt, 200 ether);
+
+		oracle.setGGP(3 ether, block.timestamp);
+		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
+		assertEq(slashAmt, 33333333333333333333);
 	}
 
 	function testFullCycle_NoUserFunds() public {

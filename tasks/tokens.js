@@ -29,3 +29,18 @@ task("ggavax:liqstaker_redeem_ggavax")
 		const ggAVAX = await get("TokenggAVAX", addr);
 		await ggAVAX.redeemAVAX(ethers.utils.parseEther(amt, "ether"));
 	});
+
+task("ggp:deal")
+	.addParam("recip", "")
+	.addParam("amt", "")
+	.setAction(async ({ recip, amt }) => {
+		amt = ethers.utils.parseEther(amt, "ether");
+		recip = (await getNamedAccounts())[recip];
+
+		const ggp = await get("TokenGGP");
+		await ggp.transfer(recip.address, amt);
+
+		const minipoolManager = await get("MinipoolManager");
+		const ggpAsRecip = await get("TokenGGP", recip);
+		await ggpAsRecip.approve(minipoolManager.address, amt);
+	});

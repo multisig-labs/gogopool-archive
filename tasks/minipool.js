@@ -205,3 +205,35 @@ task("minipool:withdrawMinipoolFunds", "")
 		const minipoolManager = await get("MinipoolManager", signer);
 		await minipoolManager.withdrawMinipoolFunds(nodeID(node));
 	});
+
+task("minipool:expected_reward", "")
+	.addParam("duration", "duration of validation period")
+	.addParam("amt", "AVAX amount")
+	.setAction(async ({ duration, amt }) => {
+		parsedAmt = ethers.utils.parseEther(amt, "ether");
+		parsedDuration = parseDelta(duration);
+		const minipoolManager = await get("MinipoolManager");
+		const expectedAmt = await minipoolManager.expectedRewardAmt(
+			parsedDuration,
+			parsedAmt
+		);
+		log(
+			`${amt} of AVAX staked for ${duration} should yield ${hre.ethers.utils.formatUnits(
+				expectedAmt
+			)} AVAX`
+		);
+	});
+
+task("minipool:calculate_slash", "")
+	.addParam("amt", "Expected AVAX reward amount")
+	.setAction(async ({ amt }) => {
+		parsedAmt = ethers.utils.parseEther(amt, "ether");
+		console.log(parsedAmt);
+		const minipoolManager = await get("MinipoolManager");
+		const slashAmt = await minipoolManager.calculateSlashAmt(parsedAmt);
+		log(
+			`${amt} AVAX is equivalent to ${hre.ethers.utils.formatEther(
+				slashAmt
+			)} GGP at current prices`
+		);
+	});

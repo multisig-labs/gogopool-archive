@@ -14,7 +14,7 @@ contract TokenGGP is Base, ERC20Burnable {
 
 	// RP has 18 million to start because of their fixed supply tokens
 	// how many should we have since we're starting from 0?
-	uint256 private constant TOTAL_INITIAL_SUPPLY = 0;
+	uint256 private constant TOTAL_INITIAL_SUPPLY = 1000000 ether;
 	// The GGP inflation interval
 	uint256 private constant INFLATION_INTERVAL = 1 days;
 
@@ -30,11 +30,10 @@ contract TokenGGP is Base, ERC20Burnable {
 	event GGPFixedSupplyBurn(address indexed from, uint256 amount, uint256 time);
 	event MintGGPToken(address _minter, address _address, uint256 _value);
 
-	// Construct
 	constructor(Storage storageAddress) Base(storageAddress) ERC20("GoGoPool Protocol", "GGP", 18) {
-		// Version
 		version = 1;
 		settingNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
+		_mint(msg.sender, TOTAL_INITIAL_SUPPLY);
 	}
 
 	function _getInflationCalcTime() private view returns (uint256) {

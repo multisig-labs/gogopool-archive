@@ -2,19 +2,17 @@
 
 pragma solidity ^0.8.13;
 
+import {TokenGGP} from "../tokens/TokenGGP.sol";
 import "../Base.sol";
-import "../tokens/TokenGGP.sol";
 
 // TODO: Add actual DAO functionality.
 
 contract ProtocolDAO is Base {
-	string private constant DAO_NAMESPACE = "dao.protocol.";
-	string private constant DAO_SETTING_PATH = "dao.protocol.setting.";
 	bytes32 private settingNamespace;
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		settingNamespace = keccak256(abi.encodePacked(DAO_SETTING_PATH, DAO_NAMESPACE));
+		settingNamespace = keccak256(abi.encodePacked("dao.protocol.setting."));
 	}
 
 	// modifier that checks if the caller is a dao member
@@ -28,6 +26,7 @@ contract ProtocolDAO is Base {
 
 	function initialize() external onlyGuardian {
 		if (!getBool(keccak256(abi.encodePacked(settingNamespace, "deployed")))) {
+			setSettingUint("avalanche.expectedRewardRate", 0.1 ether); // Annual rate as pct of 1 avax
 			// GGP Inflation settings
 			// these may change when we finialize tokenomics
 			setSettingUint("ggp.inflation.interval.rate", 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
@@ -37,21 +36,28 @@ contract ProtocolDAO is Base {
 		}
 	}
 
+	// TODO Should we use dedicated funcs like this to access values?
+	function getExpectedRewardRate() public view returns (uint256) {
+		return getSettingUint(settingNamespace, "avalanche.expectedRewardRate");
+	}
+
+	// TODO security modifiers for below
+
 	/// @dev set settings for the protocol
 	// Update a Uint setting
-	function setSettingUint(string memory _settingPath, uint256 _value) private {
+	function setSettingUint(string memory _settingPath, uint256 _value) public {
 		// Update setting now
 		setUint(keccak256(abi.encodePacked(settingNamespace, _settingPath)), _value);
 	}
 
 	// updates a bool setting
-	function setSettingBool(string memory _settingPath, bool _value) private {
+	function setSettingBool(string memory _settingPath, bool _value) public {
 		// Update setting now
 		setBool(keccak256(abi.encodePacked(settingNamespace, _settingPath)), _value);
 	}
 
 	// updates an address setting
-	function setSettingAddress(string memory _settingPath, address _value) private {
+	function setSettingAddress(string memory _settingPath, address _value) public {
 		// Update setting now
 		setAddress(keccak256(abi.encodePacked(settingNamespace, _settingPath)), _value);
 	}
