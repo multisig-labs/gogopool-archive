@@ -7,6 +7,7 @@ import "../interface/IStorage.sol";
 
 // TODO remove this when dev is complete
 import "../../lib/forge-std/src/console.sol";
+import "../../test/unit/utils/format.sol";
 
 /// @title Base settings / modifiers for each contract in GoGoPool
 /// @author Chandler

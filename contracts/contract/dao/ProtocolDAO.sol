@@ -31,6 +31,7 @@ contract ProtocolDAO is Base {
 			// these may change when we finialize tokenomics
 			setSettingUint("ggp.inflation.interval.rate", 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
 			setSettingUint("ggp.inflation.interval.start", block.timestamp + 1 days); // Set the default start date for inflation to begin as 1 day after deployment
+			setSettingUint("ggavax.reserve.target", 0.1 ether); // 10% collateral held in reserver
 			// Deployment check
 			setBool(keccak256(abi.encodePacked(settingNamespace, "deployed")), true); // Flag that this contract has been deployed, so default settings don't get reapplied on a contract upgrade
 		}
@@ -78,5 +79,15 @@ contract ProtocolDAO is Base {
 	function getInflationIntervalStartTime() external view returns (uint256) {
 		// Inflation rate start time controlled by the DAO
 		return getSettingUint(settingNamespace, "ggp.inflation.interval.start");
+	}
+
+	/**
+	 * The target percentage of ggAVAX to hold in TokenggAVAX contract
+	 * 1 ether = 100%
+	 * 0.1 ether = 10%
+	 * @return uint256 The current target reserve rate
+	 */
+	function getTargetggAVAXReserveRate() external view returns (uint256) {
+		return getSettingUint(settingNamespace, "ggavax.reserve.target");
 	}
 }
