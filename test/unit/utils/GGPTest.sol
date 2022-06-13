@@ -13,9 +13,13 @@ import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 import "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import "../../../contracts/contract/tokens/WAVAX.sol";
+import {format} from "./format.sol";
 import {MockERC20} from "@rari-capital/solmate/src/test/utils/mocks/MockERC20.sol";
+import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 abstract contract GGPTest is Test {
+	using FixedPointMathLib for uint256;
+
 	address internal constant ZERO_ADDRESS = address(0x00);
 	// vm.addr(RIALTO1_PK) gives the address of the private key, We need this because we test rialto signing things
 	uint256 internal constant RIALTO1_PK = 0xb4679213567f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c8b571a;
@@ -58,6 +62,10 @@ abstract contract GGPTest is Test {
 		store = new Storage();
 		initStorage(store);
 
+		dao = new ProtocolDAO(store);
+		registerContract(store, "ProtocolDAO", address(dao));
+		dao.initialize();
+
 		vault = new Vault(store);
 		registerContract(store, "Vault", address(vault));
 
@@ -68,8 +76,10 @@ abstract contract GGPTest is Test {
 		registerContract(store, "BaseQueue", address(baseQueue));
 
 		wavax = new WAVAX();
+
 		ggAVAX = new TokenggAVAX(store, wavax);
 		registerContract(store, "TokenggAVAX", address(ggAVAX));
+
 		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 

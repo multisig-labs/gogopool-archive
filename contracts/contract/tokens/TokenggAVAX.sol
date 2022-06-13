@@ -4,6 +4,8 @@
 
 pragma solidity ^0.8.13;
 
+import {ProtocolDAO} from "../dao/ProtocolDAO.sol";
+
 import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {SafeCastLib} from "@rari-capital/solmate/src/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
@@ -177,15 +179,12 @@ contract TokenggAVAX is Base, ERC20, ERC4626 {
 	}
 
 	function amountAvailableForStaking() public view returns (uint256) {
-		// TODO make this work
-		// uint256 targetAmt = totalReleasedAssets * targetFloatPercent;
-		uint256 cashOnHand = asset.balanceOf(address(this));
-		// if (cashOnHand < targetAmt) {
-		// 	return 0;
-		// } else {
-		// 	return cashOnHand - targetAmt;
-		// }
-		return cashOnHand;
+		ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 targetCollateralRate = protocolDAO.getTargetggAVAXReserveRate();
+		uint256 totalAssets_ = totalAssets();
+
+		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
+		return totalAssets_ - reservedAssets;
 	}
 
 	// REWARDS SYNC LOGIC

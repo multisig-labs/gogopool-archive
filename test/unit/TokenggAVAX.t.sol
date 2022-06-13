@@ -5,6 +5,7 @@ pragma solidity ^0.8.13;
 import "./utils/GGPTest.sol";
 
 contract TokenggAVAXTest is GGPTest {
+	using FixedPointMathLib for uint256;
 	uint128 private immutable MAX_AMT = type(uint128).max;
 	address private alice;
 	address private bob;
@@ -121,7 +122,7 @@ contract TokenggAVAXTest is GGPTest {
 
 	function testDepositStakingRewards() public {
 		// Scenario:
-		// 1. Bob mints 4000 shares (costs 4000 tokens)
+		// 1. Bob mints 2000 shares (costs 2000 tokens)
 		// 2. 1000 tokens are withdrawn for staking
 		// 3. 1000 rewards deposited
 		// 4. 1 rewards cycle pass, no rewards are distributed to
@@ -132,7 +133,7 @@ contract TokenggAVAXTest is GGPTest {
 		// 7. Skip ahead remaining 2/3 of the rewards cycle,
 		//		all rewards should be distributed
 
-		uint256 depositAmount = 1000 ether;
+		uint256 depositAmount = 2000 ether;
 		uint256 stakingWithdrawAmount = 1000 ether;
 		uint256 totalStakedAmount = 2000 ether;
 
@@ -150,6 +151,7 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - depositAmount.mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether));
 
 		// 2. 1000 tokens are withdrawn for staking
 		vm.prank(rialto1);
@@ -157,12 +159,11 @@ contract TokenggAVAXTest is GGPTest {
 
 		assertEq(rialto1.balance, rialtoInitBal + totalStakedAmount);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - stakingWithdrawAmount);
 		assertEq(ggAVAX.stakingTotalAssets(), stakingWithdrawAmount);
 
 		// 3. 1000 rewards are deposited
 		// None of these rewards should be distributed yet
-		vm.deal(rialto1, rialto1.balance + 100 ether);
+		vm.deal(rialto1, rialto1.balance + rewardsAmount);
 		vm.startPrank(rialto1);
 		minipoolMgr.recordStakingStart(nodeID, block.timestamp);
 		int256 idx = minipoolMgr.getIndexOf(nodeID);
@@ -170,25 +171,22 @@ contract TokenggAVAXTest is GGPTest {
 		uint256 endTime = block.timestamp + mp.duration;
 
 		skip(mp.duration);
-		minipoolMgr.recordStakingEnd{value: 2100 ether}(nodeID, endTime, rewardsAmount);
+		minipoolMgr.recordStakingEnd{value: totalStakedAmount + rewardsAmount}(nodeID, endTime, rewardsAmount);
 		vm.stopPrank();
 
 		assertEq(rialto1.balance, rialtoInitBal);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
 		// 4. Skip ahead one rewards cycle
 		// Still no rewards should be distributed
 		skip(ggAVAX.rewardsCycleLength());
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
 		// 5. Sync rewards and see an update to half the rewards
 		ggAVAX.syncRewards();
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 		assertEq(ggAVAX.lastRewardAmount(), liquidStakerRewards);
 
@@ -197,7 +195,6 @@ contract TokenggAVAXTest is GGPTest {
 
 		uint256 oneThirdRewards = liquidStakerRewards / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + oneThirdRewards);
 		assertEq(ggAVAX.lastRewardAmount(), liquidStakerRewards);
 
@@ -205,8 +202,21 @@ contract TokenggAVAXTest is GGPTest {
 		// Rewards should be fully distributed
 		skip((ggAVAX.rewardsCycleLength() * 2) / 3);
 		assertEq(ggAVAX.totalAssets(), depositAmount + liquidStakerRewards);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + liquidStakerRewards);
+	}
+
+	function testAmountAvailableForStaking() public {
+		uint256 depositAmount = 1000 ether;
+
+		vm.deal(bob, depositAmount);
+		vm.prank(bob);
+		ggAVAX.depositAVAX{value: depositAmount}();
+
+		assertEq(bob.balance, 0);
+		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
+		assertEq(ggAVAX.balanceOf(bob), depositAmount);
+		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), 900 ether);
 	}
 
 	function printState(string memory message) internal view {
@@ -234,8 +244,6 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 	}
-
-	uint256 AVAX = 1e18;
 
 	// function testFloat() public {
 	// 	uint256 float = 1e17; // 1e18 * 10%;
