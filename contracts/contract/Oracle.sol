@@ -39,12 +39,12 @@ contract Oracle is Base {
 	// Get an aggregated price from the 1Inch contract.
 	// NEVER call this on-chain, only rialto should call, then
 	// send a setGGPPrice tx
-	function getGGPPriceFromOneInch() public view returns (uint256) {
+	function getGGPPriceFromOneInch() public view returns (uint256 price, uint256 timestamp) {
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		address addr = getAddress("oracle.ggp.oneinch");
 		IOneInch oneinch = IOneInch(addr);
-		uint256 rate = oneinch.getRateToEth(ggp, false);
-		return rate;
+		price = oneinch.getRateToEth(ggp, false);
+		timestamp = block.timestamp;
 	}
 
 	// TODO modifiers for who can call all these functions (registered/enabled multisigs)
