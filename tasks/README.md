@@ -29,6 +29,7 @@ npx hardhat ggp:deal --recip nodeOp1 --amt 1000
 npx hardhat oracle:get_ggp
 npx hardhat oracle:set_ggp --price 1 --timestamp 0
 npx hardhat oracle:set_ggp --price 1 --interval 1d
+npx hardhat oracle:get_ggp_price_oneinch
 
 ### This is a full cycle
 
@@ -56,6 +57,7 @@ npx hardhat minipool:recordStakingStart --actor rialto1 --node node4 &
 npx hardhat minipool:list
 
 npx hardhat debug:skip --duration 14d
+npx hardhat mine
 
 npx hardhat minipool:recordStakingEnd --actor rialto1 --node node1 --reward 0 &
 npx hardhat minipool:recordStakingEnd --actor rialto1 --node node2 --reward 300 &

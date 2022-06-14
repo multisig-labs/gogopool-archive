@@ -395,7 +395,7 @@ contract MinipoolManager is Base, IWithdrawer {
 	// Calculate how much GGP should be slashed given an expectedRewardAmt
 	function calculateSlashAmt(uint256 avaxRewardAmt) public view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGP();
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
 		return (1 ether * avaxRewardAmt) / ggpPriceInAvax;
 	}
 

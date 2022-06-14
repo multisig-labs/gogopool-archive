@@ -74,6 +74,7 @@ gen:
 	mkdir -p $THATDIR/gen
 	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.6
 	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/_MinipoolManager.go
+	cat $THATDIR/artifacts/contracts/contract/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/_Oracle.go
 	echo "Complete!"
 
 # Update foundry binaries to the nightly version

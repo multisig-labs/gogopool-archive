@@ -21,6 +21,7 @@ const contracts: IFU = {
 	Multicall: [],
 	WAVAX: [],
 	Storage: [],
+	OneInchMock: [],
 	Vault: ["Storage"],
 	Oracle: ["Storage"],
 	ProtocolDAO: ["Storage"],

@@ -37,15 +37,15 @@ contract MinipoolManagerTest is GGPTest {
 	}
 
 	function testCalculateSlashAmt() public {
-		oracle.setGGP(1 ether, block.timestamp);
+		oracle.setGGPPrice(1 ether, block.timestamp);
 		uint256 slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 100 ether);
 
-		oracle.setGGP(0.5 ether, block.timestamp);
+		oracle.setGGPPrice(0.5 ether, block.timestamp);
 		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 200 ether);
 
-		oracle.setGGP(3 ether, block.timestamp);
+		oracle.setGGPPrice(3 ether, block.timestamp);
 		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 33333333333333333333);
 	}

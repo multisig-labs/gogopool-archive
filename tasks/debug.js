@@ -17,8 +17,12 @@ task(
 ).setAction(async () => {
 	log("ProtocolDAO initialize()");
 	const dao = await get("ProtocolDAO");
+	const oneinch = await get("OneInchMock");
 	await dao.initialize();
 	await hre.run("oracle:set_ggp", { price: "1" });
+	await hre.run("oracle:set_oneinch", {
+		addr: oneinch.address,
+	});
 	await hre.run("multisig:register", { name: "rialto1" });
 });
 

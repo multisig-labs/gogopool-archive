@@ -28,9 +28,28 @@ var (
 	_ = event.NewSubscription
 )
 
+// MinipoolManagerMinipool is an auto generated low-level Go binding around an user-defined struct.
+type MinipoolManagerMinipool struct {
+	NodeID              common.Address
+	Status              *big.Int
+	Duration            *big.Int
+	StartTime           *big.Int
+	EndTime             *big.Int
+	DelegationFee       *big.Int
+	GgpBondAmt          *big.Int
+	GgpSlashAmt         *big.Int
+	AvaxNodeOpAmt       *big.Int
+	AvaxUserAmt         *big.Int
+	AvaxTotalRewardAmt  *big.Int
+	AvaxNodeOpRewardAmt *big.Int
+	AvaxUserRewardAmt   *big.Int
+	Owner               common.Address
+	MultisigAddr        common.Address
+}
+
 // MinipoolManagerMetaData contains all meta data concerning the MinipoolManager contract.
 var MinipoolManagerMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractIStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"},{\"internalType\":\"contractTokenggAVAX\",\"name\":\"ggAVAX_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ErrorIssuingValidationTx\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ErrorSendingAvax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientAvaxForStaking\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidEndTime\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMultisigAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMultisigSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidStateTransition\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MinipoolAlreadyRegistered\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MinipoolMustBeInitialised\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MinipoolNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OnlyOwnerCanCancel\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"enumMinipoolStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"MinipoolStatusChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"ZeroRewardsReceived\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MIN_STAKING_AMT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"cancelMinipool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"}],\"name\":\"cancelMinipool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"}],\"name\":\"claimAndInitiateStaking\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpBondAmt\",\"type\":\"uint256\"}],\"name\":\"createMinipool\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"getIndexOf\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"index\",\"type\":\"int256\"}],\"name\":\"getMinipool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpBondAmt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getPublicContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggAVAX\",\"outputs\":[{\"internalType\":\"contractTokenggAVAX\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"receiveVaultWithdrawalAVAX\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxRewardAmt\",\"type\":\"uint256\"}],\"name\":\"recordStakingEnd\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"message\",\"type\":\"string\"}],\"name\":\"recordStakingError\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"}],\"name\":\"recordStakingStart\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"enumMinipoolStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"updateMinipoolStatus\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"},{\"internalType\":\"contractTokenggAVAX\",\"name\":\"ggAVAX_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ErrorIssuingValidationTx\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ErrorSendingAvax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientAvaxForStaking\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientAvaxVaultBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidEndTime\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMultisigAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMultisigSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidStateTransition\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MinipoolAlreadyRegistered\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MinipoolMustBeInitialised\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MinipoolNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OnlyOwnerCanCancel\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OnlyOwnerCanWithdraw\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"enumMinipoolStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"MinipoolStatusChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"ZeroRewardsReceived\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MINIPOOL_QUEUE_KEY\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MIN_STAKING_AMT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"avaxRewardAmt\",\"type\":\"uint256\"}],\"name\":\"calculateSlashAmt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"canClaimAndInitiateStaking\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"cancelMinipool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"claimAndInitiateStaking\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpBondAmt\",\"type\":\"uint256\"}],\"name\":\"createMinipool\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAmt\",\"type\":\"uint256\"}],\"name\":\"expectedRewardAmt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"getIndexOf\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"index\",\"type\":\"int256\"}],\"name\":\"getMinipool\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpBondAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpSlashAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxNodeOpAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxUserAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxTotalRewardAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxNodeOpRewardAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxUserRewardAmt\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"multisigAddr\",\"type\":\"address\"}],\"internalType\":\"structMinipoolManager.Minipool\",\"name\":\"mp\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getMinipoolCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"getMinipoolCountPerStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"prelaunchCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"launchedCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakingCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"withdrawableCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"finishedCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"canceledCount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumMinipoolStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"getMinipools\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"delegationFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpBondAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpSlashAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxNodeOpAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxUserAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxTotalRewardAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxNodeOpRewardAmt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxUserRewardAmt\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"multisigAddr\",\"type\":\"address\"}],\"internalType\":\"structMinipoolManager.Minipool[]\",\"name\":\"minipools\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getPublicContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggAVAX\",\"outputs\":[{\"internalType\":\"contractTokenggAVAX\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"receiveWithdrawalAVAX\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxTotalRewardAmt\",\"type\":\"uint256\"}],\"name\":\"recordStakingEnd\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"message\",\"type\":\"string\"}],\"name\":\"recordStakingError\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"}],\"name\":\"recordStakingStart\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"},{\"internalType\":\"enumMinipoolStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"updateMinipoolStatus\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeID\",\"type\":\"address\"}],\"name\":\"withdrawMinipoolFunds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // MinipoolManagerABI is the input ABI used to generate the binding from.
@@ -179,6 +198,37 @@ func (_MinipoolManager *MinipoolManagerTransactorRaw) Transact(opts *bind.Transa
 	return _MinipoolManager.Contract.contract.Transact(opts, method, params...)
 }
 
+// MINIPOOLQUEUEKEY is a free data retrieval call binding the contract method 0x28b105fd.
+//
+// Solidity: function MINIPOOL_QUEUE_KEY() view returns(bytes32)
+func (_MinipoolManager *MinipoolManagerCaller) MINIPOOLQUEUEKEY(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _MinipoolManager.contract.Call(opts, &out, "MINIPOOL_QUEUE_KEY")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// MINIPOOLQUEUEKEY is a free data retrieval call binding the contract method 0x28b105fd.
+//
+// Solidity: function MINIPOOL_QUEUE_KEY() view returns(bytes32)
+func (_MinipoolManager *MinipoolManagerSession) MINIPOOLQUEUEKEY() ([32]byte, error) {
+	return _MinipoolManager.Contract.MINIPOOLQUEUEKEY(&_MinipoolManager.CallOpts)
+}
+
+// MINIPOOLQUEUEKEY is a free data retrieval call binding the contract method 0x28b105fd.
+//
+// Solidity: function MINIPOOL_QUEUE_KEY() view returns(bytes32)
+func (_MinipoolManager *MinipoolManagerCallerSession) MINIPOOLQUEUEKEY() ([32]byte, error) {
+	return _MinipoolManager.Contract.MINIPOOLQUEUEKEY(&_MinipoolManager.CallOpts)
+}
+
 // MINSTAKINGAMT is a free data retrieval call binding the contract method 0xe49e49bf.
 //
 // Solidity: function MIN_STAKING_AMT() view returns(uint256)
@@ -208,6 +258,99 @@ func (_MinipoolManager *MinipoolManagerSession) MINSTAKINGAMT() (*big.Int, error
 // Solidity: function MIN_STAKING_AMT() view returns(uint256)
 func (_MinipoolManager *MinipoolManagerCallerSession) MINSTAKINGAMT() (*big.Int, error) {
 	return _MinipoolManager.Contract.MINSTAKINGAMT(&_MinipoolManager.CallOpts)
+}
+
+// CalculateSlashAmt is a free data retrieval call binding the contract method 0xf4812b88.
+//
+// Solidity: function calculateSlashAmt(uint256 avaxRewardAmt) view returns(uint256)
+func (_MinipoolManager *MinipoolManagerCaller) CalculateSlashAmt(opts *bind.CallOpts, avaxRewardAmt *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _MinipoolManager.contract.Call(opts, &out, "calculateSlashAmt", avaxRewardAmt)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// CalculateSlashAmt is a free data retrieval call binding the contract method 0xf4812b88.
+//
+// Solidity: function calculateSlashAmt(uint256 avaxRewardAmt) view returns(uint256)
+func (_MinipoolManager *MinipoolManagerSession) CalculateSlashAmt(avaxRewardAmt *big.Int) (*big.Int, error) {
+	return _MinipoolManager.Contract.CalculateSlashAmt(&_MinipoolManager.CallOpts, avaxRewardAmt)
+}
+
+// CalculateSlashAmt is a free data retrieval call binding the contract method 0xf4812b88.
+//
+// Solidity: function calculateSlashAmt(uint256 avaxRewardAmt) view returns(uint256)
+func (_MinipoolManager *MinipoolManagerCallerSession) CalculateSlashAmt(avaxRewardAmt *big.Int) (*big.Int, error) {
+	return _MinipoolManager.Contract.CalculateSlashAmt(&_MinipoolManager.CallOpts, avaxRewardAmt)
+}
+
+// CanClaimAndInitiateStaking is a free data retrieval call binding the contract method 0xea3092d1.
+//
+// Solidity: function canClaimAndInitiateStaking(address nodeID) view returns(bool)
+func (_MinipoolManager *MinipoolManagerCaller) CanClaimAndInitiateStaking(opts *bind.CallOpts, nodeID common.Address) (bool, error) {
+	var out []interface{}
+	err := _MinipoolManager.contract.Call(opts, &out, "canClaimAndInitiateStaking", nodeID)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// CanClaimAndInitiateStaking is a free data retrieval call binding the contract method 0xea3092d1.
+//
+// Solidity: function canClaimAndInitiateStaking(address nodeID) view returns(bool)
+func (_MinipoolManager *MinipoolManagerSession) CanClaimAndInitiateStaking(nodeID common.Address) (bool, error) {
+	return _MinipoolManager.Contract.CanClaimAndInitiateStaking(&_MinipoolManager.CallOpts, nodeID)
+}
+
+// CanClaimAndInitiateStaking is a free data retrieval call binding the contract method 0xea3092d1.
+//
+// Solidity: function canClaimAndInitiateStaking(address nodeID) view returns(bool)
+func (_MinipoolManager *MinipoolManagerCallerSession) CanClaimAndInitiateStaking(nodeID common.Address) (bool, error) {
+	return _MinipoolManager.Contract.CanClaimAndInitiateStaking(&_MinipoolManager.CallOpts, nodeID)
+}
+
+// ExpectedRewardAmt is a free data retrieval call binding the contract method 0xde5a61e3.
+//
+// Solidity: function expectedRewardAmt(uint256 duration, uint256 avaxAmt) view returns(uint256)
+func (_MinipoolManager *MinipoolManagerCaller) ExpectedRewardAmt(opts *bind.CallOpts, duration *big.Int, avaxAmt *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _MinipoolManager.contract.Call(opts, &out, "expectedRewardAmt", duration, avaxAmt)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// ExpectedRewardAmt is a free data retrieval call binding the contract method 0xde5a61e3.
+//
+// Solidity: function expectedRewardAmt(uint256 duration, uint256 avaxAmt) view returns(uint256)
+func (_MinipoolManager *MinipoolManagerSession) ExpectedRewardAmt(duration *big.Int, avaxAmt *big.Int) (*big.Int, error) {
+	return _MinipoolManager.Contract.ExpectedRewardAmt(&_MinipoolManager.CallOpts, duration, avaxAmt)
+}
+
+// ExpectedRewardAmt is a free data retrieval call binding the contract method 0xde5a61e3.
+//
+// Solidity: function expectedRewardAmt(uint256 duration, uint256 avaxAmt) view returns(uint256)
+func (_MinipoolManager *MinipoolManagerCallerSession) ExpectedRewardAmt(duration *big.Int, avaxAmt *big.Int) (*big.Int, error) {
+	return _MinipoolManager.Contract.ExpectedRewardAmt(&_MinipoolManager.CallOpts, duration, avaxAmt)
 }
 
 // GetIndexOf is a free data retrieval call binding the contract method 0x017df522.
@@ -243,70 +386,41 @@ func (_MinipoolManager *MinipoolManagerCallerSession) GetIndexOf(nodeID common.A
 
 // GetMinipool is a free data retrieval call binding the contract method 0xd8ce16f4.
 //
-// Solidity: function getMinipool(int256 index) view returns(address nodeID, uint256 status, uint256 duration, uint256 delegationFee, uint256 ggpBondAmt)
-func (_MinipoolManager *MinipoolManagerCaller) GetMinipool(opts *bind.CallOpts, index *big.Int) (struct {
-	NodeID        common.Address
-	Status        *big.Int
-	Duration      *big.Int
-	DelegationFee *big.Int
-	GgpBondAmt    *big.Int
-}, error) {
+// Solidity: function getMinipool(int256 index) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,address) mp)
+func (_MinipoolManager *MinipoolManagerCaller) GetMinipool(opts *bind.CallOpts, index *big.Int) (MinipoolManagerMinipool, error) {
 	var out []interface{}
 	err := _MinipoolManager.contract.Call(opts, &out, "getMinipool", index)
 
-	outstruct := new(struct {
-		NodeID        common.Address
-		Status        *big.Int
-		Duration      *big.Int
-		DelegationFee *big.Int
-		GgpBondAmt    *big.Int
-	})
 	if err != nil {
-		return *outstruct, err
+		return *new(MinipoolManagerMinipool), err
 	}
 
-	outstruct.NodeID = *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-	outstruct.Status = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
-	outstruct.Duration = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
-	outstruct.DelegationFee = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
-	outstruct.GgpBondAmt = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	out0 := *abi.ConvertType(out[0], new(MinipoolManagerMinipool)).(*MinipoolManagerMinipool)
 
-	return *outstruct, err
+	return out0, err
 
 }
 
 // GetMinipool is a free data retrieval call binding the contract method 0xd8ce16f4.
 //
-// Solidity: function getMinipool(int256 index) view returns(address nodeID, uint256 status, uint256 duration, uint256 delegationFee, uint256 ggpBondAmt)
-func (_MinipoolManager *MinipoolManagerSession) GetMinipool(index *big.Int) (struct {
-	NodeID        common.Address
-	Status        *big.Int
-	Duration      *big.Int
-	DelegationFee *big.Int
-	GgpBondAmt    *big.Int
-}, error) {
+// Solidity: function getMinipool(int256 index) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,address) mp)
+func (_MinipoolManager *MinipoolManagerSession) GetMinipool(index *big.Int) (MinipoolManagerMinipool, error) {
 	return _MinipoolManager.Contract.GetMinipool(&_MinipoolManager.CallOpts, index)
 }
 
 // GetMinipool is a free data retrieval call binding the contract method 0xd8ce16f4.
 //
-// Solidity: function getMinipool(int256 index) view returns(address nodeID, uint256 status, uint256 duration, uint256 delegationFee, uint256 ggpBondAmt)
-func (_MinipoolManager *MinipoolManagerCallerSession) GetMinipool(index *big.Int) (struct {
-	NodeID        common.Address
-	Status        *big.Int
-	Duration      *big.Int
-	DelegationFee *big.Int
-	GgpBondAmt    *big.Int
-}, error) {
+// Solidity: function getMinipool(int256 index) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,address) mp)
+func (_MinipoolManager *MinipoolManagerCallerSession) GetMinipool(index *big.Int) (MinipoolManagerMinipool, error) {
 	return _MinipoolManager.Contract.GetMinipool(&_MinipoolManager.CallOpts, index)
 }
 
-// GetNonce is a free data retrieval call binding the contract method 0x2d0335ab.
+// GetMinipoolCount is a free data retrieval call binding the contract method 0xae4d0bed.
 //
-// Solidity: function getNonce(address signer) view returns(uint256)
-func (_MinipoolManager *MinipoolManagerCaller) GetNonce(opts *bind.CallOpts, signer common.Address) (*big.Int, error) {
+// Solidity: function getMinipoolCount() view returns(uint256)
+func (_MinipoolManager *MinipoolManagerCaller) GetMinipoolCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _MinipoolManager.contract.Call(opts, &out, "getNonce", signer)
+	err := _MinipoolManager.contract.Call(opts, &out, "getMinipoolCount")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -318,18 +432,114 @@ func (_MinipoolManager *MinipoolManagerCaller) GetNonce(opts *bind.CallOpts, sig
 
 }
 
-// GetNonce is a free data retrieval call binding the contract method 0x2d0335ab.
+// GetMinipoolCount is a free data retrieval call binding the contract method 0xae4d0bed.
 //
-// Solidity: function getNonce(address signer) view returns(uint256)
-func (_MinipoolManager *MinipoolManagerSession) GetNonce(signer common.Address) (*big.Int, error) {
-	return _MinipoolManager.Contract.GetNonce(&_MinipoolManager.CallOpts, signer)
+// Solidity: function getMinipoolCount() view returns(uint256)
+func (_MinipoolManager *MinipoolManagerSession) GetMinipoolCount() (*big.Int, error) {
+	return _MinipoolManager.Contract.GetMinipoolCount(&_MinipoolManager.CallOpts)
 }
 
-// GetNonce is a free data retrieval call binding the contract method 0x2d0335ab.
+// GetMinipoolCount is a free data retrieval call binding the contract method 0xae4d0bed.
 //
-// Solidity: function getNonce(address signer) view returns(uint256)
-func (_MinipoolManager *MinipoolManagerCallerSession) GetNonce(signer common.Address) (*big.Int, error) {
-	return _MinipoolManager.Contract.GetNonce(&_MinipoolManager.CallOpts, signer)
+// Solidity: function getMinipoolCount() view returns(uint256)
+func (_MinipoolManager *MinipoolManagerCallerSession) GetMinipoolCount() (*big.Int, error) {
+	return _MinipoolManager.Contract.GetMinipoolCount(&_MinipoolManager.CallOpts)
+}
+
+// GetMinipoolCountPerStatus is a free data retrieval call binding the contract method 0x3b5ecefa.
+//
+// Solidity: function getMinipoolCountPerStatus(uint256 offset, uint256 limit) view returns(uint256 prelaunchCount, uint256 launchedCount, uint256 stakingCount, uint256 withdrawableCount, uint256 finishedCount, uint256 canceledCount)
+func (_MinipoolManager *MinipoolManagerCaller) GetMinipoolCountPerStatus(opts *bind.CallOpts, offset *big.Int, limit *big.Int) (struct {
+	PrelaunchCount    *big.Int
+	LaunchedCount     *big.Int
+	StakingCount      *big.Int
+	WithdrawableCount *big.Int
+	FinishedCount     *big.Int
+	CanceledCount     *big.Int
+}, error) {
+	var out []interface{}
+	err := _MinipoolManager.contract.Call(opts, &out, "getMinipoolCountPerStatus", offset, limit)
+
+	outstruct := new(struct {
+		PrelaunchCount    *big.Int
+		LaunchedCount     *big.Int
+		StakingCount      *big.Int
+		WithdrawableCount *big.Int
+		FinishedCount     *big.Int
+		CanceledCount     *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.PrelaunchCount = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.LaunchedCount = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.StakingCount = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.WithdrawableCount = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.FinishedCount = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.CanceledCount = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// GetMinipoolCountPerStatus is a free data retrieval call binding the contract method 0x3b5ecefa.
+//
+// Solidity: function getMinipoolCountPerStatus(uint256 offset, uint256 limit) view returns(uint256 prelaunchCount, uint256 launchedCount, uint256 stakingCount, uint256 withdrawableCount, uint256 finishedCount, uint256 canceledCount)
+func (_MinipoolManager *MinipoolManagerSession) GetMinipoolCountPerStatus(offset *big.Int, limit *big.Int) (struct {
+	PrelaunchCount    *big.Int
+	LaunchedCount     *big.Int
+	StakingCount      *big.Int
+	WithdrawableCount *big.Int
+	FinishedCount     *big.Int
+	CanceledCount     *big.Int
+}, error) {
+	return _MinipoolManager.Contract.GetMinipoolCountPerStatus(&_MinipoolManager.CallOpts, offset, limit)
+}
+
+// GetMinipoolCountPerStatus is a free data retrieval call binding the contract method 0x3b5ecefa.
+//
+// Solidity: function getMinipoolCountPerStatus(uint256 offset, uint256 limit) view returns(uint256 prelaunchCount, uint256 launchedCount, uint256 stakingCount, uint256 withdrawableCount, uint256 finishedCount, uint256 canceledCount)
+func (_MinipoolManager *MinipoolManagerCallerSession) GetMinipoolCountPerStatus(offset *big.Int, limit *big.Int) (struct {
+	PrelaunchCount    *big.Int
+	LaunchedCount     *big.Int
+	StakingCount      *big.Int
+	WithdrawableCount *big.Int
+	FinishedCount     *big.Int
+	CanceledCount     *big.Int
+}, error) {
+	return _MinipoolManager.Contract.GetMinipoolCountPerStatus(&_MinipoolManager.CallOpts, offset, limit)
+}
+
+// GetMinipools is a free data retrieval call binding the contract method 0x934857bb.
+//
+// Solidity: function getMinipools(uint8 status, uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,address)[] minipools)
+func (_MinipoolManager *MinipoolManagerCaller) GetMinipools(opts *bind.CallOpts, status uint8, offset *big.Int, limit *big.Int) ([]MinipoolManagerMinipool, error) {
+	var out []interface{}
+	err := _MinipoolManager.contract.Call(opts, &out, "getMinipools", status, offset, limit)
+
+	if err != nil {
+		return *new([]MinipoolManagerMinipool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]MinipoolManagerMinipool)).(*[]MinipoolManagerMinipool)
+
+	return out0, err
+
+}
+
+// GetMinipools is a free data retrieval call binding the contract method 0x934857bb.
+//
+// Solidity: function getMinipools(uint8 status, uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,address)[] minipools)
+func (_MinipoolManager *MinipoolManagerSession) GetMinipools(status uint8, offset *big.Int, limit *big.Int) ([]MinipoolManagerMinipool, error) {
+	return _MinipoolManager.Contract.GetMinipools(&_MinipoolManager.CallOpts, status, offset, limit)
+}
+
+// GetMinipools is a free data retrieval call binding the contract method 0x934857bb.
+//
+// Solidity: function getMinipools(uint8 status, uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,address)[] minipools)
+func (_MinipoolManager *MinipoolManagerCallerSession) GetMinipools(status uint8, offset *big.Int, limit *big.Int) ([]MinipoolManagerMinipool, error) {
+	return _MinipoolManager.Contract.GetMinipools(&_MinipoolManager.CallOpts, status, offset, limit)
 }
 
 // GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
@@ -570,46 +780,25 @@ func (_MinipoolManager *MinipoolManagerTransactorSession) CancelMinipool(nodeID 
 	return _MinipoolManager.Contract.CancelMinipool(&_MinipoolManager.TransactOpts, nodeID)
 }
 
-// CancelMinipool0 is a paid mutator transaction binding the contract method 0xfdc652ca.
+// ClaimAndInitiateStaking is a paid mutator transaction binding the contract method 0x809784c5.
 //
-// Solidity: function cancelMinipool(address nodeID, bytes sig) returns()
-func (_MinipoolManager *MinipoolManagerTransactor) CancelMinipool0(opts *bind.TransactOpts, nodeID common.Address, sig []byte) (*types.Transaction, error) {
-	return _MinipoolManager.contract.Transact(opts, "cancelMinipool0", nodeID, sig)
+// Solidity: function claimAndInitiateStaking(address nodeID) returns()
+func (_MinipoolManager *MinipoolManagerTransactor) ClaimAndInitiateStaking(opts *bind.TransactOpts, nodeID common.Address) (*types.Transaction, error) {
+	return _MinipoolManager.contract.Transact(opts, "claimAndInitiateStaking", nodeID)
 }
 
-// CancelMinipool0 is a paid mutator transaction binding the contract method 0xfdc652ca.
+// ClaimAndInitiateStaking is a paid mutator transaction binding the contract method 0x809784c5.
 //
-// Solidity: function cancelMinipool(address nodeID, bytes sig) returns()
-func (_MinipoolManager *MinipoolManagerSession) CancelMinipool0(nodeID common.Address, sig []byte) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.CancelMinipool0(&_MinipoolManager.TransactOpts, nodeID, sig)
+// Solidity: function claimAndInitiateStaking(address nodeID) returns()
+func (_MinipoolManager *MinipoolManagerSession) ClaimAndInitiateStaking(nodeID common.Address) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.ClaimAndInitiateStaking(&_MinipoolManager.TransactOpts, nodeID)
 }
 
-// CancelMinipool0 is a paid mutator transaction binding the contract method 0xfdc652ca.
+// ClaimAndInitiateStaking is a paid mutator transaction binding the contract method 0x809784c5.
 //
-// Solidity: function cancelMinipool(address nodeID, bytes sig) returns()
-func (_MinipoolManager *MinipoolManagerTransactorSession) CancelMinipool0(nodeID common.Address, sig []byte) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.CancelMinipool0(&_MinipoolManager.TransactOpts, nodeID, sig)
-}
-
-// ClaimAndInitiateStaking is a paid mutator transaction binding the contract method 0xfb853082.
-//
-// Solidity: function claimAndInitiateStaking(address nodeID, bytes sig) returns()
-func (_MinipoolManager *MinipoolManagerTransactor) ClaimAndInitiateStaking(opts *bind.TransactOpts, nodeID common.Address, sig []byte) (*types.Transaction, error) {
-	return _MinipoolManager.contract.Transact(opts, "claimAndInitiateStaking", nodeID, sig)
-}
-
-// ClaimAndInitiateStaking is a paid mutator transaction binding the contract method 0xfb853082.
-//
-// Solidity: function claimAndInitiateStaking(address nodeID, bytes sig) returns()
-func (_MinipoolManager *MinipoolManagerSession) ClaimAndInitiateStaking(nodeID common.Address, sig []byte) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.ClaimAndInitiateStaking(&_MinipoolManager.TransactOpts, nodeID, sig)
-}
-
-// ClaimAndInitiateStaking is a paid mutator transaction binding the contract method 0xfb853082.
-//
-// Solidity: function claimAndInitiateStaking(address nodeID, bytes sig) returns()
-func (_MinipoolManager *MinipoolManagerTransactorSession) ClaimAndInitiateStaking(nodeID common.Address, sig []byte) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.ClaimAndInitiateStaking(&_MinipoolManager.TransactOpts, nodeID, sig)
+// Solidity: function claimAndInitiateStaking(address nodeID) returns()
+func (_MinipoolManager *MinipoolManagerTransactorSession) ClaimAndInitiateStaking(nodeID common.Address) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.ClaimAndInitiateStaking(&_MinipoolManager.TransactOpts, nodeID)
 }
 
 // CreateMinipool is a paid mutator transaction binding the contract method 0x356ff5a5.
@@ -633,88 +822,88 @@ func (_MinipoolManager *MinipoolManagerTransactorSession) CreateMinipool(nodeID 
 	return _MinipoolManager.Contract.CreateMinipool(&_MinipoolManager.TransactOpts, nodeID, duration, delegationFee, ggpBondAmt)
 }
 
-// ReceiveVaultWithdrawalAVAX is a paid mutator transaction binding the contract method 0xac0027c2.
+// ReceiveWithdrawalAVAX is a paid mutator transaction binding the contract method 0xffe09241.
 //
-// Solidity: function receiveVaultWithdrawalAVAX() payable returns()
-func (_MinipoolManager *MinipoolManagerTransactor) ReceiveVaultWithdrawalAVAX(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _MinipoolManager.contract.Transact(opts, "receiveVaultWithdrawalAVAX")
+// Solidity: function receiveWithdrawalAVAX() payable returns()
+func (_MinipoolManager *MinipoolManagerTransactor) ReceiveWithdrawalAVAX(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MinipoolManager.contract.Transact(opts, "receiveWithdrawalAVAX")
 }
 
-// ReceiveVaultWithdrawalAVAX is a paid mutator transaction binding the contract method 0xac0027c2.
+// ReceiveWithdrawalAVAX is a paid mutator transaction binding the contract method 0xffe09241.
 //
-// Solidity: function receiveVaultWithdrawalAVAX() payable returns()
-func (_MinipoolManager *MinipoolManagerSession) ReceiveVaultWithdrawalAVAX() (*types.Transaction, error) {
-	return _MinipoolManager.Contract.ReceiveVaultWithdrawalAVAX(&_MinipoolManager.TransactOpts)
+// Solidity: function receiveWithdrawalAVAX() payable returns()
+func (_MinipoolManager *MinipoolManagerSession) ReceiveWithdrawalAVAX() (*types.Transaction, error) {
+	return _MinipoolManager.Contract.ReceiveWithdrawalAVAX(&_MinipoolManager.TransactOpts)
 }
 
-// ReceiveVaultWithdrawalAVAX is a paid mutator transaction binding the contract method 0xac0027c2.
+// ReceiveWithdrawalAVAX is a paid mutator transaction binding the contract method 0xffe09241.
 //
-// Solidity: function receiveVaultWithdrawalAVAX() payable returns()
-func (_MinipoolManager *MinipoolManagerTransactorSession) ReceiveVaultWithdrawalAVAX() (*types.Transaction, error) {
-	return _MinipoolManager.Contract.ReceiveVaultWithdrawalAVAX(&_MinipoolManager.TransactOpts)
+// Solidity: function receiveWithdrawalAVAX() payable returns()
+func (_MinipoolManager *MinipoolManagerTransactorSession) ReceiveWithdrawalAVAX() (*types.Transaction, error) {
+	return _MinipoolManager.Contract.ReceiveWithdrawalAVAX(&_MinipoolManager.TransactOpts)
 }
 
-// RecordStakingEnd is a paid mutator transaction binding the contract method 0xeb55c544.
+// RecordStakingEnd is a paid mutator transaction binding the contract method 0x8e481d60.
 //
-// Solidity: function recordStakingEnd(address nodeID, bytes sig, uint256 endTime, uint256 avaxRewardAmt) payable returns()
-func (_MinipoolManager *MinipoolManagerTransactor) RecordStakingEnd(opts *bind.TransactOpts, nodeID common.Address, sig []byte, endTime *big.Int, avaxRewardAmt *big.Int) (*types.Transaction, error) {
-	return _MinipoolManager.contract.Transact(opts, "recordStakingEnd", nodeID, sig, endTime, avaxRewardAmt)
+// Solidity: function recordStakingEnd(address nodeID, uint256 endTime, uint256 avaxTotalRewardAmt) payable returns()
+func (_MinipoolManager *MinipoolManagerTransactor) RecordStakingEnd(opts *bind.TransactOpts, nodeID common.Address, endTime *big.Int, avaxTotalRewardAmt *big.Int) (*types.Transaction, error) {
+	return _MinipoolManager.contract.Transact(opts, "recordStakingEnd", nodeID, endTime, avaxTotalRewardAmt)
 }
 
-// RecordStakingEnd is a paid mutator transaction binding the contract method 0xeb55c544.
+// RecordStakingEnd is a paid mutator transaction binding the contract method 0x8e481d60.
 //
-// Solidity: function recordStakingEnd(address nodeID, bytes sig, uint256 endTime, uint256 avaxRewardAmt) payable returns()
-func (_MinipoolManager *MinipoolManagerSession) RecordStakingEnd(nodeID common.Address, sig []byte, endTime *big.Int, avaxRewardAmt *big.Int) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.RecordStakingEnd(&_MinipoolManager.TransactOpts, nodeID, sig, endTime, avaxRewardAmt)
+// Solidity: function recordStakingEnd(address nodeID, uint256 endTime, uint256 avaxTotalRewardAmt) payable returns()
+func (_MinipoolManager *MinipoolManagerSession) RecordStakingEnd(nodeID common.Address, endTime *big.Int, avaxTotalRewardAmt *big.Int) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.RecordStakingEnd(&_MinipoolManager.TransactOpts, nodeID, endTime, avaxTotalRewardAmt)
 }
 
-// RecordStakingEnd is a paid mutator transaction binding the contract method 0xeb55c544.
+// RecordStakingEnd is a paid mutator transaction binding the contract method 0x8e481d60.
 //
-// Solidity: function recordStakingEnd(address nodeID, bytes sig, uint256 endTime, uint256 avaxRewardAmt) payable returns()
-func (_MinipoolManager *MinipoolManagerTransactorSession) RecordStakingEnd(nodeID common.Address, sig []byte, endTime *big.Int, avaxRewardAmt *big.Int) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.RecordStakingEnd(&_MinipoolManager.TransactOpts, nodeID, sig, endTime, avaxRewardAmt)
+// Solidity: function recordStakingEnd(address nodeID, uint256 endTime, uint256 avaxTotalRewardAmt) payable returns()
+func (_MinipoolManager *MinipoolManagerTransactorSession) RecordStakingEnd(nodeID common.Address, endTime *big.Int, avaxTotalRewardAmt *big.Int) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.RecordStakingEnd(&_MinipoolManager.TransactOpts, nodeID, endTime, avaxTotalRewardAmt)
 }
 
-// RecordStakingError is a paid mutator transaction binding the contract method 0xb6879000.
+// RecordStakingError is a paid mutator transaction binding the contract method 0x75c98715.
 //
-// Solidity: function recordStakingError(address nodeID, bytes sig, uint256 endTime, string message) returns()
-func (_MinipoolManager *MinipoolManagerTransactor) RecordStakingError(opts *bind.TransactOpts, nodeID common.Address, sig []byte, endTime *big.Int, message string) (*types.Transaction, error) {
-	return _MinipoolManager.contract.Transact(opts, "recordStakingError", nodeID, sig, endTime, message)
+// Solidity: function recordStakingError(address nodeID, uint256 endTime, string message) returns()
+func (_MinipoolManager *MinipoolManagerTransactor) RecordStakingError(opts *bind.TransactOpts, nodeID common.Address, endTime *big.Int, message string) (*types.Transaction, error) {
+	return _MinipoolManager.contract.Transact(opts, "recordStakingError", nodeID, endTime, message)
 }
 
-// RecordStakingError is a paid mutator transaction binding the contract method 0xb6879000.
+// RecordStakingError is a paid mutator transaction binding the contract method 0x75c98715.
 //
-// Solidity: function recordStakingError(address nodeID, bytes sig, uint256 endTime, string message) returns()
-func (_MinipoolManager *MinipoolManagerSession) RecordStakingError(nodeID common.Address, sig []byte, endTime *big.Int, message string) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.RecordStakingError(&_MinipoolManager.TransactOpts, nodeID, sig, endTime, message)
+// Solidity: function recordStakingError(address nodeID, uint256 endTime, string message) returns()
+func (_MinipoolManager *MinipoolManagerSession) RecordStakingError(nodeID common.Address, endTime *big.Int, message string) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.RecordStakingError(&_MinipoolManager.TransactOpts, nodeID, endTime, message)
 }
 
-// RecordStakingError is a paid mutator transaction binding the contract method 0xb6879000.
+// RecordStakingError is a paid mutator transaction binding the contract method 0x75c98715.
 //
-// Solidity: function recordStakingError(address nodeID, bytes sig, uint256 endTime, string message) returns()
-func (_MinipoolManager *MinipoolManagerTransactorSession) RecordStakingError(nodeID common.Address, sig []byte, endTime *big.Int, message string) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.RecordStakingError(&_MinipoolManager.TransactOpts, nodeID, sig, endTime, message)
+// Solidity: function recordStakingError(address nodeID, uint256 endTime, string message) returns()
+func (_MinipoolManager *MinipoolManagerTransactorSession) RecordStakingError(nodeID common.Address, endTime *big.Int, message string) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.RecordStakingError(&_MinipoolManager.TransactOpts, nodeID, endTime, message)
 }
 
-// RecordStakingStart is a paid mutator transaction binding the contract method 0xa7fe2aac.
+// RecordStakingStart is a paid mutator transaction binding the contract method 0x19ef22b2.
 //
-// Solidity: function recordStakingStart(address nodeID, bytes sig, uint256 startTime) returns()
-func (_MinipoolManager *MinipoolManagerTransactor) RecordStakingStart(opts *bind.TransactOpts, nodeID common.Address, sig []byte, startTime *big.Int) (*types.Transaction, error) {
-	return _MinipoolManager.contract.Transact(opts, "recordStakingStart", nodeID, sig, startTime)
+// Solidity: function recordStakingStart(address nodeID, uint256 startTime) returns()
+func (_MinipoolManager *MinipoolManagerTransactor) RecordStakingStart(opts *bind.TransactOpts, nodeID common.Address, startTime *big.Int) (*types.Transaction, error) {
+	return _MinipoolManager.contract.Transact(opts, "recordStakingStart", nodeID, startTime)
 }
 
-// RecordStakingStart is a paid mutator transaction binding the contract method 0xa7fe2aac.
+// RecordStakingStart is a paid mutator transaction binding the contract method 0x19ef22b2.
 //
-// Solidity: function recordStakingStart(address nodeID, bytes sig, uint256 startTime) returns()
-func (_MinipoolManager *MinipoolManagerSession) RecordStakingStart(nodeID common.Address, sig []byte, startTime *big.Int) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.RecordStakingStart(&_MinipoolManager.TransactOpts, nodeID, sig, startTime)
+// Solidity: function recordStakingStart(address nodeID, uint256 startTime) returns()
+func (_MinipoolManager *MinipoolManagerSession) RecordStakingStart(nodeID common.Address, startTime *big.Int) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.RecordStakingStart(&_MinipoolManager.TransactOpts, nodeID, startTime)
 }
 
-// RecordStakingStart is a paid mutator transaction binding the contract method 0xa7fe2aac.
+// RecordStakingStart is a paid mutator transaction binding the contract method 0x19ef22b2.
 //
-// Solidity: function recordStakingStart(address nodeID, bytes sig, uint256 startTime) returns()
-func (_MinipoolManager *MinipoolManagerTransactorSession) RecordStakingStart(nodeID common.Address, sig []byte, startTime *big.Int) (*types.Transaction, error) {
-	return _MinipoolManager.Contract.RecordStakingStart(&_MinipoolManager.TransactOpts, nodeID, sig, startTime)
+// Solidity: function recordStakingStart(address nodeID, uint256 startTime) returns()
+func (_MinipoolManager *MinipoolManagerTransactorSession) RecordStakingStart(nodeID common.Address, startTime *big.Int) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.RecordStakingStart(&_MinipoolManager.TransactOpts, nodeID, startTime)
 }
 
 // UpdateMinipoolStatus is a paid mutator transaction binding the contract method 0xe92aa0ce.
@@ -736,6 +925,27 @@ func (_MinipoolManager *MinipoolManagerSession) UpdateMinipoolStatus(nodeID comm
 // Solidity: function updateMinipoolStatus(address nodeID, uint8 status) returns()
 func (_MinipoolManager *MinipoolManagerTransactorSession) UpdateMinipoolStatus(nodeID common.Address, status uint8) (*types.Transaction, error) {
 	return _MinipoolManager.Contract.UpdateMinipoolStatus(&_MinipoolManager.TransactOpts, nodeID, status)
+}
+
+// WithdrawMinipoolFunds is a paid mutator transaction binding the contract method 0x2f1fbf9b.
+//
+// Solidity: function withdrawMinipoolFunds(address nodeID) returns()
+func (_MinipoolManager *MinipoolManagerTransactor) WithdrawMinipoolFunds(opts *bind.TransactOpts, nodeID common.Address) (*types.Transaction, error) {
+	return _MinipoolManager.contract.Transact(opts, "withdrawMinipoolFunds", nodeID)
+}
+
+// WithdrawMinipoolFunds is a paid mutator transaction binding the contract method 0x2f1fbf9b.
+//
+// Solidity: function withdrawMinipoolFunds(address nodeID) returns()
+func (_MinipoolManager *MinipoolManagerSession) WithdrawMinipoolFunds(nodeID common.Address) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.WithdrawMinipoolFunds(&_MinipoolManager.TransactOpts, nodeID)
+}
+
+// WithdrawMinipoolFunds is a paid mutator transaction binding the contract method 0x2f1fbf9b.
+//
+// Solidity: function withdrawMinipoolFunds(address nodeID) returns()
+func (_MinipoolManager *MinipoolManagerTransactorSession) WithdrawMinipoolFunds(nodeID common.Address) (*types.Transaction, error) {
+	return _MinipoolManager.Contract.WithdrawMinipoolFunds(&_MinipoolManager.TransactOpts, nodeID)
 }
 
 // MinipoolManagerMinipoolStatusChangedIterator is returned from FilterMinipoolStatusChanged and is used to iterate over the raw logs and unpacked data for MinipoolStatusChanged events raised by the MinipoolManager contract.
