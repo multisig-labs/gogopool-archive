@@ -8,9 +8,15 @@ const PAGE_SIZE = 2;
 let addrs = {};
 try {
 	// eslint-disable-next-line node/no-missing-require
-	addrs = require("../../cache/deployed_addrs");
+	addrs = require(`../../cache/deployed_addrs_${
+		process.env.HARDHAT_NETWORK || "localhost"
+	}`);
 } catch {
-	console.log("Unable to require file cache/deployed_addrs.js");
+	console.log(
+		`Unable to require file cache/deployed_addrs_${
+			process.env.HARDHAT_NETWORK || "localhost"
+		}.js`
+	);
 }
 
 // Random addresses to use for nodeIDs

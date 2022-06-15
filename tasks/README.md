@@ -13,7 +13,12 @@ npx hardhat
 just deploy-local
 npx hardhat debug:setup
 
-### List system variables
+### Select a network
+
+export HARDHAT_NETWORK=localhost # default Hardhat Network
+export HARDHAT_NETWORK=local # ANR at https://testnet.multisiglabs.org
+
+### Examples
 
 npx hardhat debug:list_contracts
 npx hardhat multisig:list
@@ -96,48 +101,53 @@ npx hardhat ggavax:sync_rewards --actor rialto1
 
 ### Multisig Labs Testnet
 
+export HARDHAT_NETWORK=local # select the ANR at testnet.multisiglabs.com
 just deploy-local local
-npx hardhat --network local debug:setup
-npx hardhat --network local ggp:deal --recip nodeOp1 --amt 800
+npx hardhat debug:setup
+npx hardhat debug:topup_actor_balance --actor alice --amt 1000
+npx hardhat debug:topup_actor_balance --actor bob --amt 1000
+npx hardhat debug:topup_actor_balance --actor nodeOp1 --amt 1000
+npx hardhat debug:topup_actor_balance --actor rewarder --amt 100000
+npx hardhat ggp:deal --recip nodeOp1 --amt 800
 
-npx hardhat --network local debug:list_actor_balances
+npx hardhat debug:list_actor_balances
 
-npx hardhat --network local minipool:create --actor nodeOp1 --node node1 --duration 14d --ggp 200 --avax 1000 &
-npx hardhat --network local minipool:create --actor nodeOp1 --node node2 --duration 14d --ggp 200 --avax 1000 &
-npx hardhat --network local minipool:create --actor nodeOp1 --node node3 --duration 14d --ggp 200 --avax 1000 &
-npx hardhat --network local minipool:create --actor nodeOp1 --node node4 --duration 14d --ggp 200 --avax 1000 &
-npx hardhat --network local ggavax:liqstaker_deposit_avax --actor alice --amt 2000 &
-npx hardhat --network local ggavax:liqstaker_deposit_avax --actor bob --amt 2000 &
+npx hardhat minipool:create --actor nodeOp1 --node node1 --duration 14d --ggp 200 --avax 1000 &
+npx hardhat minipool:create --actor nodeOp1 --node node2 --duration 14d --ggp 200 --avax 1000 &
+npx hardhat minipool:create --actor nodeOp1 --node node3 --duration 14d --ggp 200 --avax 1000 &
+npx hardhat minipool:create --actor nodeOp1 --node node4 --duration 14d --ggp 200 --avax 1000 &
+npx hardhat ggavax:liqstaker_deposit_avax --actor alice --amt 2000 &
+npx hardhat ggavax:liqstaker_deposit_avax --actor bob --amt 2000 &
 
-npx hardhat --network local minipool:list_claimable --actor rialto1
-npx hardhat --network local minipool:claim --actor rialto1
-npx hardhat --network local minipool:list
+npx hardhat minipool:list_claimable --actor rialto1
+npx hardhat minipool:claim --actor rialto1
+npx hardhat minipool:list
 
-npx hardhat --network local minipool:recordStakingStart --actor rialto1 --node node1 &
-npx hardhat --network local minipool:recordStakingStart --actor rialto1 --node node2 &
-npx hardhat --network local minipool:recordStakingStart --actor rialto1 --node node3 &
-npx hardhat --network local minipool:recordStakingStart --actor rialto1 --node node4 &
-npx hardhat --network local minipool:list
+npx hardhat minipool:recordStakingStart --actor rialto1 --node node1 &
+npx hardhat minipool:recordStakingStart --actor rialto1 --node node2 &
+npx hardhat minipool:recordStakingStart --actor rialto1 --node node3 &
+npx hardhat minipool:recordStakingStart --actor rialto1 --node node4 &
+npx hardhat minipool:list
 
-npx hardhat --network local debug:skip --duration 14d
-npx hardhat --network local mine
+npx hardhat debug:skip --duration 14d
+npx hardhat mine
 
-npx hardhat --network local minipool:recordStakingEnd --actor rialto1 --node node1 --reward 0 &
-npx hardhat --network local minipool:recordStakingEnd --actor rialto1 --node node2 --reward 300 &
-npx hardhat --network local minipool:recordStakingEnd --actor rialto1 --node node3 --reward 300 &
-npx hardhat --network local minipool:recordStakingEnd --actor rialto1 --node node4 --reward 300 &
-npx hardhat --network local minipool:list
+npx hardhat minipool:recordStakingEnd --actor rialto1 --node node1 --reward 0 &
+npx hardhat minipool:recordStakingEnd --actor rialto1 --node node2 --reward 300 &
+npx hardhat minipool:recordStakingEnd --actor rialto1 --node node3 --reward 300 &
+npx hardhat minipool:recordStakingEnd --actor rialto1 --node node4 --reward 300 &
+npx hardhat minipool:list
 
-npx hardhat --network local minipool:withdrawMinipoolFunds --actor nodeOp1 --node node1 &
-npx hardhat --network local minipool:withdrawMinipoolFunds --actor nodeOp1 --node node2 &
-npx hardhat --network local minipool:withdrawMinipoolFunds --actor nodeOp1 --node node3 &
-npx hardhat --network local minipool:withdrawMinipoolFunds --actor nodeOp1 --node node4 &
+npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node1 &
+npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node2 &
+npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node3 &
+npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node4 &
 
-npx hardhat --network local ggavax:sync_rewards --actor rialto1
-npx hardhat --network local debug:skip --duration 14d
-npx hardhat --network local ggavax:sync_rewards --actor rialto1
+npx hardhat ggavax:sync_rewards --actor rialto1
+npx hardhat debug:skip --duration 14d
+npx hardhat ggavax:sync_rewards --actor rialto1
 
-npx hardhat --network local ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000 &
-npx hardhat --network local ggavax:liqstaker_redeem_ggavax --actor bob --amt 2000 &
+npx hardhat ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000 &
+npx hardhat ggavax:liqstaker_redeem_ggavax --actor bob --amt 2000 &
 
-npx hardhat --network local debug:list_actor_balances
+npx hardhat debug:list_actor_balances

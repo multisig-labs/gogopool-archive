@@ -43,6 +43,7 @@ const deploy = async () => {
 	// await hre.run("compile");
 
 	const { deployer } = await getNamedAccounts();
+	console.log(`Network: ${hre.network.name}`);
 	console.log(`Deploying contracts as (${deployer.address})`);
 	for (const contract in contracts) {
 		const args = [];
@@ -84,11 +85,11 @@ const deploy = async () => {
 		data = data + `[${name}]="${addresses[name]}" `;
 	}
 	data = data + ")";
-	await writeFile("cache/deployed_addrs.bash", data);
+	await writeFile(`cache/deployed_addrs_${hre.network.name}.bash`, data);
 
 	// Write out the deployed addresses to a format easily loaded by javascript
 	data = `module.exports = ${JSON.stringify(addresses)}`;
-	await writeFile("cache/deployed_addrs.js", data);
+	await writeFile(`cache/deployed_addrs_${hre.network.name}.js`, data);
 
 	// This takes a while so allow us to skip it if we want
 	if (

@@ -55,7 +55,7 @@ test-hh:
 # just cast send MultisigManager "registerMultisig(address)" 0xf39f...
 cast cmd contractName sig *args:
 	#!/usr/bin/env bash
-	source -- "cache/deployed_addrs.bash"
+	source -- "cache/deployed_addrs_${HARDHAT_NETWORK:-localhost}.bash"
 	if ([ "{{cmd}}" == "send" ]); then legacy="--legacy"; else legacy=""; fi;
 	cast {{cmd}} ${legacy} --private-key $PRIVATE_KEY ${addrs[{{contractName}}]} "{{sig}}" {{args}}
 
