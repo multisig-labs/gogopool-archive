@@ -33,6 +33,24 @@ task("debug:skip", "Skip forward a duration")
 		await hre.run("mine");
 	});
 
+task("debug:topup_actor_balance")
+	.addParam("actor", "")
+	.addParam("amt", "")
+	.setAction(async ({ actor, amt }) => {
+		const actors = await getNamedAccounts();
+		const signer = actors.deployer;
+		const a = actors[actor];
+		const balAVAX = await hre.ethers.provider.getBalance(a.address);
+		const desiredBalAVAX = ethers.utils.parseEther(amt, "ether");
+		if (balAVAX.lt(desiredBalAVAX)) {
+			log(`Topping up ${actor}`);
+			await signer.sendTransaction({
+				to: a.address,
+				value: desiredBalAVAX.sub(balAVAX),
+			});
+		}
+	});
+
 task("debug:list_actor_balances").setAction(async () => {
 	const actors = await getNamedAccounts();
 	const ggAVAX = await get("TokenggAVAX");

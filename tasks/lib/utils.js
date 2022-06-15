@@ -26,6 +26,7 @@ const emptyWallet = (seed) => {
 
 const getNamedAccounts = async () => {
 	const names = [
+		"deployer",
 		"alice",
 		"bob",
 		"cam",
@@ -33,7 +34,6 @@ const getNamedAccounts = async () => {
 		"nodeOp2",
 		"rialto1",
 		"rialto2",
-		"deployer",
 		"rewarder",
 	];
 	const obj = {};
