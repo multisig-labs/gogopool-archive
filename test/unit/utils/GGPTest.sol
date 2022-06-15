@@ -13,9 +13,15 @@ import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 import "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import "../../../contracts/contract/tokens/WAVAX.sol";
+
 import {format} from "./format.sol";
+
+import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {MockERC20} from "@rari-capital/solmate/src/test/utils/mocks/MockERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
+
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 abstract contract GGPTest is Test {
 	using FixedPointMathLib for uint256;
@@ -42,6 +48,7 @@ abstract contract GGPTest is Test {
 	TokenGGP public ggp;
 	MockERC20 public mockGGP;
 	TokenggAVAX public ggAVAX;
+	TokenggAVAX public ggAVAXImpl;
 	WAVAX public wavax;
 
 	function setUp() public virtual {
@@ -77,7 +84,13 @@ abstract contract GGPTest is Test {
 
 		wavax = new WAVAX();
 
-		ggAVAX = new TokenggAVAX(store, wavax);
+		ggAVAXImpl = new TokenggAVAX();
+		ggAVAX = TokenggAVAX(deployProxy(address(ggAVAXImpl), guardian));
+
+		vm.stopPrank();
+		ggAVAX.initialize(wavax);
+		vm.startPrank(guardian, guardian);
+
 		registerContract(store, "TokenggAVAX", address(ggAVAX));
 
 		minipoolMgr = new MinipoolManager(store, mockGGP, ggAVAX);
@@ -94,11 +107,10 @@ abstract contract GGPTest is Test {
 		registerContract(store, "TokenGGP", address(ggp));
 
 		// Initialize the rewards cycle
+		vm.stopPrank();
 		ggAVAX.syncRewards();
 
 		deal(guardian, 1 << 128);
-
-		vm.stopPrank();
 	}
 
 	function initStorage(Storage s) internal {
@@ -114,7 +126,6 @@ abstract contract GGPTest is Test {
 		bytes memory name,
 		address addr
 	) internal {
-		// console.log(string(name), addr);
 		s.setBool(keccak256(abi.encodePacked("contract.exists", addr)), true);
 		s.setAddress(keccak256(abi.encodePacked("contract.address", name)), addr);
 		s.setString(keccak256(abi.encodePacked("contract.name", addr)), string(name));
@@ -227,5 +238,11 @@ abstract contract GGPTest is Test {
 	function signHash(uint256 pk, bytes32 h) internal returns (bytes memory) {
 		(uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, h);
 		return combineSigParts(v, r, s);
+	}
+
+	function deployProxy(address impl, address deployer) internal returns (address payable) {
+		bytes memory data;
+		TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(address(impl), deployer, data);
+		return payable(uups);
 	}
 }
