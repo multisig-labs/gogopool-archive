@@ -4978,6 +4978,11 @@ forever-agent@~0.6.1:
   resolved "https://registry.npmjs.org/forever-agent/-/forever-agent-0.6.1.tgz"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
+forge-std@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/forge-std/-/forge-std-1.0.2.tgz#f929ba056609a080afd6a6362a88f28969a7a5fd"
+  integrity sha512-PHuI5BuJfCEk5sNvIJRoy1RSuxnSMFxJ795jhkH5KncF3RzujdodFuFE0feEMkuu4cq/0GCq17KAyjRO19dQSg==
+
 form-data@^2.2.0:
   version "2.5.1"
   resolved "https://registry.npmjs.org/form-data/-/form-data-2.5.1.tgz"
