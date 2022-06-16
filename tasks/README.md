@@ -18,6 +18,13 @@ npx hardhat debug:setup
 export HARDHAT_NETWORK=localhost # default Hardhat Network
 export HARDHAT_NETWORK=local # ANR at https://testnet.multisiglabs.org
 
+### ANR Network
+
+(To use the ANR locally when spun up through Rialto, first set ETH_RPC_URL to the random port used by ANR)
+export ETH_RPC_URL=`curl --silent -X POST -k http://localhost:8081/v1/control/uris -d '' | jq -j '.uris | .[0]'`
+export HARDHAT_NETWORK=anr # ANR locally
+just deploy # this cmd uses HARHAT_NETWORK to specify where to deploy
+
 ### Examples
 
 npx hardhat debug:list_contracts

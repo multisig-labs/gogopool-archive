@@ -30,6 +30,10 @@ build: clean compile
 deploy-local network="localhost":
 	npx hardhat run --network {{network}} scripts/deploy-local.ts
 
+# Deploy contracts to network specified in HARDHAT_NETWORK env var
+deploy:
+	npx hardhat run scripts/deploy-local.ts
+
 # Start a local hardhat EVM node
 node:
 	npx hardhat node

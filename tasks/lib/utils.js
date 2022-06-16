@@ -71,7 +71,7 @@ const logf = (...args) => console.log(sprintf(...args));
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-12s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+		"%-22s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
 		"nodeID",
 		"status",
 		"owner",
@@ -90,8 +90,8 @@ function logMinipools(minipools) {
 	);
 	for (mp of minipools) {
 		logf(
-			"%-12s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
-			formatAddr(mp.nodeID),
+			"%-22s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+			mp.nodeID,
 			mp.status,
 			formatAddr(mp.owner),
 			formatAddr(mp.multisigAddr),
