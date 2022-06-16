@@ -3,6 +3,8 @@
 # or if you have rust: cargo install just
 # https://cheatography.com/linux-china/cheat-sheets/justfile/
 
+ETH_RPC_URL := `curl --silent -X POST -k http://localhost:8081/v1/control/uris -d '' | jq -j '.uris[0]'`
+
 # Autoload a .env if one exists
 set dotenv-load
 
@@ -25,6 +27,9 @@ compile:
 
 # Clean and compile the project
 build: clean compile
+
+deploy-anr:
+	ETH_RPC_URL={{ETH_RPC_URL}} npx hardhat run --network anr scripts/deploy-local.ts
 
 # Deploy contracts
 deploy-local network="localhost":
