@@ -1,4 +1,6 @@
+import "@openzeppelin/hardhat-upgrades";
 import { writeFile } from "node:fs/promises";
+import { ethers, upgrades, network } from "hardhat";
 
 const hre = require("hardhat");
 const { getNamedAccounts } = require("../tasks/lib/utils");
@@ -19,7 +21,6 @@ const instances: IFU = {};
 // ContractName: [constructorArgs...]
 const contracts: IFU = {
 	Multicall: [],
-	WAVAX: [],
 	Storage: [],
 	OneInchMock: [],
 	Vault: ["Storage"],
@@ -28,12 +29,11 @@ const contracts: IFU = {
 	MultisigManager: ["Storage"],
 	BaseQueue: ["Storage"],
 	TokenGGP: ["Storage"],
-	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
 };
 
 const hash = (types: any, vals: any) => {
-	const h = hre.ethers.utils.solidityKeccak256(types, vals);
+	const h = ethers.utils.solidityKeccak256(types, vals);
 	// console.log(types, vals, h);
 	return h;
 };
@@ -43,15 +43,29 @@ const deploy = async () => {
 	// await hre.run("compile");
 
 	const { deployer } = await getNamedAccounts();
-	console.log(`Network: ${hre.network.name}`);
+	console.log(`Network: ${network.name}`);
 	console.log(`Deploying contracts as (${deployer.address})`);
+
+	console.log(`Deploying WAVAX`);
+	const WAVAX = await ethers.getContractFactory("WAVAX");
+	const wavax = await WAVAX.deploy();
+	await wavax.deployed();
+	addresses.WAVAX = wavax.address;
+	console.log(`WAVAX deployed to: ${wavax.address}`);
+
+	console.log(`Deploying TokenggAVAX with args ${wavax.address}...`);
+	const TokenggAVAX = await ethers.getContractFactory("TokenggAVAX");
+	const tokenggavax = await upgrades.deployProxy(TokenggAVAX, [wavax.address]);
+	addresses.TokenggAVAX = tokenggavax.address;
+	console.log(`TokenggAVAX proxy deployed to: ${tokenggavax.address}`);
+
 	for (const contract in contracts) {
 		const args = [];
 		for (const name of contracts[contract]) {
 			args.push(addresses[name]);
 		}
 		console.log(`Deploying ${contract} with args ${args}...`);
-		const C = await hre.ethers.getContractFactory(contract, deployer);
+		const C = await ethers.getContractFactory(contract, deployer);
 		const c = await C.deploy(...args);
 		const inst = await c.deployed();
 		instances[contract] = inst;
@@ -85,11 +99,11 @@ const deploy = async () => {
 		data = data + `[${name}]="${addresses[name]}" `;
 	}
 	data = data + ")";
-	await writeFile(`cache/deployed_addrs_${hre.network.name}.bash`, data);
+	await writeFile(`cache/deployed_addrs_${network.name}.bash`, data);
 
 	// Write out the deployed addresses to a format easily loaded by javascript
 	data = `module.exports = ${JSON.stringify(addresses)}`;
-	await writeFile(`cache/deployed_addrs_${hre.network.name}.js`, data);
+	await writeFile(`cache/deployed_addrs_${network.name}.js`, data);
 
 	// This takes a while so allow us to skip it if we want
 	if (
