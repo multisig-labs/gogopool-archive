@@ -88,7 +88,7 @@ abstract contract GGPTest is Test {
 		ggAVAX = TokenggAVAX(deployProxy(address(ggAVAXImpl), guardian));
 
 		vm.stopPrank();
-		ggAVAX.initialize(wavax);
+		ggAVAX.initialize(wavax, store);
 		vm.startPrank(guardian, guardian);
 
 		registerContract(store, "TokenggAVAX", address(ggAVAX));

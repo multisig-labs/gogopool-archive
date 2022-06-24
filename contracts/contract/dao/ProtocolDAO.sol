@@ -3,7 +3,8 @@
 pragma solidity ^0.8.13;
 
 import {TokenGGP} from "../tokens/TokenGGP.sol";
-import "../Base.sol";
+import {Base} from "../Base.sol";
+import {Storage} from "../Storage.sol";
 
 // TODO: Add actual DAO functionality.
 

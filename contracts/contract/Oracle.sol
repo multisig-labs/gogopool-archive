@@ -5,7 +5,8 @@ pragma solidity ^0.8.13;
 import {Storage} from "./Storage.sol";
 import {IOneInch} from "../interface/IOneInch.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
-import "./Base.sol";
+import {Base} from "./Base.sol";
+import {IStorage} from "../interface/IStorage.sol";
 
 /*
 	Data Storage Schema

@@ -2,7 +2,8 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./Base.sol";
+import {Base} from "./Base.sol";
+import {Storage} from "./Storage.sol";
 import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
 import {IVault} from "../interface/IVault.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";

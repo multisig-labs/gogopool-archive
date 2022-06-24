@@ -5,10 +5,12 @@
 pragma solidity ^0.8.13;
 
 import {ProtocolDAO} from "../dao/ProtocolDAO.sol";
+import {BaseUpgradeable} from "../BaseUpgradeable.sol";
 
 import {ERC20Upgradeable} from "./upgradeable/ERC20Upgradeable.sol";
 import {ERC4626Upgradeable} from "./upgradeable/ERC4626Upgradeable.sol";
 
+import {IStorage} from "../../interface/IStorage.sol";
 import {IWAVAX} from "../../interface/IWAVAX.sol";
 import {IWithdrawer} from "../../interface/IWithdrawer.sol";
 
@@ -32,7 +34,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 	TODO Dont think you can have constructor with the proxys? Need a "setup" func instead?
 */
 
-contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, Initializable, UUPSUpgradeable, OwnableUpgradeable {
+contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, Initializable, UUPSUpgradeable, OwnableUpgradeable {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -79,11 +81,13 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, Initializable, UUP
 		_disableInitializers();
 	}
 
-	function initialize(ERC20 asset) public initializer {
+	function initialize(ERC20 asset, IStorage storageAddress) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
+		__BaseUpgradeable_init(storageAddress);
 		__Ownable_init();
 		__UUPSUpgradeable_init();
 
+		// make this a setting, should I set this from the settings or from the constructor
 		rewardsCycleLength = 14 days;
 		// seed initial rewardsCycleEnd
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
@@ -193,10 +197,9 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, Initializable, UUP
 	}
 
 	function amountAvailableForStaking() public view returns (uint256) {
-		// I might still want to storage and to be able to get the contract address of this
-		// ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		// uint256 targetCollateralRate = protocolDAO.getTargetggAVAXReserveRate();
-		uint256 targetCollateralRate = 1e17;
+		ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 targetCollateralRate = protocolDAO.getTargetggAVAXReserveRate();
+
 		uint256 totalAssets_ = totalAssets();
 
 		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);

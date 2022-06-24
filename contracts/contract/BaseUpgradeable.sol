@@ -1,11 +1,10 @@
 pragma solidity ^0.8.13;
+
 import {BaseAbstract} from "./BaseAbstract.sol";
 import {IStorage} from "../interface/IStorage.sol";
 
-abstract contract Base is BaseAbstract {
-	/// @dev Set the main GoGo Storage address
-	constructor(IStorage _gogoStorageAddress) {
-		// Update the contract address
+contract BaseUpgradeable is BaseAbstract {
+	function __BaseUpgradeable_init(IStorage _gogoStorageAddress) internal {
 		gogoStorage = IStorage(_gogoStorageAddress);
 	}
 }
