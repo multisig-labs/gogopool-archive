@@ -12,9 +12,22 @@ task("oracle:set_oneinch", "")
 
 task("oracle:get_ggp_price_oneinch", "").setAction(async () => {
 	const oracle = await get("Oracle");
-	const price = await oracle.getGGPPriceFromOneInch();
-	log(`OneInch GGP Price: ${ethers.utils.formatEther(price)}`);
+	const result = await oracle.getGGPPriceFromOneInch();
+	log(
+		`OneInch GGP Price: ${ethers.utils.formatEther(result.price)} @ ts ${
+			result.timestamp
+		}`
+	);
 });
+
+task("oracle:set_ggp_price_oneinch", "Set the mocked oneinch price of GGP")
+	.addParam("price", "price of GGP in AVAX")
+	.setAction(async ({ price }) => {
+		const priceParsed = ethers.utils.parseEther(price, "ether");
+		const mock = await get("OneInchMock");
+		await mock.setMockedRate(priceParsed);
+		log(`GGP one inch reported price set to ${priceParsed}`);
+	});
 
 task("oracle:set_ggp", "")
 	.addParam("price", "price of GGP in AVAX")

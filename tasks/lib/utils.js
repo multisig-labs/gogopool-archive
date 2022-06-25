@@ -4,13 +4,22 @@ const ms = require("ms");
 
 const PAGE_SIZE = 2;
 
+const log = (...args) => console.log(...args);
+const logf = (...args) => console.log(sprintf(...args));
+const logtx = async (tx) => {
+	const r = await tx.wait();
+	console.log(`Tx: ${r.transactionHash}  Gas: ${r.gasUsed}`);
+};
+
 // Only load the deployed contract addrs if they exist
 let addrs = {};
 try {
-	// eslint-disable-next-line node/no-missing-require
-	addrs = require(`../../cache/deployed_addrs_${
+	const name = `../../cache/deployed_addrs_${
 		process.env.HARDHAT_NETWORK || "localhost"
-	}`);
+	}`;
+	// eslint-disable-next-line node/no-missing-require
+	addrs = require(name);
+	log(`Loaded addresses from ${name}.js`);
 } catch {
 	console.log(
 		`Unable to require file cache/deployed_addrs_${
@@ -47,6 +56,9 @@ const getNamedAccounts = async () => {
 	for (i in names) {
 		obj[names[i]] = signers[i];
 	}
+	// A real Rialto address
+	const rialto = new ethers.VoidSigner(process.env.RIALTO, hre.ethers.provider);
+	obj.rialto = rialto;
 	return obj;
 };
 
@@ -59,19 +71,21 @@ const get = async (name, signer) => {
 	return fac.attach(addrs[name]);
 };
 
+// ANR fails lots of txs with gaslimit estimation errors, so override here
+const overrides = {
+	gasLimit: 8000000,
+};
+
 const hash = (types, vals) => {
 	const h = ethers.utils.solidityKeccak256(types, vals);
 	// console.log(types, vals, h);
 	return h;
 };
 
-const log = (...args) => console.log(...args);
-const logf = (...args) => console.log(sprintf(...args));
-
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-22s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
 		"nodeID",
 		"status",
 		"owner",
@@ -90,7 +104,7 @@ function logMinipools(minipools) {
 	);
 	for (mp of minipools) {
 		logf(
-			"%-22s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
 			mp.nodeID,
 			mp.status,
 			formatAddr(mp.owner),
@@ -207,9 +221,11 @@ async function now() {
 module.exports = {
 	addrs,
 	get,
+	overrides,
 	hash,
 	log,
 	logf,
+	logtx,
 	logMinipools,
 	formatAddr,
 	getNamedAccounts,

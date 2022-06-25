@@ -18,4 +18,14 @@ contract MultisigManagerTest is GGPTest {
 		assertEq(a, rialto1Addr);
 		assert(enabled);
 	}
+
+	function testFindActive() public {
+		address rialto1Addr = vm.addr(RIALTO1_PK);
+		registerMultisig(rialto1Addr);
+		address rialto2Addr = vm.addr(RIALTO2_PK);
+		registerMultisig(rialto2Addr);
+		multisigMgr.disableMultisig(rialto1Addr);
+		address ms = multisigMgr.getNextActiveMultisig();
+		assertEq(rialto2Addr, ms);
+	}
 }

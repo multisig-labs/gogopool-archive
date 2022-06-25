@@ -26,6 +26,9 @@ contract MultisigManager is Base {
 	/// @notice Multisig has been disabled
 	error MultisigDisabled();
 
+	/// @notice No active Multisig has been found
+	error NoEnabledMultisigFound();
+
 	/// @notice Signature is invalid
 	error SignatureInvalid();
 
@@ -79,9 +82,16 @@ contract MultisigManager is Base {
 	// In future, have a way to choose which multisig gets used for each validator
 	// i.e. round-robin, or based on GGP staked, etc
 	function getNextActiveMultisig() external view returns (address) {
-		uint256 index = 0; // In future some other method of selecting multisig
-		(address multisigAddress, ) = getMultisig(index);
-		return multisigAddress;
+		uint256 total = getUint(keccak256("multisig.count"));
+		address addr;
+		bool enabled;
+		for (uint256 i = 0; i < total; i++) {
+			(addr, enabled) = getMultisig(i);
+			if (enabled) {
+				return addr;
+			}
+		}
+		revert NoEnabledMultisigFound();
 	}
 
 	// The index of an item

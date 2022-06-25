@@ -2,8 +2,10 @@
 // hardhat ensures hre is always in scope, no need to require
 const {
 	get,
+	overrides,
 	hash,
 	log,
+	logtx,
 	nodeID,
 	getNamedAccounts,
 	getMinipoolsFor,
@@ -70,24 +72,12 @@ task("minipool:create", "")
 			parseDelta(duration),
 			fee,
 			hre.ethers.utils.parseEther(ggp),
-			{
-				value: hre.ethers.utils.parseEther(avax),
-			}
+			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
 		);
 		log(`Minipool created for node ${node}: ${nodeID(node)}`);
 	});
 
-task("minipool:add_avax", "")
-	.addParam("actor", "Account used to send tx")
-	.addParam("node", "NodeID name")
-	.addParam("amt", "AVAX amount")
-	.setAction(async ({ actor, node, amt }) => {
-		const signer = (await getNamedAccounts())[actor];
-		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.updateMinipoolStatus(nodeID(node), status);
-	});
-
-task("minipool:update_status", "")
+task("minipool:update_status", "Force into a particular status")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
 	.addParam("status", "", 0, types.int)
@@ -110,14 +100,13 @@ task("minipool:cancel", "")
 
 task("minipool:can_claim", "")
 	.addParam("actor", "Account used to send tx")
-	.addParam("node", "NodeID name")
-	.setAction(async ({ actor, node }) => {
+	.addParam("node", "NodeID name", "")
+	.addParam("nodeaddr", "NodeID address", "")
+	.setAction(async ({ actor, node, nodeaddr }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		const res = await minipoolManager.canClaimAndInitiateStaking(nodeID(node), {
-			gasPrice: 18000000,
-			gasLimit: 3000000,
-		});
+		const n = node === "" ? nodeaddr : nodeID(node);
+		const res = await minipoolManager.canClaimAndInitiateStaking(n, overrides);
 		log(`Can claim ${node}: ${res}`);
 	});
 
@@ -131,11 +120,12 @@ task("minipool:claim", "Claim minipools until funds run out")
 		// Somehow Rialto will sort these by priority
 		for (mp of minipools) {
 			const canClaim = await minipoolManager.canClaimAndInitiateStaking(
-				mp.nodeID
+				mp.nodeID,
+				overrides
 			);
 			if (canClaim) {
 				log(`Claiming ${mp.nodeID}`);
-				await minipoolManager.claimAndInitiateStaking(mp.nodeID);
+				await minipoolManager.claimAndInitiateStaking(mp.nodeID, overrides);
 			} else {
 				log("Nothing to do or not enough user funds");
 			}
@@ -148,10 +138,7 @@ task("minipool:claim_one", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.claimAndInitiateStaking(nodeID(node), {
-			gasPrice: 18000000,
-			gasLimit: 3000000,
-		});
+		await minipoolManager.claimAndInitiateStaking(nodeID(node), overrides);
 		log(`Minipool claimed for ${node}`);
 	});
 
@@ -165,7 +152,12 @@ task("minipool:recordStakingStart", "")
 		}
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.recordStakingStart(nodeID(node), start);
+		const tx = await minipoolManager.recordStakingStart(
+			nodeID(node),
+			start,
+			overrides
+		);
+		await logtx(tx);
 	});
 
 task("minipool:recordStakingEnd", "")
@@ -185,16 +177,18 @@ task("minipool:recordStakingEnd", "")
 		// Send rialto the reward funds from some other address to simulate Avalanche rewards,
 		// so we can see rialtos actual balance
 		const rewarder = (await getNamedAccounts()).rewarder;
-		const tx = {
+		let tx = {
 			to: signer.address,
 			value: reward,
 		};
 		await rewarder.sendTransaction(tx);
 		total = avax.add(reward);
 
-		await minipoolManager.recordStakingEnd(nodeID(node), end, reward, {
+		tx = await minipoolManager.recordStakingEnd(nodeID(node), end, reward, {
+			...overrides,
 			value: total,
 		});
+		await logtx(tx);
 	});
 
 task("minipool:withdrawMinipoolFunds", "")

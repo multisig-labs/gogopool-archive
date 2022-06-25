@@ -407,11 +407,8 @@ contract MinipoolManager is Base, IWithdrawer {
 	}
 
 	// Rialto was for some reason unable to start the validation period, so cancel and refund all monies?
-	function recordStakingError(
-		address nodeID,
-		uint256 endTime,
-		string calldata message
-	) external {
+	// Should prob be payable and send all funds back to here?
+	function recordStakingError(address nodeID, string calldata message) external {
 		// TODO
 	}
 

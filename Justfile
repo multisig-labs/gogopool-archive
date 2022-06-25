@@ -3,7 +3,8 @@
 # or if you have rust: cargo install just
 # https://cheatography.com/linux-china/cheat-sheets/justfile/
 
-ETH_RPC_URL := `curl --silent -X POST -k http://localhost:8081/v1/control/uris -d '' | jq -j '.uris[0]'`
+HARDHAT_NETWORK := env_var_or_default("HARDHAT_NETWORK", "localhost")
+ETH_RPC_URL := env_var_or_default("ETH_RPC_URL", "http://127.0.0.1:8545")
 
 # Autoload a .env if one exists
 set dotenv-load
@@ -28,16 +29,15 @@ compile:
 # Clean and compile the project
 build: clean compile
 
-deploy-anr:
-	ETH_RPC_URL={{ETH_RPC_URL}} npx hardhat run --network anr scripts/deploy-local.ts
+# Deploy base contracts to HARDHAT_NETWORK (localhost,custom,fuji)
+deploy-base:
+	@if curl --connect-timeout 2 {{ETH_RPC_URL}} >/dev/null 2>&1; then echo "ETH_RPC_URL={{ETH_RPC_URL}}"; else echo 'No server at ETH_RPC_URL!' && exit 1; fi
+	npx hardhat run --network {{HARDHAT_NETWORK}} scripts/deploy-base.ts
 
-# Deploy contracts
-deploy-local network="localhost":
-	npx hardhat run --network {{network}} scripts/deploy-local.ts
-
-# Deploy contracts to network specified in HARDHAT_NETWORK env var
-deploy:
-	npx hardhat run scripts/deploy-local.ts
+# Deploy non-base contracts to HARDHAT_NETWORK (localhost,custom,fuji)
+deploy contracts="":
+	@if curl --connect-timeout 2 {{ETH_RPC_URL}} >/dev/null 2>&1; then echo "ETH_RPC_URL={{ETH_RPC_URL}}"; else echo 'No server at ETH_RPC_URL!' && exit 1; fi
+	DEPLOY_CONTRACTS="{{contracts}}" npx hardhat run --network {{HARDHAT_NETWORK}} scripts/deploy.ts
 
 # Start a local hardhat EVM node
 node:
@@ -81,9 +81,10 @@ gen:
 	#!/bin/bash
 	THATDIR=$PWD
 	mkdir -p $THATDIR/gen
-	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.6
+	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.12
 	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/_MinipoolManager.go
 	cat $THATDIR/artifacts/contracts/contract/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/_Oracle.go
+	cat $THATDIR/artifacts/contracts/contract/Storage.sol/Storage.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg storage --out $THATDIR/gen/_Storage.go
 	echo "Complete!"
 
 # Update foundry binaries to the nightly version
@@ -106,13 +107,6 @@ doctor:
 		exit 1
 	fi
 	echo "yarn ok"
-
-	# check if yarn is installed
-	if ! yarn --version > /dev/null 2>&1; then
-		echo "yarn is not installed"
-		echo "You can install it via npm with 'npm install -g yarn'"
-		exit 1
-	fi
 
 	if [ ! -e $HOME/.foundry/bin/forge ]; then
 		echo "Install forge from https://book.getfoundry.sh/getting-started/installation.html"

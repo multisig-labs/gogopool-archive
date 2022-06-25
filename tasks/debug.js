@@ -128,7 +128,7 @@ task("debug:list_vars", "List important system variables").setAction(
 
 		log("");
 		const oracle = await get("Oracle");
-		const oracleResults = await oracle.getGGP();
+		const oracleResults = await oracle.getGGPPrice();
 		const ggpPrice = await oracleResults.price;
 		const ggpTs = await oracleResults.timestamp;
 		log(
@@ -158,10 +158,59 @@ task(
 					? "✅"
 					: "(Not Registered)";
 			if (address !== hre.ethers.constants.AddressZero) {
-				log(name, address, emoji);
+				logf("%-20s %-30s %s", name, address, emoji);
+			} else {
+				logf("%-20s %-30s", name, addrs[name]);
 			}
 		} catch (e) {
 			log("error", e);
 		}
 	}
+});
+
+// Take pks we are using for ANR and make a standard JSON all tools can use
+task("debug:output_named_users").setAction(async () => {
+	users = {
+		deployer: {
+			pk: "0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027",
+			addr: "",
+		},
+		alice: {
+			pk: "0x7b4198529994b0dc604278c99d153cfd069d594753d471171a1d102a10438e07",
+			addr: "",
+		},
+		bob: {
+			pk: "0x15614556be13730e9e8d6eacc1603143e7b96987429df8726384c2ec4502ef6e",
+			addr: "",
+		},
+		cam: {
+			pk: "0x31b571bf6894a248831ff937bb49f7754509fe93bbd2517c9c73c4144c0e97dc",
+			addr: "",
+		},
+		nodeOp1: {
+			pk: "0x6934bef917e01692b789da754a0eae31a8536eb465e7bff752ea291dad88c675",
+			addr: "",
+		},
+		nodeOp2: {
+			pk: "0xe700bdbdbc279b808b1ec45f8c2370e4616d3a02c336e68d85d4668e08f53cff",
+			addr: "",
+		},
+		rialto1: {
+			pk: "0xbbc2865b76ba28016bc2255c7504d000e046ae01934b04c694592a6276988630",
+			addr: "",
+		},
+		rialto2: {
+			pk: "0xcdbfd34f687ced8c6968854f8a99ae47712c4f4183b78dcc4a903d1bfe8cbf60",
+			addr: "",
+		},
+		rewarder: {
+			pk: "0x86f78c5416151fe3546dece84fda4b4b1e36089f2dbc48496faf3a950f16157c",
+			addr: "",
+		},
+	};
+	Object.keys(users).forEach((n) => {
+		s = new ethers.Wallet(users[n].pk, hre.ethers.provider);
+		users[n].addr = s.address;
+	});
+	console.log(JSON.stringify(users, null, 2));
 });

@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
-const { get, getNamedAccounts } = require("./lib/utils");
+const { overrides, get, getNamedAccounts } = require("./lib/utils");
 
 task("ggavax:sync_rewards", "")
 	.addParam("actor", "Account used to send tx")
@@ -17,6 +17,7 @@ task("ggavax:liqstaker_deposit_avax")
 		const addr = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", addr);
 		await ggAVAX.depositAVAX({
+			...overrides,
 			value: ethers.utils.parseEther(amt, "ether"),
 		});
 	});
@@ -27,7 +28,7 @@ task("ggavax:liqstaker_redeem_ggavax")
 	.setAction(async ({ actor, amt }) => {
 		const addr = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", addr);
-		await ggAVAX.redeemAVAX(ethers.utils.parseEther(amt, "ether"));
+		await ggAVAX.redeemAVAX(ethers.utils.parseEther(amt, "ether"), overrides);
 	});
 
 task("ggp:deal")
