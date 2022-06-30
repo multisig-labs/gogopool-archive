@@ -15,7 +15,7 @@ import {IWithdrawer} from "../interface/IWithdrawer.sol";
 
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
-import "./Base.sol";
+import {Base} from "./Base.sol";
 
 /*
 	Data Storage Schema

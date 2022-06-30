@@ -49,7 +49,7 @@ contract Multicall {
 		gaslimit = block.gaslimit;
 	}
 
-	function getCurrentBlockCoinbase() public view returns (address coinbase) {
+	function getCurrentBlockCoinBaseConstructor() public view returns (address coinbase) {
 		coinbase = block.coinbase;
 	}
 }

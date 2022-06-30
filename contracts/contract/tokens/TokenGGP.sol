@@ -4,7 +4,8 @@ pragma solidity ^0.8.13;
 
 import {ERC20, ERC20Burnable} from "./ERC20Burnable.sol";
 import {Vault} from "../Vault.sol";
-import "../Base.sol";
+import {Base} from "../Base.sol";
+import {Storage} from "../Storage.sol";
 
 // GGP Governance and utility token
 // Inflationary with rate determined by DAO

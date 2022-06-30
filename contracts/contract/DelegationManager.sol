@@ -2,11 +2,12 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./Base.sol";
+import {Base} from "./Base.sol";
 import "./BaseQueue.sol";
 import "../interface/IVault.sol";
 import "../interface/IStorage.sol";
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
+import {Storage} from "./Storage.sol";
 
 /*
 	Data Storage Schema
