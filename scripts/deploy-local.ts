@@ -2,13 +2,7 @@ import "@openzeppelin/hardhat-upgrades";
 import { writeFile } from "node:fs/promises";
 import { ethers, upgrades, network } from "hardhat";
 
-const hre = require("hardhat");
 const { getNamedAccounts } = require("../tasks/lib/utils");
-
-if (process.env.ETHERNAL_EMAIL !== "") {
-	require("hardhat-ethernal");
-	hre.ethernalUploadAst = true;
-}
 
 // DO NOT USE FOR PRODUCTION
 // This will deploy the contracts to the local network
@@ -104,19 +98,6 @@ const deploy = async () => {
 	// Write out the deployed addresses to a format easily loaded by javascript
 	data = `module.exports = ${JSON.stringify(addresses)}`;
 	await writeFile(`cache/deployed_addrs_${network.name}.js`, data);
-
-	// This takes a while so allow us to skip it if we want
-	if (
-		process.env.ETHERNAL_EMAIL !== "" &&
-		process.env.ETHERNAL_PUSH === "true"
-	) {
-		for (const contract in contracts) {
-			await hre.ethernal.push({
-				name: contract,
-				address: addresses[contract],
-			});
-		}
-	}
 };
 
 deploy()
