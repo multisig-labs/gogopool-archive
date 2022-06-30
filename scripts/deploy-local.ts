@@ -16,6 +16,7 @@ const instances: IFU = {};
 const contracts: IFU = {
 	Multicall: [],
 	Storage: [],
+	WAVAX: [],
 	OneInchMock: [],
 	Vault: ["Storage"],
 	Oracle: ["Storage"],
@@ -23,8 +24,11 @@ const contracts: IFU = {
 	MultisigManager: ["Storage"],
 	BaseQueue: ["Storage"],
 	TokenGGP: ["Storage"],
+	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
 };
+
+const deployAsProxy = ["TokenggAVAX"];
 
 const hash = (types: any, vals: any) => {
 	const h = ethers.utils.solidityKeccak256(types, vals);
@@ -40,19 +44,6 @@ const deploy = async () => {
 	console.log(`Network: ${network.name}`);
 	console.log(`Deploying contracts as (${deployer.address})`);
 
-	console.log(`Deploying WAVAX`);
-	const WAVAX = await ethers.getContractFactory("WAVAX");
-	const wavax = await WAVAX.deploy();
-	await wavax.deployed();
-	addresses.WAVAX = wavax.address;
-	console.log(`WAVAX deployed to: ${wavax.address}`);
-
-	console.log(`Deploying TokenggAVAX with args ${wavax.address}...`);
-	const TokenggAVAX = await ethers.getContractFactory("TokenggAVAX");
-	const tokenggavax = await upgrades.deployProxy(TokenggAVAX, [wavax.address]);
-	addresses.TokenggAVAX = tokenggavax.address;
-	console.log(`TokenggAVAX proxy deployed to: ${tokenggavax.address}`);
-
 	for (const contract in contracts) {
 		const args = [];
 		for (const name of contracts[contract]) {
@@ -60,7 +51,12 @@ const deploy = async () => {
 		}
 		console.log(`Deploying ${contract} with args ${args}...`);
 		const C = await ethers.getContractFactory(contract, deployer);
-		const c = await C.deploy(...args);
+		let c;
+		if (deployAsProxy.includes(contract)) {
+			c = await upgrades.deployProxy(C, [...args]);
+		} else {
+			c = await C.deploy(...args);
+		}
 		const inst = await c.deployed();
 		instances[contract] = inst;
 		addresses[contract] = c.address;
