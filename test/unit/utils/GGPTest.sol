@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-
 pragma solidity ^0.8.13;
+
+// SPDX-License-Identifier: GPL-3.0-only
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../contracts/contract/MinipoolManager.sol";
