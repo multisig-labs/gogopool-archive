@@ -73,6 +73,15 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	// Total amount of avax currently out for staking (not including any rewards)
 	uint256 public stakingTotalAssets;
 
+	/// @custom:oz-upgrades-unsafe-allow constructor
+	constructor() {
+		/*
+	  	Since the constructor is executed only when creating the
+	  	implementation contract, prevent its re-initialization.
+	  */
+		_disableInitializers();
+	}
+
 	function initialize(IStorage storageAddress, ERC20 asset) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
 		__BaseUpgradeable_init(storageAddress);
