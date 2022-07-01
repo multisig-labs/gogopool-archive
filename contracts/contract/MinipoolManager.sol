@@ -35,6 +35,7 @@ import {Base} from "./Base.sol";
 	minipool.item<index>.ggpBondAmt = amt ggp deposited by node op for bond
 	minipool.item<index>.multisigAddr = which Rialto multisig is assigned to manage this validation (in future could be multiple)
 	// Below are submitted by Rialto oracle
+	minipool.item<index>.txID = transaction id of the AddValidatorTx
 	minipool.item<index>.startTime = actual time validation was started
 	minipool.item<index>.endTime = actual time validation was finished
 	minipool.item<index>.avaxTotalRewardAmt = Actual total avax rewards paid by avalanchego to the TSS P-chain addr
@@ -71,6 +72,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		uint256 avaxUserRewardAmt;
 		address owner;
 		address multisigAddr;
+		bytes32 txID;
 	}
 
 	/// @notice A minipool with this nodeid has already been registered
@@ -157,6 +159,7 @@ contract MinipoolManager is Base, IWithdrawer {
 			// Existing nodeID
 			requireValidStateTransition(index, MinipoolStatus.Prelaunch);
 			// Zero out any left over data from a previous validation
+			setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")), 0);
@@ -327,11 +330,16 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	// Rialto calls this after a successful minipool launch
 	// TODO Is it worth it to validate startTime? Or just depend on rialto to do the right thing?
-	function recordStakingStart(address nodeID, uint256 startTime) external {
+	function recordStakingStart(
+		address nodeID,
+		bytes32 txID,
+		uint256 startTime
+	) external {
 		int256 index = requireValidMultisig(nodeID);
 
 		requireValidStateTransition(index, MinipoolStatus.Staking);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Staking));
+		setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")), txID);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), startTime);
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Staking);
 	}
@@ -423,6 +431,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		mp.nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
 		mp.status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
 		mp.duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
+		mp.txID = getBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")));
 		mp.startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
 		mp.endTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")));
 		mp.delegationFee = getUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")));

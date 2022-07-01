@@ -165,7 +165,8 @@ contract TokenggAVAXTest is GGPTest {
 		// None of these rewards should be distributed yet
 		vm.deal(rialto1, rialto1.balance + rewardsAmount);
 		vm.startPrank(rialto1);
-		minipoolMgr.recordStakingStart(nodeID, block.timestamp);
+		bytes32 txID = keccak256("txid");
+		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
 		int256 idx = minipoolMgr.getIndexOf(nodeID);
 		MinipoolManager.Minipool memory mp = minipoolMgr.getMinipool(idx);
 		uint256 endTime = block.timestamp + mp.duration;

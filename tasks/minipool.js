@@ -146,6 +146,7 @@ task("minipool:recordStakingStart", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
 	.addParam("start", "staking start time", 0, types.int)
+	.addParam("txid", "txid of AddValidatorTx", "0x00", types.bytes32)
 	.setAction(async ({ actor, node, start }) => {
 		if (start === 0) {
 			start = await now();
@@ -154,6 +155,7 @@ task("minipool:recordStakingStart", "")
 		const minipoolManager = await get("MinipoolManager", signer);
 		const tx = await minipoolManager.recordStakingStart(
 			nodeID(node),
+			txid,
 			start,
 			overrides
 		);

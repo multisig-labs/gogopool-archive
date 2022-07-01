@@ -85,7 +85,7 @@ const hash = (types, vals) => {
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-14s %-10s %-10s %-10s %-10s",
 		"nodeID",
 		"status",
 		"owner",
@@ -97,6 +97,7 @@ function logMinipools(minipools) {
 		"dur",
 		"start",
 		"end",
+		"txID",
 		"totRwds",
 		"nopRwds",
 		"usrRwds",
@@ -104,7 +105,7 @@ function logMinipools(minipools) {
 	);
 	for (mp of minipools) {
 		logf(
-			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s",
+			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-14s %-10s %-10s %-10s %-10s",
 			mp.nodeID,
 			mp.status,
 			formatAddr(mp.owner),
@@ -116,6 +117,7 @@ function logMinipools(minipools) {
 			mp.duration,
 			mp.startTime,
 			mp.endTime,
+			formatAddr(mp.txID),
 			hre.ethers.utils.formatUnits(mp.avaxTotalRewardAmt),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpRewardAmt),
 			hre.ethers.utils.formatUnits(mp.avaxUserRewardAmt),

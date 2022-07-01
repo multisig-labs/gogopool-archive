@@ -68,7 +68,8 @@ contract MinipoolManagerTest is GGPTest {
 		// nonce = minipoolMgr.getNonce(rialto1);
 		// msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
 		// sig = signHash(RIALTO1_PK, msgHash);
-		minipoolMgr.recordStakingStart(nodeID, block.timestamp);
+		bytes32 txID = keccak256("txid");
+		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
 
 		// nonce = minipoolMgr.getNonce(rialto1);
 		// msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
