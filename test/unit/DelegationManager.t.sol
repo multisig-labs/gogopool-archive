@@ -2,10 +2,10 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./utils/GGPTest.sol";
+import "./utils/BaseTest.sol";
 import {DelegationNodeStatus} from "../../contracts/types/DelegationNodeStatus.sol";
 
-contract DelegationManagerTest is GGPTest {
+contract DelegationManagerTest is BaseTest {
 	int256 private index;
 	address private nodeID;
 	address private nodeOp;
@@ -110,9 +110,8 @@ contract DelegationManagerTest is GGPTest {
 		address nodeID_notNeeded;
 		uint256 minipool_duration;
 		uint256 delegationFee;
-		(nodeID, minipool_duration, delegationFee) = randMinipool();
-		vm.prank(nodeOp);
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, minipool_duration, delegationFee, 2000 ether);
+
+		(nodeID, minipool_duration) = stakeAndCreateMinipool(nodeOp, 100 ether, 1000 ether);
 		assertEq(vault.balanceOf("MinipoolManager"), 1000 ether);
 
 		vm.startPrank(rialto1);

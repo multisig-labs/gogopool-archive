@@ -2,10 +2,10 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./utils/GGPTest.sol";
+import "./utils/BaseTest.sol";
 import "../../contracts/contract/dao/ProtocolDAO.sol";
 
-contract ProtocolDAOTest is GGPTest {
+contract ProtocolDAOTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 	}

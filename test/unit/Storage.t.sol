@@ -2,10 +2,10 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./utils/GGPTest.sol";
+import "./utils/BaseTest.sol";
 import "../../contracts/contract/Storage.sol";
 
-contract StorageTest is GGPTest {
+contract StorageTest is BaseTest {
 	address private constant NEWGUARDIAN = address(0xDEADBEEF);
 	bytes32 private constant KEY = keccak256("test.key");
 

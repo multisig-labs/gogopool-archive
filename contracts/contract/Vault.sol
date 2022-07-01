@@ -2,7 +2,7 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import {Base} from "./Base.sol";
+import "./Base.sol";
 import {Storage} from "./Storage.sol";
 import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
 import {IVault} from "../interface/IVault.sol";
@@ -110,9 +110,11 @@ contract Vault is Base, IVault {
 		// Get contract key
 		bytes32 contractKey = keccak256(abi.encodePacked(_networkContractName, address(_tokenContract)));
 		// Send the tokens to this contract now
+
 		if (!_tokenContract.transferFrom(msg.sender, address(this), _amount)) {
 			revert TokenTransferFailed();
 		}
+
 		// Update contract balance
 		tokenBalances[contractKey] = tokenBalances[contractKey] + _amount;
 		// Emit token transfer

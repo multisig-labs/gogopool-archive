@@ -2,7 +2,6 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import {IStorage} from "../interface/IStorage.sol";
 import {Base} from "./Base.sol";
 import {Storage} from "./Storage.sol";
 
@@ -37,7 +36,7 @@ contract MultisigManager is Base {
 	event EnabledMultisig(address indexed addr);
 	event DisabledMultisig(address indexed addr);
 
-	constructor(IStorage storageAddress) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 

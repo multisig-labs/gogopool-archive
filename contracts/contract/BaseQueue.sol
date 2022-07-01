@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import {Base} from "./Base.sol";
-import "../interface/IStorage.sol";
+import {Storage} from "./Storage.sol";
 
 // Delegation queue storage helper (ring buffer implementation)
 // Based off the Minipool queue
@@ -13,7 +13,7 @@ contract BaseQueue is Base {
 	uint256 public constant CAPACITY = 2**255; // max uint256 / 2
 
 	// Construct
-	constructor(IStorage storageAddress) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 

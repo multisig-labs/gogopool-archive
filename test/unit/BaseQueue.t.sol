@@ -2,9 +2,9 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./utils/GGPTest.sol";
+import {BaseTest} from "./utils/BaseTest.sol";
 
-contract BaseQueueTest is GGPTest {
+contract BaseQueueTest is BaseTest {
 	// test node IDs
 	address public NODE_ID_1 = 0x0000000000000000000000000000000000000001;
 	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;

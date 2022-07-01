@@ -10,7 +10,7 @@ import {BaseUpgradeable} from "../BaseUpgradeable.sol";
 import {ERC20Upgradeable} from "./upgradeable/ERC20Upgradeable.sol";
 import {ERC4626Upgradeable} from "./upgradeable/ERC4626Upgradeable.sol";
 
-import {IStorage} from "../../interface/IStorage.sol";
+import {Storage} from "../Storage.sol";
 import {IWAVAX} from "../../interface/IWAVAX.sol";
 import {IWithdrawer} from "../../interface/IWithdrawer.sol";
 
@@ -82,7 +82,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		_disableInitializers();
 	}
 
-	function initialize(IStorage storageAddress, ERC20 asset) public initializer {
+	function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
 		__BaseUpgradeable_init(storageAddress);
 		__Ownable_init();

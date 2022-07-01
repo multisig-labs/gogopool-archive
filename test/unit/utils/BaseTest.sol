@@ -8,9 +8,11 @@ import "../../../contracts/contract/BaseQueue.sol";
 import "../../../contracts/contract/DelegationManager.sol";
 import "../../../contracts/contract/MultisigManager.sol";
 import "../../../contracts/contract/Storage.sol";
+import "../../../contracts/contract/rewards/claims/ProtocolDAOClaim.sol";
 import "../../../contracts/contract/Vault.sol";
 import "../../../contracts/contract/Oracle.sol";
 import "../../../contracts/contract/dao/ProtocolDAO.sol";
+import "../../../contracts/contract/rewards/claims/NOPClaim.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 import "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import "../../../contracts/contract/tokens/WAVAX.sol";
@@ -18,13 +20,16 @@ import "../../../contracts/contract/tokens/WAVAX.sol";
 import {format} from "./format.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
+import "../../../contracts/contract/rewards/RewardsPool.sol";
+import "../../../contracts/contract/util/AddressSetStorage.sol";
+import "../../../contracts/contract/Staking.sol";
 import {MockERC20} from "@rari-capital/solmate/src/test/utils/mocks/MockERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-abstract contract GGPTest is Test {
+abstract contract BaseTest is Test {
 	using FixedPointMathLib for uint256;
 
 	address internal constant ZERO_ADDRESS = address(0x00);
@@ -47,16 +52,20 @@ abstract contract GGPTest is Test {
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	ProtocolDAO public dao;
+	ProtocolDAOClaim public daoClaim;
 	TokenGGP public ggp;
+	RewardsPool public rewardsPool;
 	MockERC20 public mockGGP;
 	TokenggAVAX public ggAVAX;
 	TokenggAVAX public ggAVAXImpl;
+	AddressSetStorage public addressSetStorage;
+	NOPClaim public nopClaim;
+	Staking public staking;
 	WAVAX public wavax;
 
 	function setUp() public virtual {
 		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
 		vm.label(address(guardian), "guardian");
-
 		rialto1 = vm.addr(RIALTO1_PK);
 		vm.label(address(rialto1), "rialto1");
 
@@ -79,6 +88,7 @@ abstract contract GGPTest is Test {
 		registerContract(store, "Vault", address(vault));
 
 		oracle = new Oracle(store);
+		oracle.setGGPPrice(1 ether, block.timestamp);
 		registerContract(store, "Oracle", address(oracle));
 
 		baseQueue = new BaseQueue(store);
@@ -107,6 +117,21 @@ abstract contract GGPTest is Test {
 		dao = new ProtocolDAO(store);
 		registerContract(store, "ProtocolDAO", address(dao));
 		dao.initialize();
+
+		staking = new Staking(store, mockGGP);
+		registerContract(store, "Staking", address(staking));
+
+		daoClaim = new ProtocolDAOClaim(store);
+		registerContract(store, "ProtocolDAOClaim", address(daoClaim));
+
+		rewardsPool = new RewardsPool(store);
+		registerContract(store, "RewardsPool", address(rewardsPool));
+
+		addressSetStorage = new AddressSetStorage(store);
+		registerContract(store, "AddressSetStorage", address(addressSetStorage));
+
+		nopClaim = new NOPClaim(store);
+		registerContract(store, "NOPClaim", address(nopClaim));
 
 		ggp = new TokenGGP(store);
 		registerContract(store, "TokenGGP", address(ggp));
@@ -168,22 +193,54 @@ abstract contract GGPTest is Test {
 		return actor;
 	}
 
+	function getGGP(address actor, uint128 amount) public {
+		mockGGP.mint(actor, amount);
+
+		vm.startPrank(actor);
+		mockGGP.approve(address(minipoolMgr), amount);
+		mockGGP.approve(address(delegationMgr), amount);
+		mockGGP.approve(address(staking), amount);
+		vm.stopPrank();
+	}
+
 	function getActorWithTokens(
 		uint160 i,
 		uint128 avaxAmt,
 		uint128 ggpAmt
 	) public returns (address) {
 		address actor = getActor(i);
+
+		vm.startPrank(guardian);
+		ggp.transfer(actor, ggpAmt);
+		vm.stopPrank();
+
 		vm.deal(actor, avaxAmt);
 		vm.startPrank(actor);
 		wavax.deposit{value: avaxAmt}();
 		wavax.approve(address(ggAVAX), avaxAmt);
+
 		vm.deal(actor, avaxAmt);
 		mockGGP.mint(actor, ggpAmt);
 		mockGGP.approve(address(minipoolMgr), ggpAmt);
 		mockGGP.approve(address(delegationMgr), ggpAmt);
+		mockGGP.approve(address(staking), ggpAmt);
 		vm.stopPrank();
 		return actor;
+	}
+
+	function stakeAndCreateMinipool(
+		address user,
+		uint128 stakeAmt,
+		uint256 minipoolAmt
+	) internal returns (address, uint256) {
+		getGGP(user, stakeAmt);
+		vm.startPrank(user);
+		staking.stakeGGP(stakeAmt);
+		(address nodeId, uint256 duration, uint256 delegationFee) = randMinipool();
+
+		minipoolMgr.createMinipool{value: minipoolAmt}(nodeId, duration, delegationFee);
+		vm.stopPrank();
+		return (nodeId, duration);
 	}
 
 	function randAddress() internal returns (address) {
