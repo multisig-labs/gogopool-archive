@@ -1,5 +1,5 @@
 import "@openzeppelin/hardhat-upgrades";
-import { ethers, upgrades, network } from "hardhat";
+import { ethers, upgrades, network, web3 } from "hardhat";
 import { writeFile } from "node:fs/promises";
 
 const { getNamedAccounts } = require("../tasks/lib/utils");
@@ -66,6 +66,8 @@ const deploy = async () => {
 		console.log(`${contract} deployed to: ${c.address}`);
 	}
 
+	let nonce = await web3.eth.getTransactionCount(deployer.address);
+
 	// Register any contract with Storage as first constructor param
 	for (const contract of toDeploy) {
 		const store = instances.Storage;
@@ -73,15 +75,24 @@ const deploy = async () => {
 			console.log(`Registering ${contract}`);
 			await store.setAddress(
 				hash(["string", "string"], ["contract.address", contract]),
-				addresses[contract]
+				addresses[contract],
+				{
+					nonce: nonce++,
+				}
 			);
 			await store.setBool(
 				hash(["string", "address"], ["contract.exists", addresses[contract]]),
-				true
+				true,
+				{
+					nonce: nonce++,
+				}
 			);
 			await store.setString(
 				hash(["string", "address"], ["contract.name", addresses[contract]]),
-				contract
+				contract,
+				{
+					nonce: nonce++,
+				}
 			);
 		}
 	}
