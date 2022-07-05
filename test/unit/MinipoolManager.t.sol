@@ -13,11 +13,13 @@ contract MinipoolManagerTest is GGPTest {
 	uint256 private delegationFee;
 	uint256 private ggpBondAmt;
 	uint128 private immutable MAX_AMT = 20_000 ether;
+	address private bob;
 
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
 		nodeOp = getActorWithTokens(1, MAX_AMT, MAX_AMT);
+		bob = getActor(2);
 	}
 
 	function testExpectedReward() public {
@@ -53,7 +55,8 @@ contract MinipoolManagerTest is GGPTest {
 	function testFullCycle_NoUserFunds() public {
 		(nodeID, duration, delegationFee) = randMinipool();
 		vm.prank(nodeOp);
-		minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, 2000 ether);
+		ggpBondAmt = 2000 ether;
+		minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, ggpBondAmt);
 		assertEq(vault.balanceOf("MinipoolManager"), 2000 ether);
 		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
 
@@ -94,6 +97,70 @@ contract MinipoolManagerTest is GGPTest {
 		assertEq(vault.balanceOf("MinipoolManager"), 2010 ether);
 
 		vm.stopPrank();
+
+		///test that the node op can withdraw the funds they are due
+		vm.startPrank(nodeOp);
+		uint256 priorBalance_ggp = mockGGP.balanceOf(nodeOp);
+		uint256 priorBalance_nodeOp = nodeOp.balance;
+
+		minipoolMgr.withdrawMinipoolFunds(nodeID);
+		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
+		assertEq((nodeOp.balance - priorBalance_nodeOp), 2010 ether);
+	}
+
+	function testFullCycle_WithUserFunds() public {
+		uint256 depositAmount = 3000000 ether;
+		//fill liquid staker funds
+		vm.deal(bob, depositAmount);
+		vm.prank(bob);
+		ggAVAX.depositAVAX{value: depositAmount}();
+		assertEq(bob.balance, 0);
+
+		(nodeID, duration, delegationFee) = randMinipool();
+		vm.prank(nodeOp);
+		ggpBondAmt = 2000 ether;
+		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, ggpBondAmt);
+		assertEq(vault.balanceOf("MinipoolManager"), 1000 ether);
+
+		vm.startPrank(rialto1);
+
+		minipoolMgr.claimAndInitiateStaking(nodeID);
+
+		assertEq(vault.balanceOf("MinipoolManager"), 0);
+		assertEq(rialto1.balance, 2000 ether);
+
+		bytes32 txID = keccak256("txid");
+		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
+
+		vm.expectRevert(MinipoolManager.InvalidEndTime.selector);
+		minipoolMgr.recordStakingEnd{value: 2000 ether}(nodeID, block.timestamp, 0 ether);
+
+		skip(duration);
+
+		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
+		minipoolMgr.recordStakingEnd{value: 0 ether}(nodeID, block.timestamp, 0 ether);
+
+		// // // Give rialto the rewards it needs
+		uint256 rewards = 10 ether;
+		deal(rialto1, rialto1.balance + rewards);
+
+		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
+		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, block.timestamp, 9 ether);
+
+		//right now rewards are split equally between the node op and user. User provided half the total funds in this test
+		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, block.timestamp, 10 ether);
+		assertEq(vault.balanceOf("MinipoolManager"), 1005 ether);
+
+		vm.stopPrank();
+
+		///test that the node op can withdraw the funds they are due
+		vm.startPrank(nodeOp);
+		uint256 priorBalance_ggp = mockGGP.balanceOf(nodeOp);
+		uint256 priorBalance_nodeOp = nodeOp.balance;
+
+		minipoolMgr.withdrawMinipoolFunds(nodeID);
+		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
+		assertEq((nodeOp.balance - priorBalance_nodeOp), 1005 ether);
 	}
 
 	function testBondZeroGGP() public {
