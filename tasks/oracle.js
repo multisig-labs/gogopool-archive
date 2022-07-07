@@ -7,7 +7,7 @@ task("oracle:set_oneinch", "")
 	.setAction(async ({ addr }) => {
 		log(`OneInch addr: ${addr}`);
 		const oracle = await get("Oracle");
-		oracle.setOneInch(addr);
+		await oracle.setOneInch(addr);
 	});
 
 task("oracle:get_ggp_price_oneinch", "").setAction(async () => {
