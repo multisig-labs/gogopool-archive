@@ -383,8 +383,10 @@ contract MinipoolManager is Base, IWithdrawer {
 			vault.depositAvax{value: avaxNodeOpAmt}();
 		} else {
 			uint256 avaxUserRewardAmt;
+			uint256 avaxHalfRewards;
 			if (avaxUserAmt > 0) {
-				avaxUserRewardAmt = avaxTotalRewardAmt / 2; // TODO make this appropriate percentage of rewards
+				avaxHalfRewards = avaxTotalRewardAmt / 2; // TODO make this appropriate percentage of rewards
+				avaxUserRewardAmt = avaxHalfRewards - (avaxHalfRewards * 15/100); // we are giving node operators an additional 15% commission fee
 				ggAVAX.depositFromStaking{value: avaxUserAmt + avaxUserRewardAmt}(avaxUserAmt, avaxUserRewardAmt);
 			}
 			// If no user funds were used, nodeop gets the whole reward

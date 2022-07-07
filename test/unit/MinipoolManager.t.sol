@@ -149,7 +149,9 @@ contract MinipoolManagerTest is GGPTest {
 
 		//right now rewards are split equally between the node op and user. User provided half the total funds in this test
 		minipoolMgr.recordStakingEnd{value: 2010 ether}(nodeID, block.timestamp, 10 ether);
-		assertEq(vault.balanceOf("MinipoolManager"), 1005 ether);
+		uint256 commissionFee = 5 ether * (15/100);
+		//checking the node operators rewards are corrrect
+		assertEq(vault.balanceOf("MinipoolManager"), (1005 ether + commissionFee));
 
 		vm.stopPrank();
 
@@ -160,7 +162,7 @@ contract MinipoolManagerTest is GGPTest {
 
 		minipoolMgr.withdrawMinipoolFunds(nodeID);
 		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
-		assertEq((nodeOp.balance - priorBalance_nodeOp), 1005 ether);
+		assertEq((nodeOp.balance - priorBalance_nodeOp), (1005 ether + commissionFee));
 	}
 
 	function testBondZeroGGP() public {

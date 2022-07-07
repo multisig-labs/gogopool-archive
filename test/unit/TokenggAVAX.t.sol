@@ -138,7 +138,7 @@ contract TokenggAVAXTest is GGPTest {
 		uint256 totalStakedAmount = 2000 ether;
 
 		uint256 rewardsAmount = 100 ether;
-		uint256 liquidStakerRewards = 50 ether;
+		uint256 liquidStakerRewards = 50 ether - (50 ether * 15/100);
 
 		uint256 rialtoInitBal = rialto1.balance;
 

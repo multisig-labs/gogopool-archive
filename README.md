@@ -3,9 +3,9 @@
 ## First time setup
 
 ```
-npm install
+yarn
 brew install just
-curl -L https://foundry.paradigm.xyz | bash (from https://github.com/foundry-rs/foundry)
+curl -L https://foundry.paradigm.xyz | bash
 foundryup
 forge install
 just build
