@@ -66,7 +66,12 @@ const deploy = async () => {
 		console.log(`${contract} deployed to: ${c.address}`);
 	}
 
-	let nonce = await web3.eth.getTransactionCount(deployer.address);
+	let nonce = parseInt(
+		await ethers.provider.send("eth_getTransactionCount", [
+			deployer.address,
+			"latest",
+		])
+	);
 
 	// Register any contract with Storage as first constructor param
 	for (const contract of toDeploy) {

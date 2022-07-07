@@ -8,7 +8,6 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "@atixlabs/hardhat-time-n-mine";
 import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-web3";
 
 dotenv.config();
 
