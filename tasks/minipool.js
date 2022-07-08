@@ -151,6 +151,10 @@ task("minipool:claim_one", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
+		let tx = await minipoolManager.callStatic.claimAndInitiateStaking(
+			nodeID(node),
+			overrides
+		);
 		tx = await minipoolManager.claimAndInitiateStaking(nodeID(node), overrides);
 		await logtx(tx);
 		log(`Minipool claimed for ${node}`);
@@ -160,14 +164,23 @@ task("minipool:recordStakingStart", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name")
 	.addParam("start", "staking start time", 0, types.int)
-	.addParam("txid", "txid of AddValidatorTx", "0x00", types.bytes32)
-	.setAction(async ({ actor, node, start }) => {
+	.addParam("txid", "txid of AddValidatorTx", "", types.string)
+	.setAction(async ({ actor, node, start, txid }) => {
 		if (start === 0) {
 			start = await now();
 		}
+		if (txid === "") {
+			txid = hre.ethers.constants.HashZero;
+		}
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		const tx = await minipoolManager.recordStakingStart(
+		let tx = await minipoolManager.callStatic.recordStakingStart(
+			nodeID(node),
+			txid,
+			start,
+			overrides
+		);
+		tx = await minipoolManager.recordStakingStart(
 			nodeID(node),
 			txid,
 			start,
@@ -200,6 +213,15 @@ task("minipool:recordStakingEnd", "")
 		await rewarder.sendTransaction(tx);
 		total = avax.add(reward);
 
+		tx = await minipoolManager.callStatic.recordStakingEnd(
+			nodeID(node),
+			end,
+			reward,
+			{
+				...overrides,
+				value: total,
+			}
+		);
 		tx = await minipoolManager.recordStakingEnd(nodeID(node), end, reward, {
 			...overrides,
 			value: total,

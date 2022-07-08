@@ -1,13 +1,14 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
-const { overrides, get, getNamedAccounts } = require("./lib/utils");
+const { overrides, get, getNamedAccounts, logtx } = require("./lib/utils");
 
 task("ggavax:sync_rewards", "")
 	.addParam("actor", "Account used to send tx")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", signer);
-		await ggAVAX.syncRewards();
+		tx = await ggAVAX.syncRewards();
+		logtx(tx);
 	});
 
 task("ggavax:liqstaker_deposit_avax")
@@ -16,10 +17,11 @@ task("ggavax:liqstaker_deposit_avax")
 	.setAction(async ({ actor, amt }) => {
 		const addr = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", addr);
-		await ggAVAX.depositAVAX({
+		tx = await ggAVAX.depositAVAX({
 			...overrides,
 			value: ethers.utils.parseEther(amt, "ether"),
 		});
+		logtx(tx);
 	});
 
 task("ggavax:liqstaker_redeem_ggavax")
@@ -28,7 +30,11 @@ task("ggavax:liqstaker_redeem_ggavax")
 	.setAction(async ({ actor, amt }) => {
 		const addr = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", addr);
-		await ggAVAX.redeemAVAX(ethers.utils.parseEther(amt, "ether"), overrides);
+		tx = await ggAVAX.redeemAVAX(
+			ethers.utils.parseEther(amt, "ether"),
+			overrides
+		);
+		logtx(tx);
 	});
 
 task("ggp:deal")
