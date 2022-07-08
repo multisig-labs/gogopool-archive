@@ -1,7 +1,6 @@
 import { assert, expect } from "chai";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
-import web3 from "web3";
 
 // need to finish writing deploy routine
 const deployTestGGPToken = async () => {

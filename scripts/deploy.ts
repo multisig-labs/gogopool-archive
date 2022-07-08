@@ -1,5 +1,5 @@
 import "@openzeppelin/hardhat-upgrades";
-import { ethers, upgrades, network, web3 } from "hardhat";
+import { ethers, upgrades, network } from "hardhat";
 import { writeFile } from "node:fs/promises";
 
 const { getNamedAccounts } = require("../tasks/lib/utils");
