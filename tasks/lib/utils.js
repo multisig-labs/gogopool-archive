@@ -2,6 +2,24 @@
 const { sprintf } = require("sprintf-js");
 const ms = require("ms");
 
+// Take NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 and return 0xF29Bce5F34a74301eB0dE716d5194E4a4aEA5d7A
+const { BinTools } = require("avalanche");
+const bintools = BinTools.getInstance();
+const nodeIDToHex = (pk) => {
+	if (!pk.startsWith("NodeID-")) {
+		throw new Error("Error: nodeID must start with 'NodeID-'");
+	}
+	const pksplit = pk.split("-");
+	buff = bintools.cb58Decode(pksplit[pksplit.length - 1]);
+	return ethers.utils.getAddress(ethers.utils.hexlify(buff));
+};
+
+// Take 0xF29Bce5F34a74301eB0dE716d5194E4a4aEA5d7A and return NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5
+const nodeHexToID = (h) => {
+	b = ethers.utils.arrayify(ethers.utils.getAddress(h));
+	return `NodeID-${bintools.cb58Encode(b)}`;
+};
+
 const PAGE_SIZE = 2;
 
 const log = (...args) => console.log(...args);
@@ -19,7 +37,6 @@ try {
 	}`;
 	// eslint-disable-next-line node/no-missing-require
 	addrs = require(name);
-	log(`Loaded addresses from ${name}.js`);
 } catch {
 	console.log(
 		`Unable to require file cache/deployed_addrs_${
@@ -28,9 +45,15 @@ try {
 	);
 }
 
-// Random addresses to use for nodeIDs
+// Actual nodeID or random addresses to use for nodeIDs
 const nodeID = (seed) => {
-	return emptyWallet(seed).address;
+	if (seed.startsWith("NodeID-")) {
+		return nodeIDToHex(seed);
+	} else if (seed.startsWith("0x")) {
+		return ethers.utils.getAddress(seed);
+	} else {
+		return emptyWallet(seed).address;
+	}
 };
 
 const emptyWallet = (seed) => {
@@ -85,7 +108,7 @@ const hash = (types, vals) => {
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-14s %-10s %-10s %-10s %-10s",
+		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10s %-10s %-10s %-10s",
 		"nodeID",
 		"status",
 		"owner",
@@ -105,7 +128,7 @@ function logMinipools(minipools) {
 	);
 	for (mp of minipools) {
 		logf(
-			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-14s %-10s %-10s %-10s %-10s",
+			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10.6f %-10.6f %-10.6f %-10.6f",
 			mp.nodeID,
 			mp.status,
 			formatAddr(mp.owner),
@@ -117,7 +140,7 @@ function logMinipools(minipools) {
 			mp.duration,
 			mp.startTime,
 			mp.endTime,
-			formatAddr(mp.txID),
+			mp.txID,
 			hre.ethers.utils.formatUnits(mp.avaxTotalRewardAmt),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpRewardAmt),
 			hre.ethers.utils.formatUnits(mp.avaxUserRewardAmt),
@@ -238,4 +261,6 @@ module.exports = {
 	randomNumber,
 	parseDelta,
 	now,
+	nodeIDToHex,
+	nodeHexToID,
 };

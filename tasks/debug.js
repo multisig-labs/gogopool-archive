@@ -9,6 +9,8 @@ const {
 	logf,
 	getNamedAccounts,
 	now,
+	nodeID,
+	nodeHexToID,
 } = require("./lib/utils");
 
 task(
@@ -19,7 +21,7 @@ task(
 	const dao = await get("ProtocolDAO");
 	const oneinch = await get("OneInchMock");
 	await dao.initialize();
-	await hre.run("oracle:set_ggp", { price: "1" });
+	await hre.run("oracle:set_ggp", { price: "0.0001" });
 	await hre.run("oracle:set_oneinch", {
 		addr: oneinch.address,
 	});
@@ -71,7 +73,7 @@ task("debug:list_actor_balances").setAction(async () => {
 		const balEQAVAX = await ggAVAX.previewRedeem(balGGAVAX);
 		const balGGP = await ggp.balanceOf(actors[actor].address);
 		logf(
-			"%-15s %-20.2f %-20.2f %-20.2f %-20.2f",
+			"%-15s %-20.5f %-20.5f %-20.5f %-20.5f",
 			actor,
 			hre.ethers.utils.formatUnits(balAVAX),
 			hre.ethers.utils.formatUnits(balGGAVAX),
@@ -117,7 +119,7 @@ task("debug:list_vars", "List important system variables").setAction(
 			"totAssets"
 		);
 		logf(
-			"%-15s %-15.2f %-15.2f %-15.2f %-15.2f %-15.2f",
+			"%-15s %-15.5f %-15.5f %-15.5f %-15.5f %-15.5f",
 			rewardsCycleEnd,
 			hre.ethers.utils.formatUnits(lastRewardAmount),
 			hre.ethers.utils.formatUnits(networkTotalAssets),
@@ -167,6 +169,17 @@ task(
 		}
 	}
 });
+
+task("debug:node_ids")
+	.addParam("name", "either NodeID-123, 0x123, or a name like 'node1'")
+	.setAction(async ({ name }) => {
+		addr = nodeID(name);
+		out = {
+			nodeAddr: addr,
+			nodeID: nodeHexToID(addr),
+		};
+		console.log(JSON.stringify(out));
+	});
 
 // Take pks we are using for ANR and make a standard JSON all tools can use
 task("debug:output_named_users").setAction(async () => {

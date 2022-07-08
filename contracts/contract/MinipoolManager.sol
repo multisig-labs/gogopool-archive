@@ -29,7 +29,7 @@ import {Base} from "./Base.sol";
 	minipool.item<index>.status = enum
 	minipool.item<index>.duration = requested validation duration in seconds
 	minipool.item<index>.owner = owner address
-	minipool.item<index>.delegationFee = node operator specified fee
+	minipool.item<index>.delegationFee = node operator specified fee (must be between 0 and 1_000_000) 2% is 20_000
 	minipool.item<index>.avaxNodeOpAmt = avax deposited by node op (1000 avax for now)
 	minipool.item<index>.avaxUserAmt = avax deposited by users (1000 avax for now)
 	minipool.item<index>.ggpBondAmt = amt ggp deposited by node op for bond

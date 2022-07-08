@@ -59,21 +59,30 @@ task("minipool:queue", "List all minipools in the queue").setAction(
 
 task("minipool:create", "")
 	.addParam("actor", "Account used to send tx")
-	.addParam("node", "NodeID name")
+	.addParam("node", "Real NodeID or name to use as a random seed")
 	.addParam("duration", "Duration", "14d", types.string)
-	.addParam("fee", "", 0, types.int)
+	.addParam("fee", "2% is 20,000", 20000, types.int)
 	.addParam("ggp", "", "0")
 	.addParam("avax", "Amt of AVAX to send (units are AVAX)", "2000")
 	.setAction(async ({ actor, node, duration, fee, ggp, avax }) => {
+		console.log(nodeID(node));
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.createMinipool(
+		await minipoolManager.callStatic.createMinipool(
 			nodeID(node),
 			parseDelta(duration),
 			fee,
 			hre.ethers.utils.parseEther(ggp),
 			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
 		);
+		tx = await minipoolManager.createMinipool(
+			nodeID(node),
+			parseDelta(duration),
+			fee,
+			hre.ethers.utils.parseEther(ggp),
+			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
+		);
+		await logtx(tx);
 		log(`Minipool created for node ${node}: ${nodeID(node)}`);
 	});
 
@@ -125,7 +134,11 @@ task("minipool:claim", "Claim minipools until funds run out")
 			);
 			if (canClaim) {
 				log(`Claiming ${mp.nodeID}`);
-				await minipoolManager.claimAndInitiateStaking(mp.nodeID, overrides);
+				tx = await minipoolManager.claimAndInitiateStaking(
+					mp.nodeID,
+					overrides
+				);
+				await logtx(tx);
 			} else {
 				log("Nothing to do or not enough user funds");
 			}
@@ -138,7 +151,8 @@ task("minipool:claim_one", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.claimAndInitiateStaking(nodeID(node), overrides);
+		tx = await minipoolManager.claimAndInitiateStaking(nodeID(node), overrides);
+		await logtx(tx);
 		log(`Minipool claimed for ${node}`);
 	});
 
@@ -199,7 +213,8 @@ task("minipool:withdrawMinipoolFunds", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.withdrawMinipoolFunds(nodeID(node));
+		tx = await minipoolManager.withdrawMinipoolFunds(nodeID(node));
+		await logtx(tx);
 	});
 
 task("minipool:expected_reward", "")
