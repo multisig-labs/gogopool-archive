@@ -88,8 +88,8 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		__Ownable_init();
 		__UUPSUpgradeable_init();
 
-		// make this a setting, should I set this from the settings or from the constructor
-		rewardsCycleLength = 14 days;
+		// TODO make this a param
+		rewardsCycleLength = 10 minutes;
 		// seed initial rewardsCycleEnd
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
 	}
