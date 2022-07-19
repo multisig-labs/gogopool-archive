@@ -53,6 +53,15 @@ task("debug:topup_actor_balance")
 		}
 	});
 
+task("debug:topup_actor_balances")
+	.addParam("amt", "")
+	.setAction(async ({ amt }) => {
+		const actors = await getNamedAccounts();
+		for (actor in actors) {
+			await hre.run("debug:topup_actor_balance", { amt, actor });
+		}
+	});
+
 task("debug:list_actor_balances").setAction(async () => {
 	const actors = await getNamedAccounts();
 	const ggAVAX = await get("TokenggAVAX");

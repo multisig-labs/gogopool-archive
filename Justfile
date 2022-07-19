@@ -3,8 +3,8 @@
 # or if you have rust: cargo install just
 # https://cheatography.com/linux-china/cheat-sheets/justfile/
 
-HARDHAT_NETWORK := env_var_or_default("HARDHAT_NETWORK", "localhost")
-ETH_RPC_URL := env_var_or_default("ETH_RPC_URL", "http://127.0.0.1:8545")
+export HARDHAT_NETWORK := env_var_or_default("HARDHAT_NETWORK", "localhost")
+export ETH_RPC_URL := env_var_or_default("ETH_RPC_URL", "http://127.0.0.1:8545")
 
 # Autoload a .env if one exists
 set dotenv-load
