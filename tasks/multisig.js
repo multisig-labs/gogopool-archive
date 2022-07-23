@@ -24,6 +24,14 @@ task("multisig:list", "List all registered multisigs").setAction(async () => {
 	}
 });
 
+task("multisig:getNextActive", "Get next active multisig").setAction(
+	async () => {
+		const multisigManager = await get("MultisigManager");
+		const addr = await multisigManager.getNextActiveMultisig();
+		log(addr);
+	}
+);
+
 task("multisig:register", "Register and enable a multisig address")
 	.addParam("name", "Named account", "")
 	.addParam("addr", "Address", "")

@@ -150,26 +150,24 @@ task("debug:list_vars", "List important system variables").setAction(
 
 task(
 	"debug:list_contracts",
-	"List all contracts that are registered in storage"
+	"List all contracts that are registered in storage and refresh ./cache/deployed_addrs_[network].json"
 ).setAction(async () => {
 	const storage = await get("Storage");
 	for (const name in addrs) {
 		try {
-			const n = await storage.getString(
-				hash(["string", "address"], ["contract.name", addrs[name]])
-			);
-			const exists = await storage.getBool(
-				hash(["string", "address"], ["contract.exists", addrs[name]])
-			);
 			const address = await storage.getAddress(
 				hash(["string", "string"], ["contract.address", name])
 			);
-			const emoji =
-				exists && address === addrs[name] && n === name
-					? "✅"
-					: "(Not Registered)";
+			const n = await storage.getString(
+				hash(["string", "address"], ["contract.name", address])
+			);
+			const exists = await storage.getBool(
+				hash(["string", "address"], ["contract.exists", address])
+			);
+			const emoji = exists && n === name ? "✅" : "(Not Registered)";
 			if (address !== hre.ethers.constants.AddressZero) {
 				logf("%-20s %-30s %s", name, address, emoji);
+				addrs[name] = address; // update local cache with whats in storage
 			} else {
 				logf("%-20s %-30s", name, addrs[name]);
 			}
