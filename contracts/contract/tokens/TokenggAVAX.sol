@@ -5,7 +5,7 @@
 pragma solidity ^0.8.13;
 
 import {ProtocolDAO} from "../dao/ProtocolDAO.sol";
-import {BaseUpgradeable} from "../BaseUpgradeable.sol";
+import "../BaseUpgradeable.sol";
 
 import {ERC20Upgradeable} from "./upgradeable/ERC20Upgradeable.sol";
 import {ERC4626Upgradeable} from "./upgradeable/ERC4626Upgradeable.sol";
@@ -204,7 +204,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		uint256 totalAssets_ = totalAssets();
 
 		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
-		return totalAssets_ - reservedAssets;
+		return totalAssets_ - reservedAssets - stakingTotalAssets;
 	}
 
 	// REWARDS SYNC LOGIC
