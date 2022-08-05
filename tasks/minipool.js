@@ -62,9 +62,8 @@ task("minipool:create", "")
 	.addParam("node", "Real NodeID or name to use as a random seed")
 	.addParam("duration", "Duration", "14d", types.string)
 	.addParam("fee", "2% is 20,000", 20000, types.int)
-	.addParam("ggp", "", "0")
-	.addParam("avax", "Amt of AVAX to send (units are AVAX)", "2000")
-	.setAction(async ({ actor, node, duration, fee, ggp, avax }) => {
+	.addParam("avax", "Amt of AVAX to send (units are AVAX)", "1000")
+	.setAction(async ({ actor, node, duration, fee, avax }) => {
 		console.log(nodeID(node));
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
@@ -72,14 +71,12 @@ task("minipool:create", "")
 			nodeID(node),
 			parseDelta(duration),
 			fee,
-			hre.ethers.utils.parseEther(ggp),
 			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
 		);
 		tx = await minipoolManager.createMinipool(
 			nodeID(node),
 			parseDelta(duration),
 			fee,
-			hre.ethers.utils.parseEther(ggp),
 			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
 		);
 		await logtx(tx);
@@ -124,7 +121,13 @@ task("minipool:claim", "Claim minipools until funds run out")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		const minipools = await getMinipoolsFor(0, signer.address); // 0=Prelaunch
+
+		const prelaunchStatus = 0;
+		const minipools = await getMinipoolsFor(prelaunchStatus, signer.address); // 0=Prelaunch
+
+		if (minipools.length === 0) {
+			console.log("no minpools to claim");
+		}
 
 		// Somehow Rialto will sort these by priority
 		for (mp of minipools) {

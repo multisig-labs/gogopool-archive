@@ -73,6 +73,7 @@ const getNamedAccounts = async () => {
 		"rialto1",
 		"rialto2",
 		"rewarder",
+		"rialto",
 	];
 	const obj = {};
 	const signers = await hre.ethers.getSigners();
@@ -80,8 +81,8 @@ const getNamedAccounts = async () => {
 		obj[names[i]] = signers[i];
 	}
 	// A real Rialto address
-	const rialto = new ethers.VoidSigner(process.env.RIALTO, hre.ethers.provider);
-	obj.rialto = rialto;
+	// const rialto = new ethers.VoidSigner(process.env.RIALTO, hre.ethers.provider);
+	// obj.rialto = rialto;
 	return obj;
 };
 
@@ -226,6 +227,7 @@ function parseDelta(delta) {
 	const deltaInSeconds = Number.isNaN(Number(delta))
 		? ms(delta) / 1000
 		: Number(delta);
+
 	if (!Number.isInteger(deltaInSeconds))
 		throw new Error("cannot be called with a non integer value");
 	if (deltaInSeconds < 0)

@@ -21,7 +21,7 @@ task(
 	const dao = await get("ProtocolDAO");
 	const oneinch = await get("OneInchMock");
 	await dao.initialize();
-	await hre.run("oracle:set_ggp", { price: "0.0001" });
+	await hre.run("oracle:set_ggp", { price: "1" });
 	await hre.run("oracle:set_oneinch", {
 		addr: oneinch.address,
 	});

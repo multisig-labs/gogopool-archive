@@ -15,7 +15,7 @@ import "../../../contracts/contract/dao/ProtocolDAO.sol";
 import "../../../contracts/contract/rewards/claims/NOPClaim.sol";
 import "../../../contracts/contract/tokens/TokenGGP.sol";
 import "../../../contracts/contract/tokens/TokenggAVAX.sol";
-import "../../../contracts/contract/tokens/WAVAX.sol";
+import {WAVAX} from "../../../contracts/contract/tokens/WAVAX.sol";
 
 import {format} from "./format.sol";
 

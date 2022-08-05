@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 
 import "./utils/BaseTest.sol";
 
-contract TokenggAVAXTest is BaseTest {
+contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	using FixedPointMathLib for uint256;
 
 	uint128 private immutable MAX_AMT = 20_000 ether;
@@ -18,6 +18,7 @@ contract TokenggAVAXTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
+		dao.setTargetggAVAXReserveRate(0);
 
 		alice = getActorWithWAVAX(0, type(uint128).max);
 		bob = getActor(1);
@@ -222,7 +223,22 @@ contract TokenggAVAXTest is BaseTest {
 		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), 900 ether);
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
+	}
+
+	function testWithdrawForStaking() public {
+		uint256 depositAmount = 1000 ether;
+		uint256 withdrawAmount = 200 ether;
+		vm.deal(bob, depositAmount);
+		vm.prank(bob);
+		ggAVAX.depositAVAX{value: depositAmount}();
+
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
+		ggAVAX.withdrawForStaking(withdrawAmount);
+
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets - withdrawAmount);
 	}
 
 	function printState(string memory message) internal view {
