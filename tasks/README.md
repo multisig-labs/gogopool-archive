@@ -214,14 +214,14 @@ npx hardhat ggavax:liqstaker_deposit_avax --actor bob --amt 1000 &
 npx hardhat minipool:create --actor nodeOp1 --node node2 --duration 4m &
 npx hardhat minipool:create --actor nodeOp1 --node node3 --duration 3m &
 npx hardhat minipool:create --actor nodeOp1 --node node4 --duration 2m &
-npx hardhat ggavax:available_staking
+npx hardhat ggavax:available_for_staking
 ```
 
 ```
 npx hardhat minipool:list
 npx hardhat minipool:list_claimable --actor rialto1
 npx hardhat minipool:claim --actor rialto1
-npx hardhat ggavax:available_staking
+npx hardhat ggavax:available_for_staking
 ```
 
 ----
@@ -235,7 +235,7 @@ npx hardhat ggavax:available_staking
 npx hardhat ggavax:sync_rewards --actor rialto1
 npx hardhat debug:skip --duration 14d
 npx hardhat ggavax:sync_rewards --actor rialto1
-npx hardhat ggavax:available_staking
+npx hardhat ggavax:available_for_staking
 npx hardhat ggavax:total_assets
 npx hardhat ggavax:preview_withdraw --amt 2000
 ```

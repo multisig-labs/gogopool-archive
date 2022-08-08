@@ -100,6 +100,6 @@ contract ProtocolDAO is Base {
 	}
 
 	function setTargetggAVAXReserveRate(uint256 reserveRate) external {
-		setSettingUint("ggavax.reserve.target", reserveRate); // 10% collateral held in reserver
+		setSettingUint("ggavax.reserve.target", reserveRate); // 10% collateral held in reserve
 	}
 }

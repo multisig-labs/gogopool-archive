@@ -191,35 +191,35 @@ contract MinipoolManager is Base, IWithdrawer {
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), uint256(index + 1));
 		addUint(keccak256("minipool.count"), 1);
-		if (!isUserRegistered(msg.sender)) {
-			registerUser(msg.sender);
+		if (!isNodeOpRegistered(msg.sender)) {
+			registerNodeOp(msg.sender);
 		}
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
 	}
 
-	function isUserRegistered(address userAddress) internal view returns (bool) {
+	function isNodeOpRegistered(address userAddress) internal view returns (bool) {
 		AddressSetStorage addressSetStorage = AddressSetStorage(getContractAddress("AddressSetStorage"));
-		return addressSetStorage.getIndexOf(keccak256(abi.encodePacked("nodes.index")), userAddress) != -1;
+		return addressSetStorage.getIndexOf(keccak256(abi.encodePacked("nodeOp.index")), userAddress) != -1;
 	}
 
 	// Save owner address, set as withdrawal address for easy lookup later
 	// Also register them as a claimaint in the GGP rewards system
-	function registerUser(address userAddress) internal {
+	function registerNodeOp(address nodeOpAddress) internal {
 		// Initialise node data
-		setBool(keccak256(abi.encodePacked("node.exists", msg.sender)), true);
+		setBool(keccak256(abi.encodePacked("nodeOp.exists", msg.sender)), true);
 		// setString(keccak256(abi.encodePacked("node.timezone.location", msg.sender)), _timezoneLocation);
-		// Add node to index
+		// Add nodeOp to index
 		AddressSetStorage addressSetStorage = AddressSetStorage(getContractAddress("AddressSetStorage"));
-		addressSetStorage.addItem(keccak256(abi.encodePacked("nodes.index")), userAddress);
+		addressSetStorage.addItem(keccak256(abi.encodePacked("nodeOp.index")), nodeOpAddress);
 
 		// Register node for GGP claims
 		// TODO add if statement to handle registration of investor / rialto nodes
 		NOPClaim nopClaim = NOPClaim(getContractAddress("NOPClaim"));
-		nopClaim.register(userAddress, true);
+		nopClaim.register(nodeOpAddress, true);
 
 		// set withdrawal address
-		// gogoStorage.setWithdrawalAddress(userAddress, userAddress, true);
+		// gogoStorage.setWithdrawalAddress(nodeOpAddress, nodeOpAddress, true);
 
 		// Emit node registered event
 		// emit NodeRegistered(msg.sender, block.timestamp);

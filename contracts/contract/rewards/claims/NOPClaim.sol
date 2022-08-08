@@ -76,7 +76,10 @@ contract NOPClaim is Base {
 
 		// Get node withdrawal address
 		// Get user's wallet address
-		address nodeWithdrawalAddress = gogoStorage.getNodeWithdrawalAddress(msg.sender);
+		// ToDo setup withdrawal address for nodes, for now just using msg.sender
+		// https://github.com/multisig-labs/gogopool-contracts/issues/88
+		address nodeWithdrawalAddress = msg.sender;
+		// address nodeWithdrawalAddress = gogoStorage.getNodeWithdrawalAddress(msg.sender);
 		// Claim RPL
 		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
 		rewardsPool.claim(msg.sender, nodeWithdrawalAddress, getClaimRewardsPerc(msg.sender));
