@@ -2,7 +2,7 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./utils/GGPTest.sol";
+import "./utils/BaseTest.sol";
 
 // +-----------+-----------+--------+---------+
 // |    Gas    | Gas Price | Avax $ | Tx $    |
@@ -20,7 +20,7 @@ import "./utils/GGPTest.sol";
 // | 3,000,000 |       120 |     80 |    28.8 |
 // +-----------+-----------+--------+---------+
 
-contract GasTest is GGPTest {
+contract GasTest is BaseTest {
 	function testGas() public {
 		bytes memory key = bytes("key");
 		bytes32 key2 = bytes32("key2");

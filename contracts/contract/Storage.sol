@@ -2,15 +2,11 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "../interface/IStorage.sol";
-
-// import "../../lib/forge-std/src/console2.sol";
-
 /// @title The primary persistent storage for GoGoPool
 /// @author Chandler
 /// Based on RocketStorage by RocketPool
 
-contract Storage is IStorage {
+contract Storage {
 	// Storage maps
 	mapping(bytes32 => string) private stringStorage;
 	mapping(bytes32 => bytes) private bytesStorage;
@@ -19,6 +15,10 @@ contract Storage is IStorage {
 	mapping(bytes32 => address) private addressStorage;
 	mapping(bytes32 => bool) private booleanStorage;
 	mapping(bytes32 => bytes32) private bytes32Storage;
+
+	// Protected storage (not accessible by network contracts)
+	mapping(address => address) private withdrawalAddresses;
+	mapping(address => address) private pendingWithdrawalAddresses;
 
 	// Guardian address
 	address private guardian;
@@ -54,7 +54,7 @@ contract Storage is IStorage {
 	}
 
 	// Transfers guardianship to a new address
-	function setGuardian(address _newAddress) external override {
+	function setGuardian(address _newAddress) external {
 		// Check tx comes from current guardian
 		require(msg.sender == guardian, "Is not guardian account");
 		// Store new address awaiting confirmation
@@ -62,12 +62,12 @@ contract Storage is IStorage {
 	}
 
 	// Get guardian address
-	function getGuardian() external view override returns (address) {
+	function getGuardian() external view returns (address) {
 		return guardian;
 	}
 
 	// Confirms change of guardian
-	function confirmGuardian() external override {
+	function confirmGuardian() external {
 		// Check tx came from new guardian address
 		require(msg.sender == newGuardian, "Confirmation must come from new guardian address");
 		// Store old guardian for event
@@ -80,7 +80,7 @@ contract Storage is IStorage {
 	}
 
 	// Set this as being deployed now
-	function setDeployedStatus() external override {
+	function setDeployedStatus() external {
 		// Only guardian can lock this down
 		require(msg.sender == guardian, "Is not guardian account");
 		// Set it now
@@ -88,124 +88,124 @@ contract Storage is IStorage {
 	}
 
 	// Set this as being deployed now
-	function getDeployedStatus() external view override returns (bool) {
+	function getDeployedStatus() external view returns (bool) {
 		return storageInit;
 	}
 
 	/// @param _key The key for the record
-	function setAddress(bytes32 _key, address _value) external override onlyLatestGoGoNetworkContract {
+	function setAddress(bytes32 _key, address _value) external onlyLatestGoGoNetworkContract {
 		addressStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setUint(bytes32 _key, uint256 _value) external override onlyLatestGoGoNetworkContract {
+	function setUint(bytes32 _key, uint256 _value) external onlyLatestGoGoNetworkContract {
 		uintStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setString(bytes32 _key, string calldata _value) external override onlyLatestGoGoNetworkContract {
+	function setString(bytes32 _key, string calldata _value) external onlyLatestGoGoNetworkContract {
 		stringStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setBytes(bytes32 _key, bytes calldata _value) external override onlyLatestGoGoNetworkContract {
+	function setBytes(bytes32 _key, bytes calldata _value) external onlyLatestGoGoNetworkContract {
 		bytesStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setBool(bytes32 _key, bool _value) external override onlyLatestGoGoNetworkContract {
+	function setBool(bytes32 _key, bool _value) external onlyLatestGoGoNetworkContract {
 		booleanStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setInt(bytes32 _key, int256 _value) external override onlyLatestGoGoNetworkContract {
+	function setInt(bytes32 _key, int256 _value) external onlyLatestGoGoNetworkContract {
 		intStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setBytes32(bytes32 _key, bytes32 _value) external override onlyLatestGoGoNetworkContract {
+	function setBytes32(bytes32 _key, bytes32 _value) external onlyLatestGoGoNetworkContract {
 		bytes32Storage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function deleteAddress(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteAddress(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete addressStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteUint(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteUint(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete uintStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteString(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteString(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete stringStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteBytes(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteBytes(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete bytesStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteBool(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteBool(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete booleanStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteInt(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteInt(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete intStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteBytes32(bytes32 _key) external override onlyLatestGoGoNetworkContract {
+	function deleteBytes32(bytes32 _key) external onlyLatestGoGoNetworkContract {
 		delete bytes32Storage[_key];
 	}
 
 	/// @param _key The key for the record
 	/// @param _amount An amount to add to the record's value
-	function addUint(bytes32 _key, uint256 _amount) external override onlyLatestGoGoNetworkContract {
+	function addUint(bytes32 _key, uint256 _amount) external onlyLatestGoGoNetworkContract {
 		uintStorage[_key] = uintStorage[_key] + _amount;
 	}
 
 	/// @param _key The key for the record
 	/// @param _amount An amount to subtract from the record's value
-	function subUint(bytes32 _key, uint256 _amount) external override onlyLatestGoGoNetworkContract {
+	function subUint(bytes32 _key, uint256 _amount) external onlyLatestGoGoNetworkContract {
 		uintStorage[_key] = uintStorage[_key] - _amount;
 	}
 
 	/// @param _key The key for the record
-	function getAddress(bytes32 _key) external view override returns (address r) {
+	function getAddress(bytes32 _key) external view returns (address r) {
 		return addressStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function getUint(bytes32 _key) external view override returns (uint256 r) {
+	function getUint(bytes32 _key) external view returns (uint256 r) {
 		return uintStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function getString(bytes32 _key) external view override returns (string memory) {
+	function getString(bytes32 _key) external view returns (string memory) {
 		return stringStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function getBytes(bytes32 _key) external view override returns (bytes memory) {
+	function getBytes(bytes32 _key) external view returns (bytes memory) {
 		return bytesStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function getBool(bytes32 _key) external view override returns (bool r) {
+	function getBool(bytes32 _key) external view returns (bool r) {
 		return booleanStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function getInt(bytes32 _key) external view override returns (int256 r) {
+	function getInt(bytes32 _key) external view returns (int256 r) {
 		return intStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function getBytes32(bytes32 _key) external view override returns (bytes32 r) {
+	function getBytes32(bytes32 _key) external view returns (bytes32 r) {
 		return bytes32Storage[_key];
 	}
 }

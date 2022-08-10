@@ -8,14 +8,17 @@ import {Oracle} from "./Oracle.sol";
 import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
 import {MinipoolStatus} from "../types/MinipoolStatus.sol";
 import {MultisigManager} from "./MultisigManager.sol";
+import {AddressSetStorage} from "./util/AddressSetStorage.sol";
+import {NOPClaim} from "./rewards/claims/NOPClaim.sol";
 import {TokenggAVAX} from "./tokens/TokenggAVAX.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";
+import {Staking} from "./Staking.sol";
 
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
-import {Base} from "./Base.sol";
+import "./Base.sol";
 
 /*
 	Data Storage Schema
@@ -110,6 +113,8 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	error InsufficientAvaxForStaking();
 
+	error InsufficientGgpCollateralization();
+
 	error InsufficientAvaxVaultBalance();
 
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
@@ -130,25 +135,22 @@ contract MinipoolManager is Base, IWithdrawer {
 	function createMinipool(
 		address nodeID,
 		uint256 duration,
-		uint256 delegationFee,
-		uint256 ggpBondAmt
+		uint256 delegationFee
 	) external payable {
-		// TODO check for max node count from dao
-		// TODO check for valid AVAX and GGP bond amount (1000 AVAX to start?)
-
 		// All funds AVAX and GGP will be stored in the Vault contract
 		Vault vault = Vault(getContractAddress("Vault"));
 
-		if (ggpBondAmt > 0) {
-			// Move the GGP funds (assume allowance has been set properly before hand by the front end)
-			// TODO switch to error objects
-			require(ggp.transferFrom(msg.sender, address(this), ggpBondAmt), "Could not transfer GGP to MiniPool contract");
-			require(ggp.approve(address(vault), ggpBondAmt), "Could not approve vault GGP deposit");
-			// depositToken reverts if not successful
-			vault.depositToken("MinipoolManager", ggp, ggpBondAmt);
+		require(msg.value >= 1000 ether, "Must create a minipool with at least 1000 AVAX");
+
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+
+		Staking staking = Staking(getContractAddress("Staking"));
+		// maybe use mulDivDown?
+		if ((((staking.getNodeGGPStake(msg.sender) * ggpPriceInAvax * 100) / 1 ether) / (getTotalAvaxStakedByUser(msg.sender) + msg.value)) < 10) {
+			revert InsufficientGgpCollateralization();
 		}
 
-		// TODO if (vault.balanceOf("MinipoolManager").add(msg.value) <= some setting ), "The deposit pool size after depositing exceeds the maximum size");
 		vault.depositAvax{value: msg.value}();
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
@@ -156,7 +158,6 @@ contract MinipoolManager is Base, IWithdrawer {
 		// getIndexOf returns -1 if node does not exist, so have to use signed type int256 here
 		int256 index = getIndexOf(nodeID);
 		if (index != -1) {
-			// Existing nodeID
 			requireValidStateTransition(index, MinipoolStatus.Prelaunch);
 			// Zero out any left over data from a previous validation
 			setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")), 0);
@@ -168,7 +169,6 @@ contract MinipoolManager is Base, IWithdrawer {
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserRewardAmt")), 0);
 			setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")), 0);
 		} else {
-			// new nodeID
 			index = int256(getUint(keccak256("minipool.count")));
 		}
 
@@ -186,14 +186,44 @@ contract MinipoolManager is Base, IWithdrawer {
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")), msg.sender);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")), msg.value);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")), delegationFee);
-		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")), ggpBondAmt);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
 		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
 		setUint(keccak256(abi.encodePacked("minipool.index", nodeID)), uint256(index + 1));
 		addUint(keccak256("minipool.count"), 1);
+		if (!isNodeOpRegistered(msg.sender)) {
+			registerNodeOp(msg.sender);
+		}
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
+	}
+
+	function isNodeOpRegistered(address userAddress) internal view returns (bool) {
+		AddressSetStorage addressSetStorage = AddressSetStorage(getContractAddress("AddressSetStorage"));
+		return addressSetStorage.getIndexOf(keccak256(abi.encodePacked("nodeOp.index")), userAddress) != -1;
+	}
+
+	// Save owner address, set as withdrawal address for easy lookup later
+	// Also register them as a claimaint in the GGP rewards system
+	function registerNodeOp(address nodeOpAddress) internal {
+		// Initialise node data
+		setBool(keccak256(abi.encodePacked("nodeOp.exists", msg.sender)), true);
+		// setString(keccak256(abi.encodePacked("node.timezone.location", msg.sender)), _timezoneLocation);
+		// Add nodeOp to index
+		AddressSetStorage addressSetStorage = AddressSetStorage(getContractAddress("AddressSetStorage"));
+		addressSetStorage.addItem(keccak256(abi.encodePacked("nodeOp.index")), nodeOpAddress);
+
+		// Register node for GGP claims
+		// TODO add if statement to handle registration of investor / rialto nodes
+		NOPClaim nopClaim = NOPClaim(getContractAddress("NOPClaim"));
+		nopClaim.register(nodeOpAddress, true);
+
+		// set withdrawal address
+		// gogoStorage.setWithdrawalAddress(nodeOpAddress, nodeOpAddress, true);
+
+		// Emit node registered event
+		// emit NodeRegistered(msg.sender, block.timestamp);
+		// emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
 	}
 
 	// TODO This forces a minipool into a specific state. Do we need this? For tests? For guardian?
@@ -219,12 +249,17 @@ contract MinipoolManager is Base, IWithdrawer {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Finished));
 
 		Vault vault = Vault(getContractAddress("Vault"));
-		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
+		Staking staking = Staking(getContractAddress("Staking"));
+
+		uint256 ggpBondAmt = staking.getNodeGGPStake(nodeID);
 		uint256 ggpSlashAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")));
+
 		uint256 ggpAmtDue = ggpBondAmt - ggpSlashAmt;
+
 		if (ggpAmtDue > 0) {
 			vault.withdrawToken(owner, ggp, ggpAmtDue);
 		}
+
 		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		uint256 avaxNodeOpRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")));
 		uint256 totalAvax = avaxNodeOpAmt + avaxNodeOpRewardAmt;
@@ -238,6 +273,7 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	// Owner of a node can call this to cancel the minipool
 	// TODO Should DAO also be able to cancel? Or guardian? or Rialto?
+	// TODO Should also return staked GGP?
 	function cancelMinipool(address nodeID) external {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
@@ -256,10 +292,7 @@ contract MinipoolManager is Base, IWithdrawer {
 
 		Vault vault = Vault(getContractAddress("Vault"));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
-		uint256 ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
-		if (ggpBondAmt > 0) {
-			vault.withdrawToken(owner, ggp, ggpBondAmt);
-		}
+
 		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		if (avaxNodeOpAmt > 0) {
 			vault.withdrawAvax(avaxNodeOpAmt);
@@ -272,8 +305,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);
 	}
 
-	// TODO implement the modifiers
-	function receiveWithdrawalAVAX() external payable {} // onlyThisLatestContract onlyLatestContract("rocketVault", msg.sender) {}
+	function receiveWithdrawalAVAX() external payable {}
 
 	//
 	// RIALTO FUNCTIONS
@@ -352,7 +384,6 @@ contract MinipoolManager is Base, IWithdrawer {
 		uint256 endTime,
 		uint256 avaxTotalRewardAmt
 	) external payable {
-		Vault vault = Vault(getContractAddress("Vault"));
 		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Withdrawable);
 
@@ -367,6 +398,8 @@ contract MinipoolManager is Base, IWithdrawer {
 		if (msg.value != totalAvaxAmt + avaxTotalRewardAmt) {
 			revert InvalidAmount();
 		}
+
+		Vault vault = Vault(getContractAddress("Vault"));
 
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Withdrawable));
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), endTime);
@@ -385,8 +418,8 @@ contract MinipoolManager is Base, IWithdrawer {
 			uint256 avaxUserRewardAmt;
 			uint256 avaxHalfRewards;
 			if (avaxUserAmt > 0) {
-				avaxHalfRewards = avaxTotalRewardAmt / 2; // TODO make this appropriate percentage of rewards
-				avaxUserRewardAmt = avaxHalfRewards - (avaxHalfRewards * 15/100); // we are giving node operators an additional 15% commission fee
+				avaxHalfRewards = avaxTotalRewardAmt / 2;
+				avaxUserRewardAmt = avaxHalfRewards - ((avaxHalfRewards * 15) / 100); // we are giving node operators an additional 15% commission fee
 				ggAVAX.depositFromStaking{value: avaxUserAmt + avaxUserRewardAmt}(avaxUserAmt, avaxUserRewardAmt);
 			}
 			// If no user funds were used, nodeop gets the whole reward
@@ -437,7 +470,6 @@ contract MinipoolManager is Base, IWithdrawer {
 		mp.startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
 		mp.endTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")));
 		mp.delegationFee = getUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")));
-		mp.ggpBondAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpBondAmt")));
 		mp.ggpSlashAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")));
 		mp.avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		mp.avaxUserAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxUserAmt")));
@@ -556,5 +588,89 @@ contract MinipoolManager is Base, IWithdrawer {
 		if (!isValid) {
 			revert InvalidStateTransition();
 		}
+	}
+
+	function getNodeEffectiveGGPStake(address _nodeAddress) public view returns (uint256) {
+		// TODO include the DelegationManager inside of this to count up how much avax (if any) the user put up thru the DM?
+		// ^ not sure if this is a thing
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+
+		Staking staking = Staking(getContractAddress("Staking"));
+		uint256 nodeGGPStaked = staking.getNodeGGPStake(_nodeAddress);
+
+		uint256 totalMinipools = getUint(keccak256("minipool.count"));
+
+		uint256 maxGGPStakedInAvax = 0;
+		for (uint256 i = 0; i < totalMinipools; i++) {
+			Minipool memory mp = getMinipool(int256(i));
+
+			// TODO Sum up total avax principle in minipools. is there a way to iterate though a nodeops minipools?
+			if (mp.owner == _nodeAddress) {
+				uint256 maxGgp = (1.5 ether * mp.avaxNodeOpAmt) / 1 ether;
+				maxGGPStakedInAvax += maxGgp;
+			}
+		}
+
+		return minimumInGGP(nodeGGPStaked, maxGGPStakedInAvax, ggpPriceInAvax);
+	}
+
+	function getTotalEffectiveGGPStake() public view returns (uint256) {
+		// TODO include the DelegationManager inside of this to count up how much avax (if any) the user put up thru the DM?
+		// ^ not sure if this is a thing
+		// TODO is this a potentially unbounded loop? If so we should call this off chain?
+		// that's what rocetpool says, that it's an unbounded loop that they call offchain
+		// https://github.com/rocket-pool/rocketpool/blob/3d6df4c87401f303f6acbdd249bdcb182e8827f3/contracts/contract/node/RocketNodeStaking.sol#L72
+		// if this is the case, call this function off chain and save it as a setting i nthe sotrage contract (and add a getter for the setting that other functions can cal)
+
+		uint256 totalMinipools = getUint(keccak256("minipool.count"));
+
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+
+		Staking staking = Staking(getContractAddress("Staking"));
+		uint256 totalGGPStaked = staking.getTotalGGPStake();
+
+		uint256 maxGgpStakeInAvax = 0;
+		for (uint256 i = 0; i < totalMinipools; i++) {
+			Minipool memory mp = getMinipool(int256(i));
+			maxGgpStakeInAvax += (1.5 ether * mp.avaxNodeOpAmt) / 1 ether;
+		}
+
+		uint256 totalGgpStakeInAvax = (totalGGPStaked * ggpPriceInAvax) / 1 ether;
+
+		return minimumInGGP(totalGgpStakeInAvax, maxGgpStakeInAvax, ggpPriceInAvax);
+	}
+
+	function minimumInGGP(
+		uint256 amt,
+		uint256 max,
+		uint256 priceInAvax
+	) internal pure returns (uint256) {
+		uint256 effective = 0;
+		if (amt < max) {
+			effective = amt;
+		} else {
+			effective = max;
+		}
+
+		uint256 effectiveInGGP = (effective / priceInAvax) * 1 ether;
+
+		return effectiveInGGP;
+	}
+
+	function getTotalAvaxStakedByUser(address _nodeAddress) public view returns (uint256) {
+		// TODO include the DelegationManager inside of this to count up how much avax (if any) the user put up thru the DM?
+		// ^ not sure if this is a thing
+		uint256 totalMinipools = getUint(keccak256("minipool.count"));
+		uint256 totalAvaxStaked = 0;
+		for (uint256 i = 0; i < totalMinipools; i++) {
+			Minipool memory mp = getMinipool(int256(i));
+			// ToDo consider what MinipoolStatus should count as staked
+			if (address(mp.owner) == _nodeAddress && mp.status != uint256(MinipoolStatus.Canceled)) {
+				totalAvaxStaked = totalAvaxStaked + mp.avaxNodeOpAmt;
+			}
+		}
+		return totalAvaxStaked;
 	}
 }

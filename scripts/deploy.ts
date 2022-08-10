@@ -21,6 +21,12 @@ const contracts: IFU = {
 	TokenGGP: ["Storage"],
 	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
+	RewardsPool: ["Storage"],
+	NOPClaim: ["Storage"],
+	Staking: ["Storage", "TokenGGP"],
+	ProtocolDAOClaim: ["Storage"],
+	ProtocolDAOSettingsInflation: ["Storage"],
+	AddressSetStorage: ["Storage"],
 };
 
 const deployAsProxy = ["TokenggAVAX"];
@@ -52,6 +58,7 @@ const deploy = async () => {
 		for (const name of contracts[contract]) {
 			args.push(addresses[name]);
 		}
+
 		console.log(`Deploying ${contract} with args ${args}...`);
 		const C = await ethers.getContractFactory(contract, deployer);
 		let c;
@@ -60,6 +67,7 @@ const deploy = async () => {
 		} else {
 			c = await C.deploy(...args);
 		}
+
 		const inst = await c.deployed();
 		instances[contract] = inst;
 		addresses[contract] = c.address;

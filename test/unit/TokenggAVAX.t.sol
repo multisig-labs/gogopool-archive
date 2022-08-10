@@ -2,28 +2,34 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./utils/GGPTest.sol";
+import "./utils/BaseTest.sol";
 
-contract TokenggAVAXTest is GGPTest {
+contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	using FixedPointMathLib for uint256;
-	uint128 private immutable MAX_AMT = type(uint128).max;
+
+	uint128 private immutable MAX_AMT = 20_000 ether;
 	address private alice;
 	address private bob;
 	address private nodeOp;
 	address private nodeID;
 	uint256 private duration;
+	uint256 private delegationFee;
 
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
+		dao.setTargetggAVAXReserveRate(0);
 
-		alice = getActorWithWAVAX(0, MAX_AMT);
+		alice = getActorWithWAVAX(0, type(uint128).max);
 		bob = getActor(1);
 		nodeOp = getActorWithTokens(2, MAX_AMT, MAX_AMT);
-		(nodeID, , ) = randMinipool();
-		duration = 14 days;
-		vm.prank(nodeOp);
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, 0, 1000 ether);
+
+		(nodeID, duration, delegationFee) = randMinipool();
+		// duration = 14 days;
+		vm.startPrank(nodeOp);
+		staking.stakeGGP(100 ether);
+		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee);
+		vm.stopPrank();
 	}
 
 	function testRevertOnUserMistake() public {
@@ -138,7 +144,7 @@ contract TokenggAVAXTest is GGPTest {
 		uint256 totalStakedAmount = 2000 ether;
 
 		uint256 rewardsAmount = 100 ether;
-		uint256 liquidStakerRewards = 50 ether - (50 ether * 15/100);
+		uint256 liquidStakerRewards = 50 ether - ((50 ether * 15) / 100);
 
 		uint256 rialtoInitBal = rialto1.balance;
 
@@ -217,7 +223,22 @@ contract TokenggAVAXTest is GGPTest {
 		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), 900 ether);
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
+	}
+
+	function testWithdrawForStaking() public {
+		uint256 depositAmount = 1000 ether;
+		uint256 withdrawAmount = 200 ether;
+		vm.deal(bob, depositAmount);
+		vm.prank(bob);
+		ggAVAX.depositAVAX{value: depositAmount}();
+
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
+		ggAVAX.withdrawForStaking(withdrawAmount);
+
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets - withdrawAmount);
 	}
 
 	function printState(string memory message) internal view {

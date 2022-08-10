@@ -6,7 +6,7 @@ import {Storage} from "./Storage.sol";
 import {IOneInch} from "../interface/IOneInch.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {Base} from "./Base.sol";
-import {IStorage} from "../interface/IStorage.sol";
+import {Storage} from "./Storage.sol";
 
 /*
 	Data Storage Schema
@@ -27,8 +27,9 @@ contract Oracle is Base {
 	// Events
 	event GGPPriceUpdated(uint256 indexed price);
 
-	constructor(IStorage storageAddress) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
+		// TODO initialize the price here? 
 	}
 
 	// Set the address of the One Inch price aggregator contract

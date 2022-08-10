@@ -2,8 +2,7 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "./Storage.sol";
-import "../interface/IStorage.sol";
+import {Storage} from "./Storage.sol";
 
 // TODO remove this when dev is complete
 import "../../lib/forge-std/src/console.sol";
@@ -21,7 +20,7 @@ abstract contract BaseAbstract {
 	uint8 public version;
 
 	// The main storage contract where primary persistant storage is maintained
-	IStorage internal gogoStorage;
+	Storage internal gogoStorage;
 
 	/*** Modifiers **********************************************************/
 

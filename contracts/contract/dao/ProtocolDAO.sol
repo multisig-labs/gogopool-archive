@@ -98,4 +98,8 @@ contract ProtocolDAO is Base {
 	function getTargetggAVAXReserveRate() external view returns (uint256) {
 		return getSettingUint(settingNamespace, "ggavax.reserve.target");
 	}
+
+	function setTargetggAVAXReserveRate(uint256 reserveRate) external {
+		setSettingUint("ggavax.reserve.target", reserveRate); // 10% collateral held in reserve
+	}
 }

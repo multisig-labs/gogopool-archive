@@ -7,8 +7,10 @@ coverage.json
 typechain
 dist
 
-# VS Code
-.vscode
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/settings.json
+.vscode/*.log
 
 #Hardhat files
 cache

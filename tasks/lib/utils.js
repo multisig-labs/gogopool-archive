@@ -73,6 +73,7 @@ const getNamedAccounts = async () => {
 		"rialto1",
 		"rialto2",
 		"rewarder",
+		"rialto",
 	];
 	const obj = {};
 	const signers = await hre.ethers.getSigners();
@@ -80,8 +81,8 @@ const getNamedAccounts = async () => {
 		obj[names[i]] = signers[i];
 	}
 	// A real Rialto address
-	const rialto = new ethers.VoidSigner(process.env.RIALTO, hre.ethers.provider);
-	obj.rialto = rialto;
+	// const rialto = new ethers.VoidSigner(process.env.RIALTO, hre.ethers.provider);
+	// obj.rialto = rialto;
 	return obj;
 };
 
@@ -108,13 +109,12 @@ const hash = (types, vals) => {
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10s %-10s %-10s %-10s",
+		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10s %-10s %-10s %-10s",
 		"nodeID",
 		"status",
 		"owner",
 		"multisig",
 		"avaxNopAmt",
-		"ggpBondAmt",
 		"avaxUsrAmt",
 		"delFee",
 		"dur",
@@ -128,13 +128,12 @@ function logMinipools(minipools) {
 	);
 	for (mp of minipools) {
 		logf(
-			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10.6f %-10.6f %-10.6f %-10.6f",
+			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10.6f %-10.6f %-10.6f %-10.6f",
 			mp.nodeID,
 			mp.status,
 			formatAddr(mp.owner),
 			formatAddr(mp.multisigAddr),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpAmt),
-			hre.ethers.utils.formatUnits(mp.ggpBondAmt),
 			hre.ethers.utils.formatUnits(mp.avaxUserAmt),
 			mp.delegationFee,
 			mp.duration,
@@ -228,6 +227,7 @@ function parseDelta(delta) {
 	const deltaInSeconds = Number.isNaN(Number(delta))
 		? ms(delta) / 1000
 		: Number(delta);
+
 	if (!Number.isInteger(deltaInSeconds))
 		throw new Error("cannot be called with a non integer value");
 	if (deltaInSeconds < 0)
