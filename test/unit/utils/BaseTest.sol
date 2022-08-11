@@ -3,26 +3,28 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "../../../lib/forge-std/src/Test.sol";
-import "../../../contracts/contract/MinipoolManager.sol";
-import "../../../contracts/contract/BaseQueue.sol";
-import "../../../contracts/contract/DelegationManager.sol";
-import "../../../contracts/contract/MultisigManager.sol";
-import "../../../contracts/contract/Storage.sol";
-import "../../../contracts/contract/rewards/claims/ProtocolDAOClaim.sol";
-import "../../../contracts/contract/Vault.sol";
-import "../../../contracts/contract/Oracle.sol";
-import "../../../contracts/contract/dao/ProtocolDAO.sol";
-import "../../../contracts/contract/rewards/claims/NOPClaim.sol";
-import "../../../contracts/contract/tokens/TokenGGP.sol";
-import "../../../contracts/contract/tokens/TokenggAVAX.sol";
+import {MinipoolManager} from "../../../contracts/contract/MinipoolManager.sol";
+import {BaseQueue} from "../../../contracts/contract/BaseQueue.sol";
+import {DelegationManager} from "../../../contracts/contract/DelegationManager.sol";
+import {MultisigManager} from "../../../contracts/contract/MultisigManager.sol";
+import {Storage} from "../../../contracts/contract/Storage.sol";
+import {ProtocolDAOClaim} from "../../../contracts/contract/rewards/claims/ProtocolDAOClaim.sol";
+import {Vault} from "../../../contracts/contract/Vault.sol";
+import {Oracle} from "../../../contracts/contract/Oracle.sol";
+import {ProtocolDAO} from "../../../contracts/contract/dao/ProtocolDAO.sol";
+import {NOPClaim} from "../../../contracts/contract/rewards/claims/NOPClaim.sol";
+import {TokenGGP} from "../../../contracts/contract/tokens/TokenGGP.sol";
+import {TokenggAVAX} from "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import {WAVAX} from "../../../contracts/contract/tokens/WAVAX.sol";
+import {MinipoolStatus} from "../../../contracts/types/MinipoolStatus.sol";
+import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 
-import {format} from "./format.sol";
+import {format} from "utils/format.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
-import "../../../contracts/contract/rewards/RewardsPool.sol";
-import "../../../contracts/contract/util/AddressSetStorage.sol";
-import "../../../contracts/contract/Staking.sol";
+import {RewardsPool} from "../../../contracts/contract/rewards/RewardsPool.sol";
+import {AddressSetStorage} from "../../../contracts/contract/util/AddressSetStorage.sol";
+import {Staking} from "../../../contracts/contract/Staking.sol";
 import {MockERC20} from "@rari-capital/solmate/src/test/utils/mocks/MockERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
