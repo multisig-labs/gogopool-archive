@@ -111,7 +111,7 @@ contract DelegationManagerTest is BaseTest {
 		uint256 minipool_duration;
 		uint256 delegationFee;
 
-		(nodeID, minipool_duration) = stakeAndCreateMinipool(nodeOp, 100 ether, 1000 ether);
+		(nodeID, minipool_duration, delegationFee) = stakeAndCreateMinipool(nodeOp, 100 ether, 1000 ether);
 		assertEq(vault.balanceOf("MinipoolManager"), 1000 ether);
 
 		vm.startPrank(rialto1);

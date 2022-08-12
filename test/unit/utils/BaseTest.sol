@@ -39,6 +39,7 @@ abstract contract BaseTest is Test {
 	uint256 internal constant RIALTO1_PK = 0xb4679213567f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c8b571a;
 	uint256 internal constant RIALTO2_PK = 0x9c4b7f4ad48f977dbcdb2323249fd738cc9ff283a7514f3350d344e22c5b923d;
 	uint256 private randNonce = 0;
+	uint160 private actorCounter = 0;
 
 	// Users
 	address public guardian;
@@ -173,6 +174,11 @@ abstract contract BaseTest is Test {
 		return address(uint160(0x50000 + index));
 	}
 
+	function getNextActor() public returns (address) {
+		actorCounter++;
+		return getActor(actorCounter);
+	}
+
 	// Get an address with `amount` of funds in WAVAX
 	function getActorWithWAVAX(uint160 i, uint128 amount) public returns (address) {
 		address actor = getActor(i);
@@ -234,15 +240,23 @@ abstract contract BaseTest is Test {
 		address user,
 		uint128 stakeAmt,
 		uint256 minipoolAmt
-	) internal returns (address, uint256) {
+	)
+		internal
+		returns (
+			address,
+			uint256,
+			uint256
+		)
+	{
 		getGGP(user, stakeAmt);
+		vm.deal(user, minipoolAmt);
 		vm.startPrank(user);
 		staking.stakeGGP(stakeAmt);
 		(address nodeId, uint256 duration, uint256 delegationFee) = randMinipool();
 
 		minipoolMgr.createMinipool{value: minipoolAmt}(nodeId, duration, delegationFee);
 		vm.stopPrank();
-		return (nodeId, duration);
+		return (nodeId, duration, delegationFee);
 	}
 
 	function randAddress() internal returns (address) {
