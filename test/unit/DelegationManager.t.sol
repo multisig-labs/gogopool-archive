@@ -18,7 +18,7 @@ contract DelegationManagerTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 		registerMultisig(rialto1);
-		nodeOp = getActorWithTokens(1, 3000000 ether, 3000000 ether);
+		nodeOp = getActorWithTokens(3_000_000 ether, 3_000_000 ether);
 		bob = getActor(2);
 	}
 
@@ -100,6 +100,8 @@ contract DelegationManagerTest is BaseTest {
 	}
 
 	function testFullCycle_WithMinipool() public {
+		uint256 depositAmt = 1000 ether;
+		uint128 ggpStakeAmt = 100 ether;
 		//make sure that there is a balance in the ggavax contract that can be used for delegation funds
 		vm.deal(bob, 3000000 ether);
 		vm.prank(bob);
@@ -111,7 +113,7 @@ contract DelegationManagerTest is BaseTest {
 		uint256 minipool_duration;
 		uint256 delegationFee;
 
-		(nodeID, minipool_duration) = stakeAndCreateMinipool(nodeOp, 100 ether, 1000 ether);
+		(nodeID, minipool_duration, delegationFee) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
 		assertEq(vault.balanceOf("MinipoolManager"), 1000 ether);
 
 		vm.startPrank(rialto1);
@@ -129,6 +131,7 @@ contract DelegationManagerTest is BaseTest {
 		//create the delegation node
 		(nodeID_notNeeded, requestedDelegationAmt, ggpBondAmt, duration) = randDelegationNode();
 		//act as the delegation node and request delegation
+		vm.deal(nodeOp, ggpBondAmt);
 		vm.startPrank(nodeOp);
 		delegationMgr.registerNode{value: ggpBondAmt}(nodeID, requestedDelegationAmt, ggpBondAmt, duration);
 		index = delegationMgr.getIndexOf(nodeID);

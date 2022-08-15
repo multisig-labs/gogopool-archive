@@ -20,9 +20,9 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		registerMultisig(rialto1);
 		dao.setTargetggAVAXReserveRate(0);
 
-		alice = getActorWithWAVAX(0, type(uint128).max);
+		alice = getActorWithWAVAX(type(uint128).max);
 		bob = getActor(1);
-		nodeOp = getActorWithTokens(2, MAX_AMT, MAX_AMT);
+		nodeOp = getActorWithTokens(MAX_AMT, MAX_AMT);
 
 		(nodeID, duration, delegationFee) = randMinipool();
 		// duration = 14 days;
