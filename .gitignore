@@ -28,3 +28,5 @@ broadcast
 
 # Openzeppelin Proxy files
 .openzeppelin
+
+.DS_Store
