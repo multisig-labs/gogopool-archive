@@ -180,23 +180,12 @@ abstract contract BaseTest is Test {
 	}
 
 	// Get an address with `amount` of funds in WAVAX
-	function getActorWithWAVAX(uint160 i, uint128 amount) public returns (address) {
-		address actor = getActor(i);
+	function getActorWithWAVAX(uint128 amount) public returns (address) {
+		address actor = getNextActor();
 		vm.deal(actor, amount);
 		vm.startPrank(actor);
 		wavax.deposit{value: amount}();
 		wavax.approve(address(ggAVAX), amount);
-		vm.stopPrank();
-		return actor;
-	}
-
-	// Get an address with `amount` of funds in GGP
-	function getActorWithGGP(uint160 i, uint128 amount) public returns (address) {
-		address actor = getActor(i);
-		vm.startPrank(actor);
-		mockGGP.mint(actor, amount);
-		mockGGP.approve(address(minipoolMgr), amount);
-		mockGGP.approve(address(delegationMgr), amount);
 		vm.stopPrank();
 		return actor;
 	}
@@ -211,12 +200,14 @@ abstract contract BaseTest is Test {
 		vm.stopPrank();
 	}
 
-	function getActorWithTokens(
-		uint160 i,
-		uint128 avaxAmt,
-		uint128 ggpAmt
-	) public returns (address) {
-		address actor = getActor(i);
+	function getActorWithGGP(uint128 amount) public returns (address) {
+		address actor = getNextActor();
+		getGGP(actor, amount);
+		return actor;
+	}
+
+	function getActorWithTokens(uint128 avaxAmt, uint128 ggpAmt) public returns (address) {
+		address actor = getNextActor();
 
 		vm.startPrank(guardian);
 		ggp.transfer(actor, ggpAmt);
@@ -227,7 +218,7 @@ abstract contract BaseTest is Test {
 		wavax.deposit{value: avaxAmt}();
 		wavax.approve(address(ggAVAX), avaxAmt);
 
-		vm.deal(actor, avaxAmt);
+		vm.deal(actor, ggpAmt);
 		mockGGP.mint(actor, ggpAmt);
 		mockGGP.approve(address(minipoolMgr), ggpAmt);
 		mockGGP.approve(address(delegationMgr), ggpAmt);
@@ -238,8 +229,8 @@ abstract contract BaseTest is Test {
 
 	function stakeAndCreateMinipool(
 		address user,
-		uint128 stakeAmt,
-		uint256 minipoolAmt
+		uint256 depositAmt,
+		uint128 ggpStakeAmt
 	)
 		internal
 		returns (
@@ -248,13 +239,13 @@ abstract contract BaseTest is Test {
 			uint256
 		)
 	{
-		getGGP(user, stakeAmt);
-		vm.deal(user, minipoolAmt);
+		getGGP(user, ggpStakeAmt);
+		vm.deal(user, depositAmt);
 		vm.startPrank(user);
-		staking.stakeGGP(stakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
 		(address nodeId, uint256 duration, uint256 delegationFee) = randMinipool();
 
-		minipoolMgr.createMinipool{value: minipoolAmt}(nodeId, duration, delegationFee);
+		minipoolMgr.createMinipool{value: depositAmt}(nodeId, duration, delegationFee);
 		vm.stopPrank();
 		return (nodeId, duration, delegationFee);
 	}

@@ -12,8 +12,6 @@ contract RewardsTest is BaseTest {
 	address public NODE_ID_2 = 0x0000000000000000000000000000000000000002;
 	address public NODE_ID_3 = 0x0000000000000000000000000000000000000003;
 
-	address private nodeOp;
-	address private user1;
 	address private nodeID;
 	address private withdrawalAddress;
 	uint256 private status;
@@ -27,8 +25,6 @@ contract RewardsTest is BaseTest {
 
 		registerMultisig(rialto1);
 
-		nodeOp = getActorWithTokens(1, 20_000 ether, 0);
-		user1 = getActorWithTokens(2, 20_000 ether, 0);
 		oracle.setGGPPrice(1 ether, block.timestamp);
 	}
 
@@ -57,7 +53,7 @@ contract RewardsTest is BaseTest {
 	}
 
 	function testTotalEffectiveStakeNoMinipools() public {
-		getGGP(nodeOp, 1000 ether);
+		address nodeOp = getActorWithGGP(1000 ether);
 		vm.startPrank(nodeOp);
 		staking.stakeGGP(1000 ether);
 
@@ -67,22 +63,33 @@ contract RewardsTest is BaseTest {
 	}
 
 	function testTotalEffectiveStakeWithMinipool() public {
-		getGGP(nodeOp, 1000 ether);
+		uint128 ggpStakeAmt = 1000 ether;
+		uint256 depositAmt = 1000 ether;
+
+		address nodeOp = getActorWithGGP(ggpStakeAmt);
+		vm.deal(nodeOp, depositAmt);
+
 		vm.startPrank(nodeOp);
-		staking.stakeGGP(1000 ether);
+		staking.stakeGGP(ggpStakeAmt);
 
 		(nodeID, duration, delegationFee) = randMinipool();
 
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee);
 
 		uint256 totalEffectiveStake = minipoolMgr.getTotalEffectiveGGPStake();
-		assertEq(totalEffectiveStake, 1000 ether);
+		assertEq(totalEffectiveStake, ggpStakeAmt);
 		vm.stopPrank();
 	}
 
 	function testNodeOpEffectiveStake() public {
-		stakeAndCreateMinipool(user1, 2000 ether, 1000 ether);
-		stakeAndCreateMinipool(nodeOp, 2000 ether, 1000 ether);
+		uint128 ggpStakeAmt = 2000 ether;
+		uint256 depositAmt = 1000 ether;
+
+		address nodeOp = getActorWithTokens(1000 ether, 2000 ether);
+		address nodeOp2 = getActorWithTokens(1000 ether, 2000 ether);
+
+		stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
+		stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt);
 
 		uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
 		assertEq(totalMinipools, 2);
@@ -92,7 +99,11 @@ contract RewardsTest is BaseTest {
 	}
 
 	function testNodeClaim() public {
-		stakeAndCreateMinipool(nodeOp, 2000 ether, 1000 ether);
+		uint128 ggpStakeAmt = 2000 ether;
+		uint128 depositAmt = 1000 ether;
+
+		address nodeOp = getActorWithTokens(depositAmt, ggpStakeAmt);
+		stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
 		uint256 ggpAfterStaking = ggp.balanceOf(nodeOp);
 
 		uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
@@ -112,8 +123,15 @@ contract RewardsTest is BaseTest {
 	}
 
 	function testTwoNodesClaim() public {
-		stakeAndCreateMinipool(nodeOp, 1000 ether, 1000 ether);
-		stakeAndCreateMinipool(user1, 1000 ether, 1000 ether);
+		uint128 ggpStakeAmt = 1000 ether;
+		uint128 depositAmt = 1000 ether;
+		address nodeOp = getNextActor();
+		address nodeOp2 = getNextActor();
+		vm.deal(nodeOp, depositAmt);
+		vm.deal(nodeOp2, depositAmt);
+
+		stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
+		stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt);
 
 		uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
 		assertEq(totalMinipools, 2);
@@ -123,7 +141,7 @@ contract RewardsTest is BaseTest {
 
 		skip(29 days);
 
-		vm.startPrank(nodeOp);
+		vm.prank(nodeOp);
 		nopClaim.claim();
 
 		uint256 claimingContractAllowance = rewardsPool.getClaimingContractAllowance("NOPClaim");
