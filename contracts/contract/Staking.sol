@@ -76,7 +76,7 @@ contract Staking is Base {
 
 	// Accept a GGP stake
 	// user must approve the transfer request for amount first
-	// ToDo Only accepts calls from registered nodes
+	// TODO Only accepts calls from registered nodes
 	function stakeGGP(uint256 _amount) external {
 		// Load contracts
 		Vault vault = Vault(getContractAddress("Vault"));

@@ -347,7 +347,7 @@ contract RewardsPool is Base {
 	 * Get the approx amount of rewards available for this claim interval
 	 * @return uint256 Rewards amount for current claim interval
 	 */
-	// ToDo handle the case where there are leftover rewards from the last period.
+	// TODO handle the case where there are leftover rewards from the last period.
 	// Rocketpool did this b cehcking the balance of the rewards pool contract in the vault
 	// but since we already have all the rewards minted, this needs to be handled differently.
 	function getClaimIntervalRewardsTotal() public view returns (uint256) {

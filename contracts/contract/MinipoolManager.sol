@@ -666,7 +666,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		uint256 totalAvaxStaked = 0;
 		for (uint256 i = 0; i < totalMinipools; i++) {
 			Minipool memory mp = getMinipool(int256(i));
-			// ToDo consider what MinipoolStatus should count as staked
+			// TODO consider what MinipoolStatus should count as staked
 			if (address(mp.owner) == _nodeAddress && mp.status != uint256(MinipoolStatus.Canceled)) {
 				totalAvaxStaked = totalAvaxStaked + mp.avaxNodeOpAmt;
 			}
