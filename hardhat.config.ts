@@ -8,6 +8,7 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "@atixlabs/hardhat-time-n-mine";
 import "@openzeppelin/hardhat-upgrades";
+import "hardhat-preprocessor";
 
 dotenv.config();
 
@@ -22,6 +23,14 @@ for (const file of files) {
 // Go to https://hardhat.org/config/ to learn more
 
 // "custom" network is what ANR calls itself, so we use that terminology
+
+function getRemappings() {
+	return fs
+		.readFileSync("remappings.txt", "utf8")
+		.split("\n")
+		.filter(Boolean)
+		.map((line) => line.trim().split("="));
+}
 
 const config: HardhatUserConfig = {
 	solidity: {
@@ -78,6 +87,24 @@ const config: HardhatUserConfig = {
 	},
 	etherscan: {
 		apiKey: process.env.ETHERSCAN_API_KEY,
+	},
+	preprocess: {
+		eachLine: (hre) => ({
+			transform: (line: string) => {
+				if (line.match(/^\s*import /i)) {
+					getRemappings().forEach(([find, replace]) => {
+						if (line.match(find)) {
+							line = line.replace(find, replace);
+						}
+					});
+				}
+				return line;
+			},
+		}),
+	},
+	paths: {
+		sources: "./contracts",
+		cache: "./cache",
 	},
 };
 

@@ -19,7 +19,7 @@ import {WAVAX} from "../../../contracts/contract/tokens/WAVAX.sol";
 import {MinipoolStatus} from "../../../contracts/types/MinipoolStatus.sol";
 import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 
-import {format} from "utils/format.sol";
+import {format} from "sol-utils/format.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {RewardsPool} from "../../../contracts/contract/rewards/RewardsPool.sol";
