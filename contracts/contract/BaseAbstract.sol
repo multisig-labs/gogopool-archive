@@ -6,7 +6,7 @@ import {Storage} from "./Storage.sol";
 
 // TODO remove this when dev is complete
 import {console} from "forge-std/console.sol";
-import {format} from "utils/format.sol";
+import {format} from "sol-utils/format.sol";
 
 /// @title Base settings / modifiers for each contract in GoGoPool
 /// @author Chandler
