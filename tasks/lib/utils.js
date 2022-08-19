@@ -80,9 +80,16 @@ const getNamedAccounts = async () => {
 	for (i in names) {
 		obj[names[i]] = signers[i];
 	}
-	// A real Rialto address
-	// const rialto = new ethers.VoidSigner(process.env.RIALTO, hre.ethers.provider);
-	// obj.rialto = rialto;
+
+	// A real Rialto address if one is defined
+	if (process.env.RIALTO) {
+		const rialto = new ethers.VoidSigner(
+			process.env.RIALTO,
+			hre.ethers.provider
+		);
+		obj.rialto = rialto;
+	}
+
 	return obj;
 };
 
