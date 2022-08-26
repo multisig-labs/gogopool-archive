@@ -14,7 +14,7 @@ task("staking:user_stake", "GGP Staked for actor")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const staking = await get("Staking");
-		const userStake = await staking.getNodeGGPStake(signer.address);
+		const userStake = await staking.getUserGGPStake(signer.address);
 		console.log(ethers.utils.formatUnits(userStake));
 	});
 
@@ -24,7 +24,7 @@ task("staking:get_user_min_stake", "Minimum GGP stake required for actor")
 		const signer = (await getNamedAccounts())[actor];
 		const staking = await get("Staking");
 
-		const minStakeAmt = await staking.getNodeMinimumGGPStake(signer.address);
+		const minStakeAmt = await staking.getUserMinimumGGPStake(signer.address);
 		console.log("Min stake amount", ethers.utils.formatUnits(minStakeAmt));
 	});
 

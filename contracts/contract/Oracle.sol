@@ -29,7 +29,7 @@ contract Oracle is Base {
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		// TODO initialize the price here? 
+		// TODO initialize the price here?
 	}
 
 	// Set the address of the One Inch price aggregator contract

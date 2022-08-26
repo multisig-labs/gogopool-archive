@@ -167,7 +167,7 @@ contract MinipoolManagerTest is BaseTest {
 		vm.startPrank(nodeOp);
 		(address nodeID, uint256 duration, uint256 delegationFee) = randMinipool();
 
-		vm.expectRevert(MinipoolManager.InsufficientGgpCollateralization.selector);
+		vm.expectRevert(Staking.IndexNotFound.selector); //no ggp will be staked under the address, so it will fail upon lookup
 		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee);
 		vm.stopPrank();
 	}
@@ -177,7 +177,7 @@ contract MinipoolManagerTest is BaseTest {
 		uint256 depositAmt = 1000 ether;
 		(address nodeID, , ) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
 		index = minipoolMgr.getIndexOf(nodeID);
-		ggpBondAmt = staking.getNodeGGPStake(nodeOp);
+		ggpBondAmt = staking.getUserGGPStake(nodeOp);
 		assertEq(ggpBondAmt, ggpStakeAmt);
 		vm.stopPrank();
 	}
@@ -189,7 +189,7 @@ contract MinipoolManagerTest is BaseTest {
 
 		(address nodeID, uint256 duration, uint256 delegationFee) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
 		index = minipoolMgr.getIndexOf(nodeID);
-		ggpBondAmt = staking.getNodeGGPStake(nodeOp);
+		ggpBondAmt = staking.getUserGGPStake(nodeOp);
 		assertEq(ggpBondAmt, ggpStakeAmt);
 
 		vm.startPrank(nodeOp);
@@ -203,7 +203,7 @@ contract MinipoolManagerTest is BaseTest {
 		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee);
 		int256 new_index = minipoolMgr.getIndexOf(nodeID);
 		assertEq(new_index, index);
-		ggpBondAmt = staking.getNodeGGPStake(nodeOp);
+		ggpBondAmt = staking.getUserGGPStake(nodeOp);
 		assertEq(ggpBondAmt, ggpStakeAmt);
 		vm.stopPrank();
 	}
