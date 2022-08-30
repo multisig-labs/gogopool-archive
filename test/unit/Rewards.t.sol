@@ -63,10 +63,11 @@ contract RewardsTest is BaseTest {
 	// 	vm.stopPrank();
 	// }
 
-	//commenting this out since it is failing, I think because we took out registering nodes. But we will come back to focusing on rewards later
+	//commenting this out since it is failing, because effective stake only applies to minipools that have borrowed liquid stakers funds. But we will come back to focusing on rewards later
 	// function testTotalEffectiveStakeWithMinipool() public {
 	// 	uint128 ggpStakeAmt = 1000 ether;
 	// 	uint256 depositAmt = 1000 ether;
+	// 	uint256 avaxAssignmentRequest = 1000 ether;
 
 	// 	address nodeOp = getActorWithGGP(ggpStakeAmt);
 	// 	vm.deal(nodeOp, depositAmt);
@@ -76,7 +77,7 @@ contract RewardsTest is BaseTest {
 
 	// 	(nodeID, duration, delegationFee) = randMinipool();
 
-	// 	minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee);
+	// 	minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee, avaxAssignmentRequest);
 
 	// 	uint256 totalEffectiveStake = staking.getTotalEffectiveGGPStake();
 	// 	assertEq(totalEffectiveStake, ggpStakeAmt);
@@ -87,16 +88,16 @@ contract RewardsTest is BaseTest {
 	// function testNodeOpEffectiveStake() public {
 	// 	uint128 ggpStakeAmt = 2000 ether;
 	// 	uint256 depositAmt = 1000 ether;
+	// 	uint256 avaxAssignmentRequest = 1000 ether;
 
 	// 	address nodeOp = getActorWithTokens(1000 ether, 2000 ether);
 	// 	address nodeOp2 = getActorWithTokens(1000 ether, 2000 ether);
 
-	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
-	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt);
+	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
+	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 
 	// 	uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
 	// 	assertEq(totalMinipools, 2);
-	// 	console.log(nodeOp);
 
 	// 	uint256 totalEffectiveNodeOpStake = staking.getUserEffectiveGGPStake(nodeOp);
 	// 	assertEq(totalEffectiveNodeOpStake, 1500 ether);
@@ -106,9 +107,10 @@ contract RewardsTest is BaseTest {
 	// function testNodeClaim() public {
 	// 	uint128 ggpStakeAmt = 2000 ether;
 	// 	uint128 depositAmt = 1000 ether;
+	// 	uint256 avaxAssignmentRequest = 1000 ether;
 
 	// 	address nodeOp = getActorWithTokens(depositAmt, ggpStakeAmt);
-	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
+	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 	// 	uint256 ggpAfterStaking = ggp.balanceOf(nodeOp);
 
 	// 	uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
@@ -131,13 +133,14 @@ contract RewardsTest is BaseTest {
 	// function testTwoNodesClaim() public {
 	// 	uint128 ggpStakeAmt = 1000 ether;
 	// 	uint128 depositAmt = 1000 ether;
+	// 	uint256 avaxAssignmentRequest = 1000 ether;
 	// 	address nodeOp = getNextActor();
 	// 	address nodeOp2 = getNextActor();
 	// 	vm.deal(nodeOp, depositAmt);
 	// 	vm.deal(nodeOp2, depositAmt);
 
-	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
-	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt);
+	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
+	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 
 	// 	uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
 	// 	assertEq(totalMinipools, 2);

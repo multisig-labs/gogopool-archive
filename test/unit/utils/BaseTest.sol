@@ -230,7 +230,8 @@ abstract contract BaseTest is Test {
 	function stakeAndCreateMinipool(
 		address user,
 		uint256 depositAmt,
-		uint128 ggpStakeAmt
+		uint128 ggpStakeAmt,
+		uint256 avaxAssignmentRequest
 	)
 		internal
 		returns (
@@ -245,7 +246,7 @@ abstract contract BaseTest is Test {
 		staking.stakeGGP(ggpStakeAmt);
 		(address nodeId, uint256 duration, uint256 delegationFee) = randMinipool();
 
-		minipoolMgr.createMinipool{value: depositAmt}(nodeId, duration, delegationFee);
+		minipoolMgr.createMinipool{value: depositAmt}(nodeId, duration, delegationFee, avaxAssignmentRequest);
 		vm.stopPrank();
 		return (nodeId, duration, delegationFee);
 	}

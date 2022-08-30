@@ -35,6 +35,12 @@ contract ProtocolDAO is Base {
 			setSettingUint("ggavax.reserve.target", 0.1 ether); // 10% collateral held in reserver
 			//Delegation duration limit set to 2 Months
 			setSettingUint("delegation.maxDuration", 5097600);
+
+			// Minipool Settings
+			setSettingUint("minipool.maxAvaxAssignment", 10_000 ether);
+			setSettingUint("minipool.minAvaxAssignment", 1_000 ether);
+			setSettingUint("minipool.ggpCollateralRate", 0.1 ether);
+
 			// Deployment check
 			setBool(keccak256(abi.encodePacked(settingNamespace, "deployed")), true); // Flag that this contract has been deployed, so default settings don't get reapplied on a contract upgrade
 		}
@@ -101,5 +107,21 @@ contract ProtocolDAO is Base {
 
 	function setTargetggAVAXReserveRate(uint256 reserveRate) external {
 		setSettingUint("ggavax.reserve.target", reserveRate); // 10% collateral held in reserve
+	}
+
+	// Minipool Settings
+	// Maximum AVAX a Node Operator can be assigned from liquid staking funds
+	function getMinipoolAvaxAssignmentMax() public view returns (uint256) {
+		return getSettingUint(settingNamespace, "minipool.maxAvaxAssignment");
+	}
+
+	// Minimum AVAX a Node Operator can be assigned from liquid staking funds
+	function getMinipoolAvaxAssignmentMin() public view returns (uint256) {
+		return getSettingUint(settingNamespace, "minipool.minAvaxAssignment");
+	}
+
+	// Minimum GGP collateralization for assigned liquid staker AVAX
+	function getMinipoolGgpCollateralRate() public view returns (uint256) {
+		return getSettingUint(settingNamespace, "minipool.ggpCollateralRate");
 	}
 }

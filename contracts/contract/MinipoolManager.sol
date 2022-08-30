@@ -2,6 +2,7 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
+import "./Base.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
 import {Oracle} from "./Oracle.sol";
@@ -11,13 +12,13 @@ import {MultisigManager} from "./MultisigManager.sol";
 import {AddressSetStorage} from "./util/AddressSetStorage.sol";
 import {TokenggAVAX} from "./tokens/TokenggAVAX.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
-import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";
 import {Staking} from "./Staking.sol";
 
 // TODO might be gotchas here? https://hackernoon.com/beware-the-solidity-enums-9v1qa31b2
 import {ERC20, ERC4626} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
-import "./Base.sol";
+import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
+import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
 /*
 	Data Storage Schema
@@ -50,6 +51,7 @@ import "./Base.sol";
 contract MinipoolManager is Base, IWithdrawer {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
+	using FixedPointMathLib for uint256;
 
 	ERC20 public immutable ggp;
 	TokenggAVAX public immutable ggAVAX;
@@ -91,6 +93,9 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	error InvalidAmount();
 
+	/// @notice Requested over set maximum liquid staker AVAX amount
+	error InvalidAvaxAssignmentRequest();
+
 	/// @notice Only minipool owners can cancel a minipool before validation starts
 	error OnlyOwnerCanCancel();
 
@@ -112,9 +117,13 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	error InsufficientAvaxForStaking();
 
+	/// @notice Insufficient GGP stake for requested liquid staker AVAX amount
 	error InsufficientGgpCollateralization();
 
 	error InsufficientAvaxVaultBalance();
+
+	/// @notice Must have at least 2000 AVAX to create a minipool
+	error InsufficientAvaxForMinipoolCreation();
 
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
@@ -150,22 +159,20 @@ contract MinipoolManager is Base, IWithdrawer {
 	function createMinipool(
 		address nodeID,
 		uint256 duration,
-		uint256 delegationFee
+		uint256 delegationFee,
+		uint256 avaxAssignmentRequest
 	) external payable {
-		// All funds AVAX and GGP will be stored in the Vault contract
-		Vault vault = Vault(getContractAddress("Vault"));
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		if (avaxAssignmentRequest > dao.getMinipoolAvaxAssignmentMax() || avaxAssignmentRequest < dao.getMinipoolAvaxAssignmentMin()) {
+			revert InvalidAvaxAssignmentRequest();
+		}
 
-		require(msg.value >= 1000 ether, "Must create a minipool with at least 1000 AVAX");
+		if (msg.value + avaxAssignmentRequest < MIN_STAKING_AMT) {
+			revert InsufficientAvaxForMinipoolCreation();
+		}
 
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
-
-		Staking staking = Staking(getContractAddress("Staking"));
-
-		//check that there is enough ggp to collateralize the minipool
-		if ((((staking.getUserGGPStake(msg.sender) * ggpPriceInAvax * 100) / 1 ether) / (staking.getUserAvaxStake(msg.sender) + msg.value)) < 10) {
-			revert InsufficientGgpCollateralization();
-		}
 
 		// ********* check the users GGP collateralization *************
 		// 2. if they have then check that it is enough to back up what they want to borrow.
@@ -174,6 +181,15 @@ contract MinipoolManager is Base, IWithdrawer {
 		// 5. When liquid staking funds are assigned, update totalAvaxBorrowed
 		// 6. When minipool is dissolved, decrease avaxBorrowed and avaxStaked
 
+		Staking staking = Staking(getContractAddress("Staking"));
+		uint256 ggpStakeInAvax = staking.getUserGGPStake(msg.sender).mulWadDown(ggpPriceInAvax);
+		uint256 minCollateral = (staking.getUserAvaxBorrowed(msg.sender) + avaxAssignmentRequest).mulWadDown(dao.getMinipoolGgpCollateralRate());
+		if (ggpStakeInAvax < minCollateral) {
+			revert InsufficientGgpCollateralization();
+		}
+
+		// All funds AVAX and GGP will be stored in the Vault contract
+		Vault vault = Vault(getContractAddress("Vault"));
 		vault.depositAvax{value: msg.value}();
 
 		// If nodeID exists, only allow overwriting if node is finished or canceled
@@ -182,15 +198,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		int256 index = getIndexOf(nodeID);
 		if (index != -1) {
 			requireValidStateTransition(index, MinipoolStatus.Prelaunch);
-			// Zero out any left over data from a previous validation
-			setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerRewardAmt")), 0);
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")), 0);
+			resetMinipoolData(index);
 		} else {
 			index = int256(getUint(keccak256("minipool.count")));
 		}
@@ -201,6 +209,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		if (multisig == address(0)) {
 			revert InvalidMultisigAddress();
 		}
+
 		// Save the attrs individually in the k/v store
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")), nodeID);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Prelaunch));
@@ -208,6 +217,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")), multisig);
 		setAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")), msg.sender);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")), msg.value);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")), avaxAssignmentRequest);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".delegationFee")), delegationFee);
 
 		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
@@ -217,7 +227,6 @@ contract MinipoolManager is Base, IWithdrawer {
 
 		//Owner updates
 		staking.increaseUserAvaxStake(msg.sender, msg.value);
-
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
 	}
 
@@ -331,20 +340,15 @@ contract MinipoolManager is Base, IWithdrawer {
 		requireValidStateTransition(index, MinipoolStatus.Launched);
 		Vault vault = Vault(getContractAddress("Vault"));
 
-		uint256 avaxLiquidStakerAmt;
-		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
-
-		Staking staking = Staking(getContractAddress("Staking"));
 		address nodeOpWalletAddress = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 
-		// TODO Do we let folks request *more* user funds than the min? How to handle GGP bond if thats the case?
-		if (avaxNodeOpAmt < MIN_STAKING_AMT) {
-			avaxLiquidStakerAmt = MIN_STAKING_AMT - avaxNodeOpAmt;
-		}
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
+		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")));
 
 		if (avaxLiquidStakerAmt > 0) {
-			setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")), avaxLiquidStakerAmt);
+			Staking staking = Staking(getContractAddress("Staking"));
 			staking.increaseUserAvaxBorrowed(nodeOpWalletAddress, avaxLiquidStakerAmt);
+
 			// Transfer the user funds to this contract
 			ggAVAX.withdrawForStaking(avaxLiquidStakerAmt);
 			increaseTotalAvaxLiquidStakerAmt(avaxLiquidStakerAmt);
@@ -448,14 +452,14 @@ contract MinipoolManager is Base, IWithdrawer {
 	function calculateSlashAmt(uint256 avaxRewardAmt) public view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
-		return (1 ether * avaxRewardAmt) / ggpPriceInAvax;
+		return avaxRewardAmt.divWadDown(ggpPriceInAvax);
 	}
 
 	// Given a duration and an avax amt, calculate how much avax should be earned via staking rewards
 	function expectedRewardAmt(uint256 duration, uint256 avaxAmt) public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 rate = dao.getExpectedRewardRate();
-		return (avaxAmt * ((duration * rate) / 365 days)) / 1 ether;
+		return (avaxAmt.mulWadDown(rate) * duration) / 365 days;
 	}
 
 	// Rialto was for some reason unable to start the validation period, so cancel and refund all monies?
@@ -597,5 +601,17 @@ contract MinipoolManager is Base, IWithdrawer {
 		if (!isValid) {
 			revert InvalidStateTransition();
 		}
+	}
+
+	function resetMinipoolData(int256 index) internal {
+		// Zero out any left over data from a previous validation
+		setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerRewardAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")), 0);
 	}
 }

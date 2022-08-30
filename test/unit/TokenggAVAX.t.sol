@@ -25,10 +25,11 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		nodeOp = getActorWithTokens(MAX_AMT, MAX_AMT);
 
 		(nodeID, duration, delegationFee) = randMinipool();
+		uint256 avaxAssignmentRequest = 1000 ether;
 		// duration = 14 days;
 		vm.startPrank(nodeOp);
 		staking.stakeGGP(100 ether);
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee);
+		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
 		vm.stopPrank();
 	}
 

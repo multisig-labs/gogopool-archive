@@ -102,6 +102,7 @@ contract DelegationManagerTest is BaseTest {
 	function testFullCycle_WithMinipool() public {
 		uint256 depositAmt = 1000 ether;
 		uint128 ggpStakeAmt = 100 ether;
+		uint256 avaxAssignmentRequest = 1000 ether;
 		//make sure that there is a balance in the ggavax contract that can be used for delegation funds
 		vm.deal(bob, 3000000 ether);
 		vm.prank(bob);
@@ -113,7 +114,7 @@ contract DelegationManagerTest is BaseTest {
 		uint256 minipool_duration;
 		uint256 delegationFee;
 
-		(nodeID, minipool_duration, delegationFee) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt);
+		(nodeID, minipool_duration, delegationFee) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 		assertEq(vault.balanceOf("MinipoolManager"), 1000 ether);
 
 		vm.startPrank(rialto1);
