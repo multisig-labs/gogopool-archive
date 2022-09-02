@@ -9,12 +9,10 @@ contract MinipoolManagerTest is BaseTest {
 	address private nodeOp;
 	uint256 private status;
 	uint256 private ggpBondAmt;
-	uint128 private immutable MAX_AMT = 200_000 ether;
 
 	function setUp() public override {
 		super.setUp();
-		registerMultisig(rialto1);
-		nodeOp = getActorWithTokens(MAX_AMT, MAX_AMT);
+		nodeOp = getActorWithTokens("nodeOp", MAX_AMT, MAX_AMT);
 	}
 
 	function testExpectedReward() public {
@@ -47,111 +45,53 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(slashAmt, 33333333333333333333);
 	}
 
-	// We are not going to allow minipools without liquidstaker funds
-	// function testFullCycle_NoUserFunds() public {
-	// 	uint128 ggpStake = 200 ether;
-	// 	uint256 depositAmt = 2000 ether;
-	// 	uint256 avaxAssignmentRequest = 0 ether;
-
-	// 	(address nodeID, uint256 duration, ) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStake, avaxAssignmentRequest);
-	// 	assertEq(vault.balanceOf("MinipoolManager"), depositAmt);
-
-	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-
-	// 	vm.startPrank(rialto1);
-	// 	// uint256 nonce = minipoolMgr.getNonce(rialto1);
-	// 	// bytes32 msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-	// 	// bytes memory sig = signHash(RIALTO1_PK, msgHash);
-	// 	minipoolMgr.claimAndInitiateStaking(nodeID);
-	// 	assertEq(vault.balanceOf("MinipoolManager"), 0);
-	// 	assertEq(rialto1.balance, depositAmt);
-
-	// 	// nonce = minipoolMgr.getNonce(rialto1);
-	// 	// msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-	// 	// sig = signHash(RIALTO1_PK, msgHash);
-	// 	bytes32 txID = keccak256("txid");
-	// 	minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
-
-	// 	// nonce = minipoolMgr.getNonce(rialto1);
-	// 	// msgHash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(address(minipoolMgr), rialto1, nonce)));
-	// 	// sig = signHash(RIALTO1_PK, msgHash);
-
-	// 	vm.expectRevert(MinipoolManager.InvalidEndTime.selector);
-	// 	minipoolMgr.recordStakingEnd{value: depositAmt}(nodeID, block.timestamp, 0 ether);
-
-	// 	skip(duration);
-
-	// 	vm.expectRevert(MinipoolManager.InvalidAmount.selector);
-	// 	minipoolMgr.recordStakingEnd{value: 0 ether}(nodeID, block.timestamp, 0 ether);
-
-	// 	// Give rialto the rewards it needs
-	// 	uint256 rewards = 10 ether;
-	// 	uint256 depositPlusRewards = depositAmt + rewards;
-	// 	deal(rialto1, rialto1.balance + rewards);
-
-	// 	vm.expectRevert(MinipoolManager.InvalidAmount.selector);
-	// 	minipoolMgr.recordStakingEnd{value: depositPlusRewards}(nodeID, block.timestamp, 9 ether);
-
-	// 	minipoolMgr.recordStakingEnd{value: depositPlusRewards}(nodeID, block.timestamp, 10 ether);
-	// 	assertEq(vault.balanceOf("MinipoolManager"), depositPlusRewards);
-
-	// 	vm.stopPrank();
-
-	// 	///test that the node op can withdraw the funds they are due
-	// 	vm.startPrank(nodeOp);
-	// 	uint256 priorBalance_nodeOp = nodeOp.balance;
-
-	// 	minipoolMgr.withdrawMinipoolFunds(nodeID);
-
-	// 	assertEq((nodeOp.balance - priorBalance_nodeOp), depositPlusRewards);
-	// }
-
 	function testFullCycle_WithUserFunds() public {
-		uint256 liquidStakerDepositAmt = 3_000_000 ether;
+		address lilly = getActorWithTokens("lilly", MAX_AMT, MAX_AMT);
+		vm.prank(lilly);
+		ggAVAX.depositAVAX{value: MAX_AMT}();
+		assertEq(lilly.balance, 0);
 
-		//fill liquid staker funds
-		address bob = getNextActor();
-		vm.deal(bob, liquidStakerDepositAmt);
-		vm.prank(bob);
-		ggAVAX.depositAVAX{value: liquidStakerDepositAmt}();
-		assertEq(bob.balance, 0);
-
+		uint256 duration = 2 weeks;
 		uint256 depositAmt = 1000 ether;
-		uint128 ggpStakeAmt = 2000 ether;
-		uint256 validationAmt = 2000 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
+		uint256 validationAmt = depositAmt + avaxAssignmentRequest;
+		uint128 ggpStakeAmt = 200 ether;
 
-		(address nodeID, uint256 duration, ) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
+		vm.startPrank(nodeOp);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
+		vm.stopPrank();
 
 		assertEq(vault.balanceOf("MinipoolManager"), depositAmt);
 
-		vm.startPrank(rialto1);
+		vm.startPrank(rialto);
 
-		minipoolMgr.claimAndInitiateStaking(nodeID);
+		minipoolMgr.claimAndInitiateStaking(mp.nodeID);
 
 		assertEq(vault.balanceOf("MinipoolManager"), 0);
-		assertEq(rialto1.balance, validationAmt);
+		assertEq(rialto.balance, validationAmt);
 
 		bytes32 txID = keccak256("txid");
-		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
+		minipoolMgr.recordStakingStart(mp.nodeID, txID, block.timestamp);
 
 		vm.expectRevert(MinipoolManager.InvalidEndTime.selector);
-		minipoolMgr.recordStakingEnd{value: validationAmt}(nodeID, block.timestamp, 0 ether);
+		minipoolMgr.recordStakingEnd{value: validationAmt}(mp.nodeID, block.timestamp, 0 ether);
 
 		skip(duration);
 
 		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
-		minipoolMgr.recordStakingEnd{value: 0 ether}(nodeID, block.timestamp, 0 ether);
+		minipoolMgr.recordStakingEnd{value: 0 ether}(mp.nodeID, block.timestamp, 0 ether);
 
 		// // // Give rialto the rewards it needs
 		uint256 rewards = 10 ether;
-		deal(rialto1, rialto1.balance + rewards);
+		deal(rialto, rialto.balance + rewards);
 
 		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
-		minipoolMgr.recordStakingEnd{value: validationAmt + rewards}(nodeID, block.timestamp, 9 ether);
+		minipoolMgr.recordStakingEnd{value: validationAmt + rewards}(mp.nodeID, block.timestamp, 9 ether);
 
 		//right now rewards are split equally between the node op and user. User provided half the total funds in this test
-		minipoolMgr.recordStakingEnd{value: validationAmt + rewards}(nodeID, block.timestamp, 10 ether);
+		minipoolMgr.recordStakingEnd{value: validationAmt + rewards}(mp.nodeID, block.timestamp, 10 ether);
 		uint256 commissionFee = (5 ether * 15) / 100;
 		//checking the node operators rewards are corrrect
 		assertEq(vault.balanceOf("MinipoolManager"), (1005 ether + commissionFee));
@@ -162,93 +102,58 @@ contract MinipoolManagerTest is BaseTest {
 		vm.startPrank(nodeOp);
 		uint256 priorBalance_nodeOp = nodeOp.balance;
 
-		minipoolMgr.withdrawMinipoolFunds(nodeID);
+		minipoolMgr.withdrawMinipoolFunds(mp.nodeID);
 		assertEq((nodeOp.balance - priorBalance_nodeOp), (1005 ether + commissionFee));
 	}
 
 	function testBondZeroGGP() public {
 		vm.startPrank(nodeOp);
-		(address nodeID, uint256 duration, uint256 delegationFee) = randMinipool();
+		address nodeID = randAddress();
 		uint256 avaxAssignmentRequest = 1000 ether;
 
-		vm.expectRevert(Staking.IndexNotFound.selector); //no ggp will be staked under the address, so it will fail upon lookup
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
+		vm.expectRevert(Staking.StakerNotFound.selector); //no ggp will be staked under the address, so it will fail upon lookup
+		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, 0, 0, avaxAssignmentRequest);
 		vm.stopPrank();
 	}
 
-	function testBondWithGGP() public {
-		uint128 ggpStakeAmt = 100 ether;
-		uint256 depositAmt = 1000 ether;
-		uint256 avaxAssignmentRequest = 1000 ether;
-
-		(address nodeID, , ) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
-		index = minipoolMgr.getIndexOf(nodeID);
-		ggpBondAmt = staking.getUserGGPStake(nodeOp);
-		assertEq(ggpBondAmt, ggpStakeAmt);
+	function testUndercollateralized() public {
+		vm.startPrank(nodeOp);
+		address nodeID = randAddress();
+		uint256 avaxAmt = 1000 ether;
+		uint256 ggpStakeAmt = 50 ether; // 5%
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		vm.expectRevert(MinipoolManager.InsufficientGGPCollateralization.selector); //no ggp will be staked under the address, so it will fail upon lookup
+		minipoolMgr.createMinipool{value: avaxAmt}(nodeID, 0, 0, avaxAmt);
 		vm.stopPrank();
 	}
 
 	// cancelling should cancel the previous avax borrowed counter but right now it doesn't
-	function testCancelAndReBondWithGGP() public {
-		uint128 ggpStakeAmt = 100 ether;
-		uint256 depositAmt = 1000 ether;
-		uint256 avaxAssignmentRequest = 1000 ether;
+	// function testCancelAndReBondWithGGP() public {
+	// 	uint128 ggpStakeAmt = 100 ether;
+	// 	uint256 depositAmt = 1000 ether;
+	// 	uint256 avaxAssignmentRequest = 1000 ether;
 
-		(address nodeID, uint256 duration, uint256 delegationFee) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
-		index = minipoolMgr.getIndexOf(nodeID);
-		ggpBondAmt = staking.getUserGGPStake(nodeOp);
-		assertEq(ggpBondAmt, ggpStakeAmt);
+	// 	(address nodeID, uint256 duration, uint256 delegationFee) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
+	// 	index = minipoolMgr.getIndexOf(nodeID);
+	// 	ggpBondAmt = staking.getGGPStake(nodeOp);
+	// 	assertEq(ggpBondAmt, ggpStakeAmt);
 
-		vm.startPrank(nodeOp);
-		minipoolMgr.cancelMinipool(nodeID);
-		MinipoolManager.Minipool memory mp;
-		mp = minipoolMgr.getMinipool(index);
+	// 	vm.startPrank(nodeOp);
+	// 	minipoolMgr.cancelMinipool(nodeID);
+	// 	MinipoolManager.Minipool memory mp;
+	// 	mp = minipoolMgr.getMinipool(index);
 
-		assertEq(mp.status, uint256(MinipoolStatus.Canceled));
-		assertEq(nodeOp.balance, depositAmt);
+	// 	assertEq(mp.status, uint256(MinipoolStatus.Canceled));
+	// 	assertEq(nodeOp.balance, depositAmt);
 
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-		int256 new_index = minipoolMgr.getIndexOf(nodeID);
-		assertEq(new_index, index);
-		ggpBondAmt = staking.getUserGGPStake(nodeOp);
-		assertEq(ggpBondAmt, ggpStakeAmt);
-		vm.stopPrank();
-	}
-
-	// ToDo make this work with no user funds https://github.com/multisig-labs/gogopool-contracts/issues/77
-	// We are not going to allow minipools without user funds
-	// function testClaimNoUserFunds() public {
-	// 	uint256 depositAmt = 2000 ether;
-	// 	uint128 ggpStakeAmt = 200 ether;
-	// 	uint256 avaxAssignmentRequest = 0 ether;
-
-	// 	(address nodeID, , ) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
-
-	// 	updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-
-	// 	vm.startPrank(rialto1);
-	// 	minipoolMgr.claimAndInitiateStaking(nodeID);
-
-	// 	assertEq(rialto1.balance, depositAmt);
+	// 	minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
+	// 	int256 new_index = minipoolMgr.getIndexOf(nodeID);
+	// 	assertEq(new_index, index);
+	// 	ggpBondAmt = staking.getGGPStake(nodeOp);
+	// 	assertEq(ggpBondAmt, ggpStakeAmt);
 	// 	vm.stopPrank();
 	// }
-
-	function testCancelByOwner() public {
-		uint256 depositAmt = 1000 ether;
-		uint128 ggpStakeAmt = 100 ether;
-		uint256 avaxAssignmentRequest = 1000 ether;
-
-		(address nodeID, , ) = stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
-		updateMinipoolStatus(nodeID, MinipoolStatus.Prelaunch);
-		vm.startPrank(nodeOp);
-		minipoolMgr.cancelMinipool(nodeID);
-		vm.stopPrank();
-
-		vm.startPrank(rialto1);
-		vm.expectRevert(MinipoolManager.OnlyOwnerCanCancel.selector);
-		minipoolMgr.cancelMinipool(nodeID);
-		vm.stopPrank();
-	}
 
 	function testEmptyState() public {
 		vm.startPrank(nodeOp);
@@ -263,99 +168,37 @@ contract MinipoolManagerTest is BaseTest {
 	// Maybe we have testGas... tests that just do a single important operation
 	// to make it easier to monitor gas usage
 	function testGasCreateMinipool() public {
-		vm.startPrank(nodeOp);
-		(address nodeID, uint256 duration, uint256 delegationFee) = randMinipool();
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = 1000 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
-		staking.stakeGGP(1000 ether);
+		uint128 ggpStakeAmt = 200 ether;
 
+		vm.startPrank(nodeOp);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
 		startMeasuringGas("testGasCreateMinipool");
-		minipoolMgr.createMinipool{value: 2000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
+		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
 		stopMeasuringGas();
-
-		index = minipoolMgr.getIndexOf(nodeID);
 		vm.stopPrank();
+
+		index = minipoolMgr.getIndexOf(mp.nodeID);
 		assertFalse(index == -1);
 	}
 
 	function testCreateAndGetMany() public {
 		vm.startPrank(nodeOp);
 		address nodeID;
-		uint256 duration;
-		uint256 delegationFee;
 		uint256 avaxAssignmentRequest = 1000 ether;
 
 		for (uint256 i = 0; i < 10; i++) {
-			(nodeID, duration, delegationFee) = randMinipool();
+			nodeID = randAddress();
+			ggp.approve(address(staking), 100 ether);
 			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
+			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, 0, 0, avaxAssignmentRequest);
 		}
 		index = minipoolMgr.getIndexOf(nodeID);
 		assertEq(index, 9);
 		vm.stopPrank();
-	}
-
-	function testGetStatusCounts() public {
-		uint256 prelaunchCount;
-		uint256 launchedCount;
-		uint256 stakingCount;
-		uint256 withdrawableCount;
-		uint256 finishedCount;
-		uint256 canceledCount;
-		address nodeID;
-		uint256 duration;
-		uint256 delegationFee;
-		uint256 avaxAssignmentRequest = 1000 ether;
-
-		vm.startPrank(nodeOp);
-		for (uint256 i = 0; i < 10; i++) {
-			(nodeID, duration, delegationFee) = randMinipool();
-			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-
-			(nodeID, duration, delegationFee) = randMinipool();
-			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Launched);
-
-			(nodeID, duration, delegationFee) = randMinipool();
-			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Staking);
-
-			(nodeID, duration, delegationFee) = randMinipool();
-			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Withdrawable);
-
-			(nodeID, duration, delegationFee) = randMinipool();
-			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Finished);
-
-			(nodeID, duration, delegationFee) = randMinipool();
-			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-			minipoolMgr.updateMinipoolStatus(nodeID, MinipoolStatus.Canceled);
-		}
-		vm.stopPrank();
-
-		// Get all in one page
-		(prelaunchCount, launchedCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = minipoolMgr.getMinipoolCountPerStatus(0, 0);
-		assertEq(prelaunchCount, 10);
-		assertEq(launchedCount, 10);
-		assertEq(stakingCount, 10);
-		assertEq(withdrawableCount, 10);
-		assertEq(finishedCount, 10);
-		assertEq(canceledCount, 10);
-
-		// Test pagination
-		(prelaunchCount, launchedCount, stakingCount, withdrawableCount, finishedCount, canceledCount) = minipoolMgr.getMinipoolCountPerStatus(0, 6);
-		assertEq(prelaunchCount, 1);
-		assertEq(launchedCount, 1);
-		assertEq(stakingCount, 1);
-		assertEq(withdrawableCount, 1);
-		assertEq(finishedCount, 1);
-		assertEq(canceledCount, 1);
 	}
 
 	function updateMinipoolStatus(address nodeID, MinipoolStatus newStatus) public {

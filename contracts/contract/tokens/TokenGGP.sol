@@ -2,10 +2,10 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import {ERC20, ERC20Burnable} from "./ERC20Burnable.sol";
-import {Vault} from "../Vault.sol";
 import "../Base.sol";
 import {Storage} from "../Storage.sol";
+import {Vault} from "../Vault.sol";
+import {ERC20, ERC20Burnable} from "./ERC20Burnable.sol";
 
 import "../rewards/claims/ProtocolDAOClaim.sol";
 

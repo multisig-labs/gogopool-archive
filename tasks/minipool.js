@@ -31,52 +31,54 @@ task("minipool:list_claimable", "List all claimable minipools")
 		logMinipools(minipools);
 	});
 
-task("minipool:queue", "List all minipools in the queue").setAction(
-	async () => {
-		const MINIPOOL_QUEUE_KEY = hash(["string"], ["minipoolQueue"]);
+// task("minipool:queue", "List all minipools in the queue").setAction(
+// 	async () => {
+// 		const MINIPOOL_QUEUE_KEY = hash(["string"], ["minipoolQueue"]);
 
-		const storage = await get("Storage");
-		const start = await storage.getUint(
-			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".start"])
-		);
-		const end = await storage.getUint(
-			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".end"])
-		);
-		const minipoolQueue = await get("BaseQueue");
-		const len = await minipoolQueue.getLength(MINIPOOL_QUEUE_KEY);
-		log(`Queue start: ${start}  end: ${end}  len: ${len}`);
-		for (let i = start; i < end; i++) {
-			try {
-				const nodeID = await minipoolQueue.getItem(MINIPOOL_QUEUE_KEY, i);
-				if (nodeID === hre.ethers.constants.AddressZero) break;
-				log(`[${i}] ${nodeID}`);
-			} catch (e) {
-				log("error", e);
-			}
-		}
-	}
-);
+// 		const storage = await get("Storage");
+// 		const start = await storage.getUint(
+// 			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".start"])
+// 		);
+// 		const end = await storage.getUint(
+// 			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".end"])
+// 		);
+// 		const minipoolQueue = await get("BaseQueue");
+// 		const len = await minipoolQueue.getLength(MINIPOOL_QUEUE_KEY);
+// 		log(`Queue start: ${start}  end: ${end}  len: ${len}`);
+// 		for (let i = start; i < end; i++) {
+// 			try {
+// 				const nodeID = await minipoolQueue.getItem(MINIPOOL_QUEUE_KEY, i);
+// 				if (nodeID === hre.ethers.constants.AddressZero) break;
+// 				log(`[${i}] ${nodeID}`);
+// 			} catch (e) {
+// 				log("error", e);
+// 			}
+// 		}
+// 	}
+// );
 
 task("minipool:create", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "Real NodeID or name to use as a random seed")
-	.addParam("duration", "Duration", "14d", types.string)
+	.addParam("duration", "Duration", "2m", types.string)
 	.addParam("fee", "2% is 20,000", 20000, types.int)
 	.addParam("avax", "Amt of AVAX to send (units are AVAX)", "1000")
-	.setAction(async ({ actor, node, duration, fee, avax }) => {
-		console.log(nodeID(node));
+	.addParam("avaxRequested", "Amt of AVAX to request (units are AVAX)", "1000")
+	.setAction(async ({ actor, node, duration, fee, avax, avaxRequested }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
 		await minipoolManager.callStatic.createMinipool(
 			nodeID(node),
 			parseDelta(duration),
 			fee,
+			hre.ethers.utils.parseEther(avaxRequested),
 			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
 		);
 		tx = await minipoolManager.createMinipool(
 			nodeID(node),
 			parseDelta(duration),
 			fee,
+			hre.ethers.utils.parseEther(avaxRequested),
 			{ ...overrides, value: hre.ethers.utils.parseEther(avax) }
 		);
 		await logtx(tx);
@@ -90,7 +92,8 @@ task("minipool:update_status", "Force into a particular status")
 	.setAction(async ({ actor, node, status }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.updateMinipoolStatus(nodeID(node), status);
+		tx = await minipoolManager.updateMinipoolStatus(nodeID(node), status);
+		await logtx(tx);
 		log(`Minipool status updated to ${status} for ${node}`);
 	});
 
@@ -100,7 +103,8 @@ task("minipool:cancel", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		await minipoolManager.cancelMinipool(nodeID(node));
+		tx = await minipoolManager.cancelMinipool(nodeID(node));
+		await logtx(tx);
 		log(`Minipool canceled`);
 	});
 

@@ -37,7 +37,7 @@ contract DelegationManagerTest is BaseTest {
 		index = delegationMgr.getIndexOf(nodeID);
 
 		//check that the transfer of ggpbond from node op to the contract worked
-		assertEq(vault.balanceOfToken("DelegationManager", mockGGP), ggpBondAmt);
+		assertEq(vault.balanceOfToken("DelegationManager", ggp), ggpBondAmt);
 
 		//check that the storage items are correct and the registration was successful
 		address nodeID_ = store.getAddress(keccak256(abi.encodePacked("delegationNode.item", index, ".nodeID")));
@@ -94,9 +94,9 @@ contract DelegationManagerTest is BaseTest {
 
 		//test that the node op can withdraw the funds they are due
 		vm.startPrank(nodeOp);
-		uint256 priorBalance_ggp = mockGGP.balanceOf(nodeOp);
+		uint256 priorBalance_ggp = ggp.balanceOf(nodeOp);
 		delegationMgr.withdrawRewardAndBondFunds(nodeID);
-		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
+		assertEq((ggp.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
 	}
 
 	function testFullCycle_WithMinipool() public {
@@ -138,7 +138,7 @@ contract DelegationManagerTest is BaseTest {
 		index = delegationMgr.getIndexOf(nodeID);
 
 		//check that the transfer of ggpbond from node op to the contract worked
-		assertEq(vault.balanceOfToken("DelegationManager", mockGGP), ggpBondAmt);
+		assertEq(vault.balanceOfToken("DelegationManager", ggp), ggpBondAmt);
 
 		//check that the storage items are correct and the registration was successful
 		address nodeID_ = store.getAddress(keccak256(abi.encodePacked("delegationNode.item", index, ".nodeID")));
@@ -201,11 +201,11 @@ contract DelegationManagerTest is BaseTest {
 
 		//test that the node op can withdraw the funds they are due
 		vm.startPrank(nodeOp);
-		uint256 priorBalance_ggp = mockGGP.balanceOf(nodeOp);
+		uint256 priorBalance_ggp = ggp.balanceOf(nodeOp);
 		uint256 priorBalance_nodeOp = nodeOp.balance;
 
 		delegationMgr.withdrawRewardAndBondFunds(nodeID);
-		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
+		assertEq((ggp.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
 		assertEq((nodeOp.balance - priorBalance_nodeOp), validatorRewards);
 	}
 
@@ -256,7 +256,7 @@ contract DelegationManagerTest is BaseTest {
 		index = delegationMgr.getIndexOf(nodeID);
 
 		//check that the transfer of ggpbond from node op to the contract worked
-		assertEq(vault.balanceOfToken("DelegationManager", mockGGP), ggpBondAmt);
+		assertEq(vault.balanceOfToken("DelegationManager", ggp), ggpBondAmt);
 
 		//check that the storage items are correct and the registration was successful
 		address nodeID_ = store.getAddress(keccak256(abi.encodePacked("delegationNode.item", index, ".nodeID")));
@@ -296,9 +296,9 @@ contract DelegationManagerTest is BaseTest {
 
 		//test that the node op can withdraw the funds they are due
 		vm.startPrank(nodeOp);
-		uint256 priorBalance_ggp = mockGGP.balanceOf(nodeOp);
+		uint256 priorBalance_ggp = ggp.balanceOf(nodeOp);
 		delegationMgr.withdrawRewardAndBondFunds(nodeID);
-		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), (ggpBondAmt - slashAmt));
+		assertEq((ggp.balanceOf(nodeOp) - priorBalance_ggp), (ggpBondAmt - slashAmt));
 
 		DelegationManager.DelegationNode memory dn;
 		dn = delegationMgr.getDelegationNode(index);
@@ -324,7 +324,7 @@ contract DelegationManagerTest is BaseTest {
 		index = delegationMgr.getIndexOf(nodeID);
 
 		//check that the transfer of ggpbond from node op to the contract worked
-		assertEq(vault.balanceOfToken("DelegationManager", mockGGP), ggpBondAmt);
+		assertEq(vault.balanceOfToken("DelegationManager", ggp), ggpBondAmt);
 
 		//check that the storage items are correct and the registration was successful
 		address nodeID_ = store.getAddress(keccak256(abi.encodePacked("delegationNode.item", index, ".nodeID")));
@@ -336,7 +336,7 @@ contract DelegationManagerTest is BaseTest {
 		address nodeOp_ = store.getAddress(keccak256(abi.encodePacked("delegationNode.item", index, ".owner")));
 		assertEq(nodeOp_, nodeOp);
 
-		uint256 priorBalance_ggp = mockGGP.balanceOf(nodeOp);
+		uint256 priorBalance_ggp = ggp.balanceOf(nodeOp);
 
 		//cancel delegation
 		delegationMgr.cancelDelegation(nodeID);
@@ -345,7 +345,7 @@ contract DelegationManagerTest is BaseTest {
 
 		//verify that it was canceled and the funds returned
 		assertEq(dn.status, uint256(DelegationNodeStatus.Canceled));
-		assertEq((mockGGP.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
+		assertEq((ggp.balanceOf(nodeOp) - priorBalance_ggp), ggpBondAmt);
 
 		//try to reregister the node for delegation
 		delegationMgr.registerNode{value: ggpBondAmt}(nodeID, requestedDelegationAmt, ggpBondAmt, duration);

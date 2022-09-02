@@ -10,22 +10,26 @@ contract MultisigManagerTest is BaseTest {
 	}
 
 	function testAddMultisig() public {
-		address rialto1Addr = vm.addr(RIALTO1_PK);
-		registerMultisig(rialto1Addr);
-		int256 index = multisigMgr.getIndexOf(rialto1Addr);
-		assertEq(index, 0);
+		uint256 initCount = multisigMgr.getCount();
+		address rialto1 = getActor("rialto1");
+		registerMultisig(rialto1);
+		int256 index = multisigMgr.getIndexOf(rialto1);
 		(address a, bool enabled) = multisigMgr.getMultisig(uint256(index));
-		assertEq(a, rialto1Addr);
+		assertEq(a, rialto1);
 		assert(enabled);
+		assertEq(multisigMgr.getCount(), initCount + 1);
 	}
 
 	function testFindActive() public {
-		address rialto1Addr = vm.addr(RIALTO1_PK);
-		registerMultisig(rialto1Addr);
-		address rialto2Addr = vm.addr(RIALTO2_PK);
-		registerMultisig(rialto2Addr);
-		multisigMgr.disableMultisig(rialto1Addr);
-		address ms = multisigMgr.getNextActiveMultisig();
-		assertEq(rialto2Addr, ms);
+		// Disable the global one
+		multisigMgr.disableMultisig(rialto);
+
+		address rialto1 = getActor("rialto1");
+		registerMultisig(rialto1);
+		address rialto2 = getActor("rialto2");
+		registerMultisig(rialto2);
+		multisigMgr.disableMultisig(rialto1);
+		address ms = multisigMgr.requireNextActiveMultisig();
+		assertEq(rialto2, ms);
 	}
 }

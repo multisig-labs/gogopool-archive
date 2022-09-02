@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "../../Base.sol";
-import "../../Vault.sol";
-import "../../tokens/TokenGGP.sol";
-import "../../Storage.sol";
+import {Storage} from "../../Storage.sol";
+import {Vault} from "../../Vault.sol";
+import {TokenGGP} from "../../tokens/TokenGGP.sol";
 
 // RPL Rewards claiming by the DAO
 contract ProtocolDAOClaim is Base {
@@ -19,7 +19,7 @@ contract ProtocolDAOClaim is Base {
 	}
 
 	// Determine if this contract is enabled or not for claims
-	function getEnabled() external view returns (bool) {
+	function getEnabled() external pure returns (bool) {
 		// Init the rewards pool contract
 		// IRewardsPool rewardsPool = IRewardsPool(getContractAddress("RewardsPool"));
 

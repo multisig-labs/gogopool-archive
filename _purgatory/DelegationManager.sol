@@ -148,10 +148,7 @@ contract DelegationManager is Base, IWithdrawer {
 
 		// Get a Rialto multisig to assign for this delegation node
 		MultisigManager multisigManager = MultisigManager(getContractAddress("MultisigManager"));
-		address multisigAddr = multisigManager.getNextActiveMultisig();
-		if (multisigAddr == address(0)) {
-			revert InvalidMultisigAddress();
-		}
+		address multisigAddr = multisigManager.requireNextActiveMultisig();
 
 		// Initialise node data
 		setAddress(keccak256(abi.encodePacked("delegationNode.item", index, ".nodeID")), nodeID);

@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "../Base.sol";
-import "../Storage.sol";
-import "../Vault.sol";
-import "../tokens/TokenGGP.sol";
+import {Storage} from "../Storage.sol";
+import {Vault} from "../Vault.sol";
+import {TokenGGP} from "../tokens/TokenGGP.sol";
 import "../dao/protocol/settings/ProtocolDAOSettingsInflation.sol";
 
 // GGP Rewards claiming by the DAO
@@ -185,8 +185,9 @@ contract RewardsPool is Base {
 	function getGGPBalance() external view returns (uint256) {
 		// Get the vault contract instance
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		// Check per contract
-		return vault.balanceOfToken("RewardsPool", ERC20(getContractAddress("TokenGGP")));
+		return vault.balanceOfToken("RewardsPool", ggp);
 	}
 
 	/**
@@ -260,6 +261,7 @@ contract RewardsPool is Base {
 	function getClaimingContractExists(string memory _contractName) public pure returns (bool) {
 		// RocketDAOProtocolSettingsRewardsInterface daoSettingsRewards = RocketDAOProtocolSettingsRewardsInterface(getContractAddress("rocketDAOProtocolSettingsRewards"));
 		// return (daoSettingsRewards.getRewardsClaimerPercTimeUpdated(_contractName) > 0);
+		_contractName;
 		return true;
 	}
 
@@ -270,6 +272,7 @@ contract RewardsPool is Base {
 		// RocketDAOProtocolSettingsRewardsInterface daoSettingsRewards = RocketDAOProtocolSettingsRewardsInterface(getContractAddress("rocketDAOProtocolSettingsRewards"));
 		// Now verify this contract can claim by having a claim perc > 0
 		// return daoSettingsRewards.getRewardsClaimerPerc(_contractName) > 0 ? true : false;
+		_contractName;
 		return true;
 	}
 

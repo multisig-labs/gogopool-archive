@@ -47,14 +47,14 @@ node:
 test: test-forge test-hh
 
 # Run forge unit tests
-test-forge *FLAGS:
+test-forge contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
-	forge test -vv --allow-failure --block-timestamp `date '+%s'` {{FLAGS}}
+	forge test --allow-failure --block-timestamp `date '+%s'` --match-contract {{contract}} --match-test {{test}} {{flags}}
 
 # Run forge unit tests whenever file changes occur
-test-forge-watch *FLAGS:
+test-forge-watch contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
-	forge test -vv --allow-failure --block-timestamp `date '+%s'` {{FLAGS}} --watch contracts test --delay 1
+	forge test --allow-failure --block-timestamp `date '+%s'` --match-contract {{contract}} --match-test {{test}} {{flags}} --watch contracts test --watch-delay 1
 
 # Run hardhat tests
 test-hh:

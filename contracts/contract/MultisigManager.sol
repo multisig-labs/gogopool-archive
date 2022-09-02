@@ -2,7 +2,7 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import {Base} from "./Base.sol";
+import "./Base.sol";
 import {Storage} from "./Storage.sol";
 
 /*
@@ -11,8 +11,6 @@ import {Storage} from "./Storage.sol";
 	multisig.index<address> = <index> of multisigAddress
 	multisig.item<index>.address = multisigAddress used as primary key (NOT the ascii but the actual 20 bytes of C-Chain address)
 	multisig.item<index>.enabled = bool
-	multisig.item<index>.validatorCount = total active nodes managed
-	multisig.item<index>.avaxTotal = total avax on active validators
 */
 
 contract MultisigManager is Base {
@@ -27,9 +25,6 @@ contract MultisigManager is Base {
 
 	/// @notice No active Multisig has been found
 	error NoEnabledMultisigFound();
-
-	/// @notice Signature is invalid
-	error SignatureInvalid();
 
 	// Events
 	event RegisteredMultisig(address indexed addr);
@@ -80,13 +75,13 @@ contract MultisigManager is Base {
 
 	// In future, have a way to choose which multisig gets used for each validator
 	// i.e. round-robin, or based on GGP staked, etc
-	function getNextActiveMultisig() external view returns (address) {
+	function requireNextActiveMultisig() external view returns (address) {
 		uint256 total = getUint(keccak256("multisig.count"));
 		address addr;
 		bool enabled;
 		for (uint256 i = 0; i < total; i++) {
 			(addr, enabled) = getMultisig(i);
-			if (enabled) {
+			if (enabled && addr != address(0)) {
 				return addr;
 			}
 		}
@@ -97,6 +92,10 @@ contract MultisigManager is Base {
 	// Returns -1 if the value is not found
 	function getIndexOf(address addr) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("multisig.index", addr)))) - 1;
+	}
+
+	function getCount() public view returns (uint256) {
+		return getUint(keccak256("multisig.count"));
 	}
 
 	function getMultisig(uint256 index) public view returns (address addr, bool enabled) {

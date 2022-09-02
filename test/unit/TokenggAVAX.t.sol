@@ -7,46 +7,46 @@ import "./utils/BaseTest.sol";
 contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	using FixedPointMathLib for uint256;
 
-	uint128 private immutable MAX_AMT = 20_000 ether;
 	address private alice;
 	address private bob;
-	address private nodeOp;
 	address private nodeID;
 	uint256 private duration;
 	uint256 private delegationFee;
 
 	function setUp() public override {
 		super.setUp();
-		registerMultisig(rialto1);
 		dao.setTargetggAVAXReserveRate(0);
 
-		alice = getActorWithWAVAX(type(uint128).max);
-		bob = getActor(1);
-		nodeOp = getActorWithTokens(MAX_AMT, MAX_AMT);
+		alice = getActorWithTokens("alice", MAX_AMT, MAX_AMT);
+		bob = getActor("bob");
 
-		(nodeID, duration, delegationFee) = randMinipool();
+		nodeID = randAddress();
+		duration = 2 weeks;
+		delegationFee = 20_000;
 		uint256 avaxAssignmentRequest = 1000 ether;
-		// duration = 14 days;
-		vm.startPrank(nodeOp);
+		vm.startPrank(alice);
+		ggp.approve(address(staking), 100 ether);
 		staking.stakeGGP(100 ether);
 		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, duration, delegationFee, avaxAssignmentRequest);
 		vm.stopPrank();
 	}
 
-	function testRevertOnUserMistake() public {
-		vm.prank(alice);
-		ggAVAX.deposit(1 ether, address(ggAVAX));
-	}
+	// function testRevertOnUserMistake() public {
+	// 	vm.prank(alice);
+	// 	ggAVAX.deposit(1 ether, address(ggAVAX));
+	// }
 
 	function testSingleDepositWithdrawWAVAX(uint128 amount) public {
-		vm.assume(amount != 0);
+		vm.assume(amount != 0 && amount < MAX_AMT);
 
 		uint256 aliceUnderlyingAmount = amount;
 
 		uint256 alicePreDepositBal = wavax.balanceOf(alice);
 
-		vm.prank(alice);
+		vm.startPrank(alice);
+		wavax.approve(address(ggAVAX), aliceUnderlyingAmount);
 		uint256 aliceShareAmount = ggAVAX.deposit(aliceUnderlyingAmount, alice);
+		vm.stopPrank();
 
 		// Expect exchange rate to be 1:1 on initial deposit.
 		assertEq(aliceUnderlyingAmount, aliceShareAmount);
@@ -58,8 +58,10 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(alice)), aliceUnderlyingAmount);
 		assertEq(wavax.balanceOf(alice), alicePreDepositBal - aliceUnderlyingAmount);
 
-		vm.prank(alice);
+		vm.startPrank(alice);
+		wavax.approve(address(ggAVAX), aliceUnderlyingAmount);
 		ggAVAX.withdraw(aliceUnderlyingAmount, alice, alice);
+		vm.stopPrank();
 
 		assertEq(ggAVAX.totalAssets(), 0);
 		assertEq(ggAVAX.balanceOf(alice), 0);
@@ -68,7 +70,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	}
 
 	function testSingleDepositWithdrawAVAX(uint128 amount) public {
-		vm.assume(amount != 0);
+		vm.assume(amount != 0 && amount < MAX_AMT);
 
 		uint256 aliceUnderlyingAmount = amount;
 		uint256 alicePreDepositBal = alice.balance;
@@ -97,14 +99,16 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	}
 
 	function testSingleMintRedeem(uint128 amount) public {
-		vm.assume(amount != 0);
+		vm.assume(amount != 0 && amount < MAX_AMT);
 
 		uint256 aliceShareAmount = amount;
 
 		uint256 alicePreDepositBal = wavax.balanceOf(alice);
 
-		vm.prank(alice);
+		vm.startPrank(alice);
+		wavax.approve(address(ggAVAX), aliceShareAmount);
 		uint256 aliceUnderlyingAmount = ggAVAX.mint(aliceShareAmount, alice);
+		vm.stopPrank();
 
 		// Expect exchange rate to be 1:1 on initial mint.
 		assertEq(aliceShareAmount, aliceUnderlyingAmount);
@@ -147,7 +151,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 rewardsAmount = 100 ether;
 		uint256 liquidStakerRewards = 50 ether - ((50 ether * 15) / 100);
 
-		uint256 rialtoInitBal = rialto1.balance;
+		uint256 rialtoInitBal = rialto.balance;
 
 		// 1. Bob mints 1000 shares
 		vm.deal(bob, depositAmount);
@@ -161,17 +165,17 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - depositAmount.mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether));
 
 		// 2. 1000 tokens are withdrawn for staking
-		vm.prank(rialto1);
+		vm.prank(rialto);
 		minipoolMgr.claimAndInitiateStaking(nodeID);
 
-		assertEq(rialto1.balance, rialtoInitBal + totalStakedAmount);
+		assertEq(rialto.balance, rialtoInitBal + totalStakedAmount);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.stakingTotalAssets(), stakingWithdrawAmount);
 
 		// 3. 1000 rewards are deposited
 		// None of these rewards should be distributed yet
-		vm.deal(rialto1, rialto1.balance + rewardsAmount);
-		vm.startPrank(rialto1);
+		vm.deal(rialto, rialto.balance + rewardsAmount);
+		vm.startPrank(rialto);
 		bytes32 txID = keccak256("txid");
 		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
 		int256 idx = minipoolMgr.getIndexOf(nodeID);
@@ -182,7 +186,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		minipoolMgr.recordStakingEnd{value: totalStakedAmount + rewardsAmount}(nodeID, endTime, rewardsAmount);
 		vm.stopPrank();
 
-		assertEq(rialto1.balance, rialtoInitBal);
+		assertEq(rialto.balance, rialtoInitBal);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 

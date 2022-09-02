@@ -22,9 +22,6 @@ contract RewardsTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 		distributeInitialSupply();
-
-		registerMultisig(rialto1);
-
 		oracle.setGGPPrice(1 ether, block.timestamp);
 	}
 

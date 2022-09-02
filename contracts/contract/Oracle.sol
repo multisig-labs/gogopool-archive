@@ -2,11 +2,10 @@ pragma solidity ^0.8.13;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
+import "./Base.sol";
 import {Storage} from "./Storage.sol";
 import {IOneInch} from "../interface/IOneInch.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
-import {Base} from "./Base.sol";
-import {Storage} from "./Storage.sol";
 
 /*
 	Data Storage Schema

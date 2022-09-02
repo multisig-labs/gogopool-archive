@@ -17,7 +17,6 @@ const contracts: IFU = {
 	Oracle: ["Storage"],
 	ProtocolDAO: ["Storage"],
 	MultisigManager: ["Storage"],
-	BaseQueue: ["Storage"],
 	TokenGGP: ["Storage"],
 	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
@@ -26,7 +25,6 @@ const contracts: IFU = {
 	Staking: ["Storage", "TokenGGP"],
 	ProtocolDAOClaim: ["Storage"],
 	ProtocolDAOSettingsInflation: ["Storage"],
-	AddressSetStorage: ["Storage"],
 };
 
 const deployAsProxy = ["TokenggAVAX"];

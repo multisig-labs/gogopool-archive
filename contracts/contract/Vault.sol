@@ -5,7 +5,6 @@ pragma solidity ^0.8.13;
 import "./Base.sol";
 import {Storage} from "./Storage.sol";
 import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
-import {IVault} from "../interface/IVault.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";
 
 // AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances
@@ -15,19 +14,34 @@ import {IWithdrawer} from "../interface/IWithdrawer.sol";
 /// @author Chandler
 // based on RocketVault by RocketPool
 
-contract Vault is Base, IVault {
+contract Vault is Base {
 	// Network contract balances
 	mapping(string => uint256) private avaxBalances;
 	mapping(bytes32 => uint256) private tokenBalances;
 
+	/// @notice amount was not valid
+	error InvalidAmount();
+
+	/// @notice Insufficient contract balance
+	error InsufficientContractBalance();
+
+	/// @notice not a valid network contract
+	error InvalidNetworkContract();
+
+	/// @notice token transfer failed
+	error TokenTransferFailed();
+
+	/// @notice Vault token withdrawal failed
+	error VaultTokenWithdrawalFailed();
+
 	// Events
-	event AvaxDeposited(string indexed by, uint256 amount, uint256 time);
-	event AvaxWithdrawn(string indexed by, uint256 amount, uint256 time);
-	event AvaxTransfer(string indexed from, string indexed to, uint256 amount, uint256 time);
-	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
-	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
-	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount, uint256 time);
-	event TokenTransfer(bytes32 indexed by, bytes32 indexed to, address indexed tokenAddress, uint256 amount, uint256 time);
+	event AvaxDeposited(string indexed by, uint256 amount);
+	event AvaxWithdrawn(string indexed by, uint256 amount);
+	event AvaxTransfer(string indexed from, string indexed to, uint256 amount);
+	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
+	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
+	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
+	event TokenTransfer(bytes32 indexed by, bytes32 indexed to, address indexed tokenAddress, uint256 amount);
 
 	// Construct
 	constructor(Storage storageAddress) Base(storageAddress) {
@@ -36,7 +50,7 @@ contract Vault is Base, IVault {
 
 	// Accept an AVAX deposit from a network contract
 	// Only accepts calls from GoGo Pool network contracts
-	function depositAvax() external payable override onlyLatestNetworkContract {
+	function depositAvax() external payable onlyLatestNetworkContract {
 		// Valid amount?
 		if (msg.value == 0) {
 			revert InvalidAmount();
@@ -46,7 +60,7 @@ contract Vault is Base, IVault {
 		// Update contract balance
 		avaxBalances[contractName] = avaxBalances[contractName] + msg.value;
 		// Emit ether deposited event
-		emit AvaxDeposited(contractName, msg.value, block.timestamp);
+		emit AvaxDeposited(contractName, msg.value);
 	}
 
 	// Withdraw an amount of AVAX to a network contract
@@ -67,7 +81,7 @@ contract Vault is Base, IVault {
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
 		withdrawer.receiveWithdrawalAVAX{value: _amount}();
 		// Emit ether withdrawn event
-		emit AvaxWithdrawn(contractName, _amount, block.timestamp);
+		emit AvaxWithdrawn(contractName, _amount);
 	}
 
 	// Transfer AVAX from one contract to another
@@ -90,7 +104,7 @@ contract Vault is Base, IVault {
 		}
 		avaxBalances[fromContractName] = avaxBalances[fromContractName] - amount;
 		avaxBalances[toContractName] = avaxBalances[toContractName] + amount;
-		emit AvaxTransfer(fromContractName, toContractName, amount, block.timestamp);
+		emit AvaxTransfer(fromContractName, toContractName, amount);
 	}
 
 	// Accept an token deposit and assign its balance to a network contract (saves a large amount of gas this way through not needing a double token transfer via a network contract first)
@@ -118,7 +132,7 @@ contract Vault is Base, IVault {
 		// Update contract balance
 		tokenBalances[contractKey] = tokenBalances[contractKey] + _amount;
 		// Emit token transfer
-		emit TokenDeposited(contractKey, address(_tokenContract), _amount, block.timestamp);
+		emit TokenDeposited(contractKey, address(_tokenContract), _amount);
 	}
 
 	// Withdraw an amount of a ERC20 token to an address
@@ -143,7 +157,7 @@ contract Vault is Base, IVault {
 			revert VaultTokenWithdrawalFailed();
 		}
 		// Emit token withdrawn event
-		emit TokenWithdrawn(contractKey, address(_tokenAddress), _amount, block.timestamp);
+		emit TokenWithdrawn(contractKey, address(_tokenAddress), _amount);
 	}
 
 	// Transfer token from one contract to another
@@ -168,7 +182,7 @@ contract Vault is Base, IVault {
 		tokenBalances[contractKeyFrom] = tokenBalances[contractKeyFrom] - _amount;
 		tokenBalances[contractKeyTo] = tokenBalances[contractKeyTo] + _amount;
 		// Emit token withdrawn event
-		emit TokenTransfer(contractKeyFrom, contractKeyTo, address(_tokenAddress), _amount, block.timestamp);
+		emit TokenTransfer(contractKeyFrom, contractKeyTo, address(_tokenAddress), _amount);
 	}
 
 	// Burns an amount of a token that implements a burn(uint256) method
@@ -184,7 +198,7 @@ contract Vault is Base, IVault {
 		// Burn the tokens
 		tokenContract.burn(_amount);
 		// Emit token burn event
-		emit TokenBurned(contractKey, address(_tokenAddress), _amount, block.timestamp);
+		emit TokenBurned(contractKey, address(_tokenAddress), _amount);
 	}
 
 	// Get a contract's AVAX balance by address
