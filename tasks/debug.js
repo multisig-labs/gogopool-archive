@@ -7,6 +7,7 @@ const {
 	hash,
 	log,
 	logf,
+	logtx,
 	getNamedAccounts,
 	now,
 	nodeID,
@@ -26,6 +27,52 @@ task(
 		addr: oneinch.address,
 	});
 	await hre.run("multisig:register", { name: "rialto1" });
+});
+
+task(
+	"debug:setup_anr_accounts",
+	"Run against a fresh ANR instance (before a deploy) to xfer all genesis funds to a deployer addr derived from the mnemonic"
+).setAction(async () => {
+	// Get all signers from mnemonic in hardhat.config
+	const signers = await hre.ethers.getSigners();
+	const deployer = signers[0];
+	const rewarder = signers[1];
+
+	// Genesis key for ANR "local"/"custom" network
+	//   Private Key: 0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
+	//   Address: 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
+	const defaultANRPK =
+		"0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027";
+	const defaultANR = new hre.ethers.Wallet(defaultANRPK, hre.ethers.provider);
+	let bal = await defaultANR.getBalance();
+	log(`Default ANR account balance: ${hre.ethers.utils.formatUnits(bal)}`);
+	if (bal.lt(ethers.utils.parseEther("10", "ether"))) {
+		log("Looks like balance was already transfered out, skipping...");
+		return;
+	}
+	const rewarderAmt = ethers.utils.parseEther("1000000", "ether");
+	console.log(
+		`Sending ${hre.ethers.utils.formatUnits(rewarderAmt)} to new rewarder ${
+			rewarder.address
+		}`
+	);
+	let tx = await defaultANR.sendTransaction({
+		to: rewarder.address,
+		value: rewarderAmt,
+	});
+	await logtx(tx);
+
+	bal = await defaultANR.getBalance();
+	console.log(
+		`Sending remaining balance ${hre.ethers.utils.formatUnits(
+			bal
+		)} to new deployer ${deployer.address}`
+	);
+	tx = await defaultANR.sendTransaction({
+		to: deployer.address,
+		value: bal.sub(ethers.utils.parseEther("1", "ether")),
+	});
+	await logtx(tx);
 });
 
 task("debug:skip", "Skip forward a duration")
@@ -188,49 +235,28 @@ task("debug:node_ids")
 		console.log(JSON.stringify(out));
 	});
 
-// Take pks we are using for ANR and make a standard JSON all tools can use
+// Take users we are using for ANR and make a standard JSON all tools can use
 task("debug:output_named_users").setAction(async () => {
-	users = {
-		deployer: {
-			pk: "0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027",
-			addr: "",
-		},
-		alice: {
-			pk: "0x7b4198529994b0dc604278c99d153cfd069d594753d471171a1d102a10438e07",
-			addr: "",
-		},
-		bob: {
-			pk: "0x15614556be13730e9e8d6eacc1603143e7b96987429df8726384c2ec4502ef6e",
-			addr: "",
-		},
-		cam: {
-			pk: "0x31b571bf6894a248831ff937bb49f7754509fe93bbd2517c9c73c4144c0e97dc",
-			addr: "",
-		},
-		nodeOp1: {
-			pk: "0x6934bef917e01692b789da754a0eae31a8536eb465e7bff752ea291dad88c675",
-			addr: "",
-		},
-		nodeOp2: {
-			pk: "0xe700bdbdbc279b808b1ec45f8c2370e4616d3a02c336e68d85d4668e08f53cff",
-			addr: "",
-		},
-		rialto1: {
-			pk: "0xbbc2865b76ba28016bc2255c7504d000e046ae01934b04c694592a6276988630",
-			addr: "",
-		},
-		rialto2: {
-			pk: "0xcdbfd34f687ced8c6968854f8a99ae47712c4f4183b78dcc4a903d1bfe8cbf60",
-			addr: "",
-		},
-		rewarder: {
-			pk: "0x86f78c5416151fe3546dece84fda4b4b1e36089f2dbc48496faf3a950f16157c",
-			addr: "",
-		},
-	};
-	Object.keys(users).forEach((n) => {
-		s = new ethers.Wallet(users[n].pk, hre.ethers.provider);
-		users[n].addr = s.address;
-	});
-	console.log(JSON.stringify(users, null, 2));
+	// Get mnemonic from the hardhat config (which gets it from the ENV)
+	const cfg = hre.config.networks.custom.accounts;
+	const HDNode = hre.ethers.utils.HDNode.fromMnemonic(cfg.mnemonic);
+
+	// Using the mnemonic, iterate through the derived addresses/privateKeys
+	const pks = {};
+	for (let i = 0; i < 20; i++) {
+		const derivedNode = HDNode.derivePath(`${cfg.path}/${i}`);
+		pks[derivedNode.address] = derivedNode.privateKey;
+	}
+
+	const signers = await getNamedAccounts();
+
+	const out = {};
+	for (s in signers) {
+		out[s] = {
+			pk: pks[signers[s].address],
+			address: signers[s].address,
+		};
+	}
+	console.log(`addresses and keys for mnemonic: ${HDNode.mnemonic.phrase}`);
+	console.log(JSON.stringify(out, null, 2));
 });

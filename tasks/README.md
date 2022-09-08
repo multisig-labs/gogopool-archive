@@ -36,6 +36,7 @@ just node
 ```
 
 ```
+npx hardhat debug:setup_anr_accounts
 just deploy-base
 just deploy
 npx hardhat debug:setup

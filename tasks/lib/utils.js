@@ -22,6 +22,21 @@ const nodeHexToID = (h) => {
 
 const PAGE_SIZE = 2;
 
+// DO NOT change the order of these
+const NAMED_ACCOUNTS = [
+	"deployer",
+	"rewarder",
+	"faucet",
+	"alice",
+	"bob",
+	"cam",
+	"nodeOp1",
+	"nodeOp2",
+	"rialto1",
+	"rialto2",
+	"rialto",
+];
+
 const log = (...args) => console.log(...args);
 const logf = (...args) => console.log(sprintf(...args));
 const logtx = async (tx) => {
@@ -63,22 +78,10 @@ const emptyWallet = (seed) => {
 };
 
 const getNamedAccounts = async () => {
-	const names = [
-		"deployer",
-		"alice",
-		"bob",
-		"cam",
-		"nodeOp1",
-		"nodeOp2",
-		"rialto1",
-		"rialto2",
-		"rewarder",
-		"rialto",
-	];
 	const obj = {};
 	const signers = await hre.ethers.getSigners();
-	for (i in names) {
-		obj[names[i]] = signers[i];
+	for (i in NAMED_ACCOUNTS) {
+		obj[NAMED_ACCOUNTS[i]] = signers[i];
 	}
 
 	// A real Rialto address if one is defined
@@ -89,7 +92,6 @@ const getNamedAccounts = async () => {
 		);
 		obj.rialto = rialto;
 	}
-
 	return obj;
 };
 

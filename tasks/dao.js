@@ -11,5 +11,5 @@ task("dao:set_ggavax_reserve", "Set ggAVAX reserve rate")
 		const tx = await dao.setTargetggAVAXReserveRate(
 			ethers.utils.parseEther(reserve)
 		);
-		logtx(tx);
+		await logtx(tx);
 	});
