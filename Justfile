@@ -79,13 +79,18 @@ remix:
 # Generate Go code interface for contracts
 gen:
 	#!/bin/bash
+	CORETH=0.8.16
+	echo "Generating GO code with Coreth v${CORETH}"
 	THATDIR=$PWD
 	mkdir -p $THATDIR/gen
-	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v0.8.12
-	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/_MinipoolManager.go
-	cat $THATDIR/artifacts/contracts/contract/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/_Oracle.go
-	cat $THATDIR/artifacts/contracts/contract/Storage.sol/Storage.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg storage --out $THATDIR/gen/_Storage.go
-	echo "Complete!"
+	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v${CORETH}
+	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/minipool_manager.go
+	cat $THATDIR/artifacts/contracts/contract/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/oracle.go
+	cat $THATDIR/artifacts/contracts/contract/Storage.sol/Storage.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg storage --out $THATDIR/gen/storage.go
+	echo "Complete! Copying to rialto repo..."
+	cp $THATDIR/gen/minipool_manager.go $THATDIR/../rialto/pkg/contracts/minipool_manager
+	cp $THATDIR/gen/oracle.go $THATDIR/../rialto/pkg/contracts/oracle
+	cp $THATDIR/gen/storage.go $THATDIR/../rialto/pkg/contracts/storage
 
 # Update foundry binaries to the nightly version
 update-foundry:

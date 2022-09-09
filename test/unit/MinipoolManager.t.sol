@@ -106,6 +106,57 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq((nodeOp.balance - priorBalance_nodeOp), (1005 ether + commissionFee));
 	}
 
+	function testFullCycle_Error() public {
+		address lilly = getActorWithTokens("lilly", MAX_AMT, MAX_AMT);
+		vm.prank(lilly);
+		ggAVAX.depositAVAX{value: MAX_AMT}();
+		assertEq(lilly.balance, 0);
+
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = 1000 ether;
+		uint256 avaxAssignmentRequest = 1000 ether;
+		uint256 validationAmt = depositAmt + avaxAssignmentRequest;
+		uint128 ggpStakeAmt = 200 ether;
+		uint256 amountAvailForStaking = ggAVAX.amountAvailableForStaking();
+
+		vm.startPrank(nodeOp);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
+		vm.stopPrank();
+
+		assertEq(vault.balanceOf("MinipoolManager"), depositAmt);
+
+		vm.startPrank(rialto);
+
+		minipoolMgr.claimAndInitiateStaking(mp.nodeID);
+
+		assertEq(vault.balanceOf("MinipoolManager"), 0);
+		assertEq(rialto.balance, validationAmt);
+		assertEq(minipoolMgr.getTotalAvaxLiquidStakerAmt(), avaxAssignmentRequest);
+
+		// Assume something goes wrong and we are unable to launch a minipool
+
+		bytes32 errorCode = "INVALID_NODEID";
+
+		// Expect revert on sending wrong amt
+		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
+		minipoolMgr.recordStakingError{value: 0}(mp.nodeID, errorCode);
+
+		// Now send correct amt
+		minipoolMgr.recordStakingError{value: validationAmt}(mp.nodeID, errorCode);
+		assertEq(rialto.balance, 0);
+		// NodeOps funds should be back in vault
+		assertEq(vault.balanceOf("MinipoolManager"), depositAmt);
+		// Liq stakers funds should be returned
+		assertEq(ggAVAX.amountAvailableForStaking(), amountAvailForStaking);
+		assertEq(minipoolMgr.getTotalAvaxLiquidStakerAmt(), 0);
+
+		mp = minipoolMgr.getMinipool(mp.index);
+		assertEq(mp.status, uint256(MinipoolStatus.Error));
+		assertEq(mp.errorCode, errorCode);
+	}
+
 	function testBondZeroGGP() public {
 		vm.startPrank(nodeOp);
 		address nodeID = randAddress();

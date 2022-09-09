@@ -3,7 +3,6 @@
 const {
 	get,
 	overrides,
-	hash,
 	log,
 	logtx,
 	nodeID,
@@ -15,7 +14,7 @@ const {
 } = require("./lib/utils");
 
 task("minipool:list", "List all minipools").setAction(async () => {
-	for (let status = 0; status < 5; status++) {
+	for (let status = 0; status <= 6; status++) {
 		const mps = await getMinipoolsFor(status);
 		if (mps.length > 0) logMinipools(mps);
 	}

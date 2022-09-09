@@ -214,10 +214,10 @@ task(
 			);
 			const emoji = exists && n === name ? "✅" : "(Not Registered)";
 			if (address !== hre.ethers.constants.AddressZero) {
-				logf("%-20s %-30s %s", name, address, emoji);
+				logf("%-40s, %-30s, %s", name, address, emoji);
 				addrs[name] = address; // update local cache with whats in storage
 			} else {
-				logf("%-20s %-30s", name, addrs[name]);
+				logf("%-40s, %-30s", name, addrs[name]);
 			}
 		} catch (e) {
 			log("error", e);

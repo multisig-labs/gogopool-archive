@@ -118,13 +118,13 @@ const hash = (types, vals) => {
 function logMinipools(minipools) {
 	log("===== MINIPOOLS =====");
 	logf(
-		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10s %-10s %-10s %-10s",
+		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10s %-10s %-10s %-10s %-15s",
 		"nodeID",
 		"status",
 		"owner",
 		"multisig",
 		"avaxNopAmt",
-		"avaxUsrAmt",
+		"avaxLiqStkrAmt",
 		"delFee",
 		"dur",
 		"start",
@@ -132,18 +132,19 @@ function logMinipools(minipools) {
 		"txID",
 		"totRwds",
 		"nopRwds",
-		"usrRwds",
-		"ggpSlashAmt"
+		"liqStkrRwds",
+		"ggpSlashAmt",
+		"err"
 	);
 	for (mp of minipools) {
 		logf(
-			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10.6f %-10.6f %-10.6f %-10.6f",
+			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s %-10s %-10s %-10s %-67s %-10.6f %-10.6f %-10.6f %-10.6f %-15s",
 			mp.nodeID,
 			mp.status,
 			formatAddr(mp.owner),
 			formatAddr(mp.multisigAddr),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpAmt),
-			hre.ethers.utils.formatUnits(mp.avaxUserAmt),
+			hre.ethers.utils.formatUnits(mp.avaxLiquidStakerAmt),
 			mp.delegationFee,
 			mp.duration,
 			mp.startTime,
@@ -151,8 +152,9 @@ function logMinipools(minipools) {
 			mp.txID,
 			hre.ethers.utils.formatUnits(mp.avaxTotalRewardAmt),
 			hre.ethers.utils.formatUnits(mp.avaxNodeOpRewardAmt),
-			hre.ethers.utils.formatUnits(mp.avaxUserRewardAmt),
-			hre.ethers.utils.formatUnits(mp.ggpSlashAmt)
+			hre.ethers.utils.formatUnits(mp.avaxLiquidStakerRewardAmt),
+			hre.ethers.utils.formatUnits(mp.ggpSlashAmt),
+			ethers.utils.parseBytes32String(mp.errorCode)
 		);
 	}
 }

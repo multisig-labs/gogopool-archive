@@ -41,6 +41,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	minipool.item<index>.startTime = actual time validation was started
 	minipool.item<index>.endTime = actual time validation was finished
 	minipool.item<index>.avaxTotalRewardAmt = Actual total avax rewards paid by avalanchego to the TSS P-chain addr
+	minipool.item<index>.errorCode = bytes32 that encodes an error msg if something went wrong during launch of minipool
 	// These are calculated in recordStakingEnd
 	minipool.item<index>.avaxNodeOpRewardAmt
 	minipool.item<index>.avaxLiquidStakerRewardAmt
@@ -60,6 +61,7 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	// Not used for storage, just for returning data from view functions
 	struct Minipool {
+		int256 index;
 		address nodeID;
 		uint256 status;
 		uint256 duration;
@@ -72,6 +74,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		uint256 avaxTotalRewardAmt;
 		uint256 avaxNodeOpRewardAmt;
 		uint256 avaxLiquidStakerRewardAmt;
+		bytes32 errorCode;
 		address owner;
 		address multisigAddr;
 		bytes32 txID;
@@ -213,19 +216,13 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	// TODO This forces a minipool into a specific state. Do we need this? For tests? For guardian?
 	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external {
-		int256 index = getIndexOf(nodeID);
-		if (index == -1) {
-			revert MinipoolNotFound();
-		}
+		int256 index = requireValidMinipool(nodeID);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
 
 	// Node op calls this to withdraw all AVAX funds they are due (orig, plus any rewards)
 	function withdrawMinipoolFunds(address nodeID) external {
-		int256 index = getIndexOf(nodeID);
-		if (index == -1) {
-			revert MinipoolNotFound();
-		}
+		int256 index = requireValidMinipool(nodeID);
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 		if (msg.sender != owner) {
 			revert OnlyOwnerCanWithdraw();
@@ -250,16 +247,10 @@ contract MinipoolManager is Base, IWithdrawer {
 		}
 	}
 
-	// Owner of a node can call this to cancel the minipool
+	// Owner of a node can call this to cancel the (prelaunch) minipool
 	// TODO Should DAO also be able to cancel? Or guardian? or Rialto?
-	// TODO Currently you cannot cancel a "launched" minipool, Rialto already took the funds,
-	// we need to build out the error process where Rialto can send funds back if necessary
-	// i.e. trying to validate an invalid nodeID or something
 	function cancelMinipool(address nodeID) external {
-		int256 index = getIndexOf(nodeID);
-		if (index == -1) {
-			revert MinipoolNotFound();
-		}
+		int256 index = requireValidMinipool(nodeID);
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 		if (msg.sender != owner) {
 			revert OnlyOwnerCanCancel();
@@ -432,10 +423,37 @@ contract MinipoolManager is Base, IWithdrawer {
 		return (avaxAmt.mulWadDown(rate) * duration) / 365 days;
 	}
 
-	// Rialto was for some reason unable to start the validation period, so cancel and refund all monies?
-	// Should prob be payable and send all funds back to here?
-	function recordStakingError(address nodeID, string calldata message) external {
-		// TODO
+	// Rialto was for some reason unable to start the validation period, so cancel and refund all monies
+	// TODO
+	function recordStakingError(address nodeID, bytes32 errorCode) external payable {
+		int256 index = requireValidMultisig(nodeID);
+		requireValidStateTransition(index, MinipoolStatus.Error);
+
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
+		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")));
+
+		if (msg.value != (avaxNodeOpAmt + avaxLiquidStakerAmt)) {
+			revert InvalidAmount();
+		}
+
+		Vault vault = Vault(getContractAddress("Vault"));
+		Staking staking = Staking(getContractAddress("Staking"));
+
+		setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".errorCode")), errorCode);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(MinipoolStatus.Error));
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerRewardAmt")), 0);
+
+		// Send the nodeOps AVAX to vault so they can claim later
+		vault.depositAvax{value: avaxNodeOpAmt}();
+		// Return Liq stakers funds
+		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt}(avaxLiquidStakerAmt, 0);
+		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
+		decreaseTotalAvaxLiquidStakerAmt(avaxLiquidStakerAmt);
+
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Error);
 	}
 
 	// The index of an item
@@ -445,6 +463,7 @@ contract MinipoolManager is Base, IWithdrawer {
 	}
 
 	function getMinipool(int256 index) public view returns (Minipool memory mp) {
+		mp.index = index;
 		mp.nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
 		mp.status = getUint(keccak256(abi.encodePacked("minipool.item", index, ".status")));
 		mp.duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
@@ -460,6 +479,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		mp.avaxLiquidStakerRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerRewardAmt")));
 		mp.multisigAddr = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
 		mp.owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
+		mp.errorCode = getBytes32(keccak256(abi.encodePacked("minipool.item", index, ".errorCode")));
 	}
 
 	// Get minipools in a certain status (limit=0 means no pagination)
@@ -493,12 +513,19 @@ contract MinipoolManager is Base, IWithdrawer {
 		return getUint(keccak256("minipool.count"));
 	}
 
-	// Returns index of a minipool only if msg.sender is assigned to it
-	function requireValidMultisig(address nodeID) private view returns (int256) {
+	/// @dev Returns index of a minipool or reverts if nodeID is not found
+	function requireValidMinipool(address nodeID) private view returns (int256) {
 		int256 index = getIndexOf(nodeID);
 		if (index == -1) {
 			revert MinipoolNotFound();
 		}
+
+		return index;
+	}
+
+	/// @dev Returns index of a minipool only if nodeID exists and msg.sender is assigned to it. Reverts otherwise.
+	function requireValidMultisig(address nodeID) private view returns (int256) {
+		int256 index = requireValidMinipool(nodeID);
 
 		address assignedMultisig = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".multisigAddr")));
 		if (msg.sender != assignedMultisig) {
@@ -507,7 +534,8 @@ contract MinipoolManager is Base, IWithdrawer {
 		return index;
 	}
 
-	// TODO how to handle error when Rialto is issuing validation tx? error status? or set to withdrawable with an error note or something?
+	/// @param index A valid minipool index
+	/// @param to The status we are trying to move to
 	function requireValidStateTransition(int256 index, MinipoolStatus to) private view {
 		bytes32 statusKey = keccak256(abi.encodePacked("minipool.item", index, ".status"));
 		MinipoolStatus currentStatus = MinipoolStatus(getUint(statusKey));
@@ -521,8 +549,8 @@ contract MinipoolManager is Base, IWithdrawer {
 			isValid = (to == MinipoolStatus.Withdrawable);
 		} else if (currentStatus == MinipoolStatus.Withdrawable) {
 			isValid = (to == MinipoolStatus.Finished);
-		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
-			// Once a node is finished or canceled, if they re-validate they go back to beginning state
+		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled || currentStatus == MinipoolStatus.Error) {
+			// Once a node is finished/canceled/errored, if they re-validate they go back to beginning state
 			isValid = (to == MinipoolStatus.Prelaunch);
 		} else {
 			isValid = false;
