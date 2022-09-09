@@ -13,6 +13,7 @@ const {
 	nodeID,
 	nodeHexToID,
 } = require("./lib/utils");
+const { writeFile } = require("node:fs/promises");
 
 task(
 	"debug:setup",
@@ -222,6 +223,22 @@ task(
 			log("error", e);
 		}
 	}
+
+	// Write out the deployed addresses to a format easily loaded by bash for use by cast
+	let data = "declare -A addrs=(";
+	for (const name in addrs) {
+		data = data + `[${name}]="${addrs[name]}" `;
+	}
+	data = data + ")";
+	await writeFile(`cache/deployed_addrs_${network.name}.bash`, data);
+
+	// Write out the deployed addrs to a format easily loaded by javascript
+	data = `module.exports = ${JSON.stringify(addrs, null, 2)}`;
+	await writeFile(`cache/deployed_addrs_${network.name}.js`, data);
+
+	// Write out the deployed addrs to json (used by Rialto during dev)
+	data = JSON.stringify(addrs, null, 2);
+	await writeFile(`cache/deployed_addrs_${network.name}.json`, data);
 });
 
 task("debug:node_ids")
