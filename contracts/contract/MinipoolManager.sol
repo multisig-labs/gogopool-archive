@@ -258,6 +258,13 @@ contract MinipoolManager is Base, IWithdrawer {
 		_cancelMinipoolAndReturnFunds(nodeID, index);
 	}
 
+	// Multisig can cancel a minipool if a problem was encountered *before* claimAndInitiateStaking() was called
+	function cancelMinipoolByMultisig(address nodeID, bytes32 errorCode) external {
+		int256 index = requireValidMultisig(nodeID);
+		setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".errorCode")), errorCode);
+		_cancelMinipoolAndReturnFunds(nodeID, index);
+	}
+
 	// This func could be called by owner or maybe guardian/DAO/etc
 	// NOTE At this point we dont have any liq staker funds withdrawn from ggAVAX so no need to return them
 	function _cancelMinipoolAndReturnFunds(address nodeID, int256 index) private {
@@ -570,5 +577,6 @@ contract MinipoolManager is Base, IWithdrawer {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), 0);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerRewardAmt")), 0);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")), 0);
+		setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".errorCode")), 0);
 	}
 }
