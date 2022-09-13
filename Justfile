@@ -21,6 +21,7 @@ install:
 clean:
 	npx hardhat clean
 	forge clean
+	rm -rf .openzeppelin
 
 # Compile the project with hardhat
 compile:
