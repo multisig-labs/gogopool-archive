@@ -94,10 +94,11 @@ task("debug:topup_actor_balance")
 		const desiredBalAVAX = ethers.utils.parseEther(amt, "ether");
 		if (balAVAX.lt(desiredBalAVAX)) {
 			log(`Topping up ${actor}`);
-			await signer.sendTransaction({
+			const tx = await signer.sendTransaction({
 				to: a.address,
 				value: desiredBalAVAX.sub(balAVAX),
 			});
+			logtx(tx);
 		}
 	});
 
@@ -117,8 +118,9 @@ task("debug:list_actor_balances").setAction(async () => {
 
 	log("");
 	logf(
-		"%-15s %-20s %-20s %-20s %-20s",
+		"%-10s %-42s %-20s %-20s %-20s %-20s",
 		"User",
+		"Address",
 		"AVAX",
 		"ggAVAX",
 		"equivAVAX",
@@ -130,8 +132,9 @@ task("debug:list_actor_balances").setAction(async () => {
 		const balEQAVAX = await ggAVAX.previewRedeem(balGGAVAX);
 		const balGGP = await ggp.balanceOf(actors[actor].address);
 		logf(
-			"%-15s %-20.5f %-20.5f %-20.5f %-20.5f",
+			"%-10s %-42s %-20.5f %-20.5f %-20.5f %-20.5f",
 			actor,
+			actors[actor].address,
 			hre.ethers.utils.formatUnits(balAVAX),
 			hre.ethers.utils.formatUnits(balGGAVAX),
 			hre.ethers.utils.formatUnits(balEQAVAX),

@@ -95,11 +95,13 @@ task("ggp:deal")
 		recip = (await getNamedAccounts())[recip];
 
 		const ggp = await get("TokenGGP");
-		await ggp.transfer(recip.address, amt);
+		let tx = await ggp.transfer(recip.address, amt);
+		logtx(tx);
 
 		const minipoolManager = await get("MinipoolManager");
 		const ggpAsRecip = await get("TokenGGP", recip);
-		await ggpAsRecip.approve(minipoolManager.address, amt);
+		tx = await ggpAsRecip.approve(minipoolManager.address, amt);
+		logtx(tx);
 	});
 
 task("ggp:balance_of")
