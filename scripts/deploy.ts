@@ -1,6 +1,7 @@
 import "@openzeppelin/hardhat-upgrades";
 import { ethers, upgrades, network } from "hardhat";
 import { writeFile } from "node:fs/promises";
+import * as fs from "fs";
 
 const { getNamedAccounts } = require("../tasks/lib/utils");
 
@@ -9,7 +10,13 @@ const { getNamedAccounts } = require("../tasks/lib/utils");
 
 type IFU = { [key: string]: any };
 
+if (
+	!fs.existsSync(`cache/deployed_addrs_${process.env.HARDHAT_NETWORK}.json`)
+) {
+	throw new Error("You need to run 'deploy-base' first!");
+}
 const addresses = require(`../cache/deployed_addrs_${process.env.HARDHAT_NETWORK}`);
+
 const instances: IFU = {};
 
 // ContractName: [constructorArgs...]

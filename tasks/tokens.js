@@ -14,27 +14,29 @@ task("ggavax:sync_rewards", "")
 
 task("ggavax:liqstaker_deposit_avax")
 	.addParam("actor", "")
-	.addParam("amt", "")
+	.addParam("amt", "", 0, types.int)
 	.setAction(async ({ actor, amt }) => {
 		const addr = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", addr);
 		tx = await ggAVAX.depositAVAX({
 			...overrides,
-			value: ethers.utils.parseEther(amt, "ether"),
+			value: ethers.utils.parseEther(amt.toString()),
 		});
 		logtx(tx);
 	});
 
 task("ggavax:liqstaker_redeem_ggavax")
 	.addParam("actor", "")
-	.addParam("amt", "")
+	.addParam("amt", "", 0, types.int)
 	.setAction(async ({ actor, amt }) => {
 		const addr = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", addr);
-		const avaxAmt = await ggAVAX.previewRedeem(ethers.utils.parseEther(amt));
+		const avaxAmt = await ggAVAX.previewRedeem(
+			ethers.utils.parseEther(amt.toString())
+		);
 		console.log(`redeeming for ${ethers.utils.formatUnits(avaxAmt)} avax`);
 		tx = await ggAVAX.redeemAVAX(
-			ethers.utils.parseEther(amt, "ether"),
+			ethers.utils.parseEther(amt.toString()),
 			overrides
 		);
 		logtx(tx);
@@ -66,17 +68,17 @@ task("ggavax:balance", "Balance of ggAVAX contract").setAction(async () => {
 });
 
 task("ggavax:preview_withdraw", "Preview shares -> assets && assets -> shares")
-	.addParam("amt", "amount to preview")
+	.addParam("amt", "amount to preview", 0, types.int)
 	.setAction(async ({ amt }) => {
 		const ggAVAX = await get("TokenggAVAX");
 
 		const redeemPreview = await ggAVAX.previewRedeem(
-			ethers.utils.parseEther(amt)
+			ethers.utils.parseEther(amt.toString())
 		);
 		console.log("shares -> assets", ethers.utils.formatUnits(redeemPreview));
 
 		const withdrawPreview = await ggAVAX.previewWithdraw(
-			ethers.utils.parseEther(amt)
+			ethers.utils.parseEther(amt.toString())
 		);
 		console.log("assets -> shares", ethers.utils.formatUnits(withdrawPreview));
 	});
@@ -89,9 +91,9 @@ task("wavax:balance", "Balance of WAVAX contract").setAction(async () => {
 
 task("ggp:deal")
 	.addParam("recip", "")
-	.addParam("amt", "")
+	.addParam("amt", "", 0, types.int)
 	.setAction(async ({ recip, amt }) => {
-		amt = ethers.utils.parseEther(amt, "ether");
+		amt = ethers.utils.parseEther(amt.toString());
 		recip = (await getNamedAccounts())[recip];
 
 		const ggp = await get("TokenGGP");

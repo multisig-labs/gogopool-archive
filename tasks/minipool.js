@@ -230,9 +230,9 @@ task("minipool:withdrawMinipoolFunds", "")
 
 task("minipool:expected_reward", "")
 	.addParam("duration", "duration of validation period")
-	.addParam("amt", "AVAX amount")
+	.addParam("amt", "AVAX amount", 0, types.int)
 	.setAction(async ({ duration, amt }) => {
-		parsedAmt = ethers.utils.parseEther(amt, "ether");
+		parsedAmt = ethers.utils.parseEther(amt.toString());
 		parsedDuration = parseDelta(duration);
 		const minipoolManager = await get("MinipoolManager");
 		const expectedAmt = await minipoolManager.expectedRewardAmt(
@@ -247,9 +247,9 @@ task("minipool:expected_reward", "")
 	});
 
 task("minipool:calculate_slash", "")
-	.addParam("amt", "Expected AVAX reward amount")
+	.addParam("amt", "Expected AVAX reward amount", 0, types.int)
 	.setAction(async ({ amt }) => {
-		parsedAmt = ethers.utils.parseEther(amt, "ether");
+		parsedAmt = ethers.utils.parseEther(amt.toString());
 		console.log(parsedAmt);
 		const minipoolManager = await get("MinipoolManager");
 		const slashAmt = await minipoolManager.calculateSlashAmt(parsedAmt);

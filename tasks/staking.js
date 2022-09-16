@@ -50,13 +50,16 @@ task("staking:get_user_min_stake", "Minimum GGP stake required for actor")
 
 task("staking:stake_ggp", "Stake ggp for actor")
 	.addParam("actor", "Account used to send tx")
-	.addParam("amt", "Amount of ggp to stake")
+	.addParam("amt", "Amount of ggp to stake", 0, types.int)
 	.setAction(async ({ actor, amt }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const staking = await get("Staking", signer);
 		const ggp = await get("TokenGGP", signer);
-		let tx = await ggp.approve(staking.address, ethers.utils.parseEther(amt));
+		let tx = await ggp.approve(
+			staking.address,
+			ethers.utils.parseEther(amt.toString())
+		);
 		await tx.wait();
-		tx = await staking.stakeGGP(ethers.utils.parseEther(amt));
+		tx = await staking.stakeGGP(ethers.utils.parseEther(amt.toString()));
 		await tx.wait();
 	});

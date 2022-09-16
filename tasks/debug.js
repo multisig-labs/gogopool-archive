@@ -19,7 +19,6 @@ task(
 	"debug:setup",
 	"Run after a local deploy to init necessary configs"
 ).setAction(async () => {
-	log("ProtocolDAO initialize()");
 	const dao = await get("ProtocolDAO");
 	const oneinch = await get("OneInchMock");
 	await dao.initialize();
@@ -28,6 +27,13 @@ task(
 		addr: oneinch.address,
 	});
 	await hre.run("multisig:register", { name: "rialto1" });
+	await hre.run("debug:topup_actor_balances", { amt: 20000 });
+	await hre.run("ggavax:liqstaker_deposit_avax", {
+		actor: "alice",
+		amt: 10000,
+	});
+	await hre.run("ggavax:liqstaker_deposit_avax", { actor: "bob", amt: 10000 });
+	await hre.run("ggp:deal", { recip: "nodeOp1", amt: 10000 });
 });
 
 task(
@@ -85,13 +91,13 @@ task("debug:skip", "Skip forward a duration")
 
 task("debug:topup_actor_balance")
 	.addParam("actor", "")
-	.addParam("amt", "")
+	.addParam("amt", "", 0, types.int)
 	.setAction(async ({ actor, amt }) => {
 		const actors = await getNamedAccounts();
 		const signer = actors.deployer;
 		const a = actors[actor];
 		const balAVAX = await hre.ethers.provider.getBalance(a.address);
-		const desiredBalAVAX = ethers.utils.parseEther(amt, "ether");
+		const desiredBalAVAX = ethers.utils.parseEther(amt.toString());
 		if (balAVAX.lt(desiredBalAVAX)) {
 			log(`Topping up ${actor}`);
 			const tx = await signer.sendTransaction({
@@ -103,7 +109,7 @@ task("debug:topup_actor_balance")
 	});
 
 task("debug:topup_actor_balances")
-	.addParam("amt", "")
+	.addParam("amt", "", 0, types.int)
 	.setAction(async ({ amt }) => {
 		const actors = await getNamedAccounts();
 		for (actor in actors) {

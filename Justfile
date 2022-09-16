@@ -66,11 +66,6 @@ setup-evm:
 	just deploy-base
 	just deploy
 	just task debug:setup
-	just task debug:topup_actor_balances --amt 20000
-	@sleep 2
-	just task ggp:deal --recip nodeOp1 --amt 10000
-	just task ggavax:liqstaker_deposit_avax --actor alice --amt 10000
-	just task ggavax:liqstaker_deposit_avax --actor bob --amt 10000
 
 # Having these recipies named the same as the ones in the anr repo makes copypasta of scenarios easier
 # Run a hardhat task (or list all available tasks)
