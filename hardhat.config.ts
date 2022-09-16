@@ -44,7 +44,12 @@ const config: HardhatUserConfig = {
 	},
 	defaultNetwork: "localhost",
 	networks: {
-		hardhat: {},
+		hardhat: {
+			accounts: {
+				mnemonic: process.env.MNEMONIC || "MISSING ENV MNEMONIC!",
+				accountsBalance: "1000000000000000000000000",
+			},
+		},
 		custom: {
 			url: `${process.env.ETH_RPC_URL}/ext/bc/C/rpc`,
 			gasPrice: 225000000000,

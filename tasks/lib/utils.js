@@ -5,20 +5,6 @@ const ms = require("ms");
 // Take NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 and return 0xF29Bce5F34a74301eB0dE716d5194E4a4aEA5d7A
 const { BinTools } = require("avalanche");
 const bintools = BinTools.getInstance();
-const nodeIDToHex = (pk) => {
-	if (!pk.startsWith("NodeID-")) {
-		throw new Error("Error: nodeID must start with 'NodeID-'");
-	}
-	const pksplit = pk.split("-");
-	buff = bintools.cb58Decode(pksplit[pksplit.length - 1]);
-	return ethers.utils.getAddress(ethers.utils.hexlify(buff));
-};
-
-// Take 0xF29Bce5F34a74301eB0dE716d5194E4a4aEA5d7A and return NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5
-const nodeHexToID = (h) => {
-	b = ethers.utils.arrayify(ethers.utils.getAddress(h));
-	return `NodeID-${bintools.cb58Encode(b)}`;
-};
 
 const PAGE_SIZE = 2;
 
@@ -35,7 +21,34 @@ const NAMED_ACCOUNTS = [
 	"rialto1",
 	"rialto2",
 	"rialto",
+	"mev1",
 ];
+
+const nodeIDToHex = (pk) => {
+	if (!pk.startsWith("NodeID-")) {
+		throw new Error("Error: nodeID must start with 'NodeID-'");
+	}
+	const pksplit = pk.split("-");
+	buff = bintools.cb58Decode(pksplit[pksplit.length - 1]);
+	return ethers.utils.getAddress(ethers.utils.hexlify(buff));
+};
+
+// Take 0xF29Bce5F34a74301eB0dE716d5194E4a4aEA5d7A and return NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5
+const nodeHexToID = (h) => {
+	b = ethers.utils.arrayify(ethers.utils.getAddress(h));
+	return `NodeID-${bintools.cb58Encode(b)}`;
+};
+
+// Actual nodeID (in hex) or random addresses to use for nodeIDs
+const nodeID = (seed) => {
+	if (seed.startsWith("NodeID-")) {
+		return nodeIDToHex(seed);
+	} else if (seed.startsWith("0x")) {
+		return ethers.utils.getAddress(seed);
+	} else {
+		return emptyWallet(seed).address;
+	}
+};
 
 const log = (...args) => console.log(...args);
 const logf = (...args) => console.log(sprintf(...args));
@@ -59,17 +72,6 @@ try {
 		}.js`
 	);
 }
-
-// Actual nodeID or random addresses to use for nodeIDs
-const nodeID = (seed) => {
-	if (seed.startsWith("NodeID-")) {
-		return nodeIDToHex(seed);
-	} else if (seed.startsWith("0x")) {
-		return ethers.utils.getAddress(seed);
-	} else {
-		return emptyWallet(seed).address;
-	}
-};
 
 const emptyWallet = (seed) => {
 	const pk = randomBytes(seed, 32);

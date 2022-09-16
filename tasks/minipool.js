@@ -30,32 +30,6 @@ task("minipool:list_claimable", "List all claimable minipools")
 		logMinipools(minipools);
 	});
 
-// task("minipool:queue", "List all minipools in the queue").setAction(
-// 	async () => {
-// 		const MINIPOOL_QUEUE_KEY = hash(["string"], ["minipoolQueue"]);
-
-// 		const storage = await get("Storage");
-// 		const start = await storage.getUint(
-// 			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".start"])
-// 		);
-// 		const end = await storage.getUint(
-// 			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".end"])
-// 		);
-// 		const minipoolQueue = await get("BaseQueue");
-// 		const len = await minipoolQueue.getLength(MINIPOOL_QUEUE_KEY);
-// 		log(`Queue start: ${start}  end: ${end}  len: ${len}`);
-// 		for (let i = start; i < end; i++) {
-// 			try {
-// 				const nodeID = await minipoolQueue.getItem(MINIPOOL_QUEUE_KEY, i);
-// 				if (nodeID === hre.ethers.constants.AddressZero) break;
-// 				log(`[${i}] ${nodeID}`);
-// 			} catch (e) {
-// 				log("error", e);
-// 			}
-// 		}
-// 	}
-// );
-
 task("minipool:create", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "Real NodeID or name to use as a random seed")
@@ -110,12 +84,13 @@ task("minipool:cancel", "")
 task("minipool:can_claim", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID name", "")
-	.addParam("nodeaddr", "NodeID address", "")
-	.setAction(async ({ actor, node, nodeaddr }) => {
+	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		const n = node === "" ? nodeaddr : nodeID(node);
-		const res = await minipoolManager.canClaimAndInitiateStaking(n, overrides);
+		const res = await minipoolManager.canClaimAndInitiateStaking(
+			nodeID(node),
+			overrides
+		);
 		log(`Can claim ${node}: ${res}`);
 	});
 
@@ -157,13 +132,20 @@ task("minipool:claim_one", "")
 	.setAction(async ({ actor, node }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
-		let tx = await minipoolManager.callStatic.claimAndInitiateStaking(
+		const canClaim = await minipoolManager.canClaimAndInitiateStaking(
 			nodeID(node),
 			overrides
 		);
-		tx = await minipoolManager.claimAndInitiateStaking(nodeID(node), overrides);
-		await logtx(tx);
-		log(`Minipool claimed for ${node}`);
+		if (canClaim) {
+			tx = await minipoolManager.claimAndInitiateStaking(
+				nodeID(node),
+				overrides
+			);
+			await logtx(tx);
+			log(`Minipool claimed for ${node}`);
+		} else {
+			log("canClaimAndInitiateStaking returned false");
+		}
 	});
 
 task("minipool:recordStakingStart", "")
@@ -197,26 +179,27 @@ task("minipool:recordStakingStart", "")
 
 task("minipool:recordStakingEnd", "")
 	.addParam("actor", "Account used to send tx")
-	.addParam("node", "NodeID name")
+	.addParam("node", "NodeID")
 	.addParam("reward", "AVAX Reward amount", 0, types.int)
 	.setAction(async ({ actor, node, reward }) => {
+		reward = hre.ethers.utils.parseEther(reward.toString());
 		const signer = (await getNamedAccounts())[actor];
 		const minipoolManager = await get("MinipoolManager", signer);
 		const i = await minipoolManager.getIndexOf(nodeID(node));
 		const mp = await minipoolManager.getMinipool(i);
 		const end = mp.startTime.add(mp.duration);
+		const avax = mp.avaxNodeOpAmt.add(mp.avaxLiquidStakerAmt);
 
-		const avax = mp.avaxNodeOpAmt.add(mp.avaxUserAmt);
-
-		reward = hre.ethers.utils.parseEther(reward.toString());
 		// Send rialto the reward funds from some other address to simulate Avalanche rewards,
 		// so we can see rialtos actual balance
 		const rewarder = (await getNamedAccounts()).rewarder;
-		let tx = {
+		const sendTx = {
 			to: signer.address,
 			value: reward,
 		};
-		await rewarder.sendTransaction(tx);
+		tx = await rewarder.sendTransaction(sendTx);
+		await logtx(tx);
+
 		total = avax.add(reward);
 
 		tx = await minipoolManager.callStatic.recordStakingEnd(
@@ -276,3 +259,29 @@ task("minipool:calculate_slash", "")
 			)} GGP at current prices`
 		);
 	});
+
+// task("minipool:queue", "List all minipools in the queue").setAction(
+// 	async () => {
+// 		const MINIPOOL_QUEUE_KEY = hash(["string"], ["minipoolQueue"]);
+
+// 		const storage = await get("Storage");
+// 		const start = await storage.getUint(
+// 			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".start"])
+// 		);
+// 		const end = await storage.getUint(
+// 			hash(["bytes32", "string"], [MINIPOOL_QUEUE_KEY, ".end"])
+// 		);
+// 		const minipoolQueue = await get("BaseQueue");
+// 		const len = await minipoolQueue.getLength(MINIPOOL_QUEUE_KEY);
+// 		log(`Queue start: ${start}  end: ${end}  len: ${len}`);
+// 		for (let i = start; i < end; i++) {
+// 			try {
+// 				const nodeID = await minipoolQueue.getItem(MINIPOOL_QUEUE_KEY, i);
+// 				if (nodeID === hre.ethers.constants.AddressZero) break;
+// 				log(`[${i}] ${nodeID}`);
+// 			} catch (e) {
+// 				log("error", e);
+// 			}
+// 		}
+// 	}
+// );

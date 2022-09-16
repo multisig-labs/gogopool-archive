@@ -30,19 +30,18 @@ compile:
 # Clean and compile the project
 build: clean compile
 
-# Deploy base contracts to HARDHAT_NETWORK (localhost,custom,fuji)
-deploy-base:
-	@if curl --connect-timeout 2 {{ETH_RPC_URL}} >/dev/null 2>&1; then echo "ETH_RPC_URL={{ETH_RPC_URL}}"; else echo 'No server at ETH_RPC_URL!' && exit 1; fi
+# Deploy base contracts to HARDHAT_NETWORK
+deploy-base: (_ping ETH_RPC_URL)
 	npx hardhat run --network {{HARDHAT_NETWORK}} scripts/deploy-base.ts
 
-# Deploy non-base contracts to HARDHAT_NETWORK (localhost,custom,fuji)
-deploy contracts="":
-	@if curl --connect-timeout 2 {{ETH_RPC_URL}} >/dev/null 2>&1; then echo "ETH_RPC_URL={{ETH_RPC_URL}}"; else echo 'No server at ETH_RPC_URL!' && exit 1; fi
+# Deploy non-base contracts to HARDHAT_NETWORK
+deploy contracts="": (_ping ETH_RPC_URL)
 	DEPLOY_CONTRACTS="{{contracts}}" npx hardhat run --network {{HARDHAT_NETWORK}} scripts/deploy.ts
 
+# HARDHAT_NETWORK should be "localhost" for tasks, but must be "hardhat" when starting the node
 # Start a local hardhat EVM node
 node:
-	npx hardhat node
+	HARDHAT_NETWORK=hardhat npx hardhat node
 
 # Run all tests (hh/forge)
 test: test-forge test-hh
@@ -61,8 +60,25 @@ test-forge-watch contract="." test="." *flags="":
 test-hh:
 	npx hardhat test --network hardhat
 
-# Run cast command
+# Deploy contracts and init actors to a fresh EVM
+setup-evm:
+	just clean
+	just deploy-base
+	just deploy
+	just contracts-task debug:setup
+	just contracts-task debug:topup_actor_balances --amt 20000
+	@sleep 2
+	just contracts-task ggp:deal --recip nodeOp1 --amt 10000
+	just contracts-task ggavax:liqstaker_deposit_avax --actor alice --amt 10000
+	just contracts-task ggavax:liqstaker_deposit_avax --actor bob --amt 10000
+
+# Having these recipies named the same as the ones in the anr repo makes copypasta of scenarios easier
+# Run a hardhat task
+contracts-task *cmd:
+	npx hardhat {{cmd}}
+
 # just cast send MultisigManager "registerMultisig(address)" 0xf39f...
+# Run cast command
 cast cmd contractName sig *args:
 	#!/usr/bin/env bash
 	source -- "cache/deployed_addrs_${HARDHAT_NETWORK:-localhost}.bash"
@@ -122,5 +138,6 @@ doctor:
 	echo "forge ok"
 
 # Im a recipie that doesnt show up in the default list
-_secret:
-	echo "Go Go Gadget Justfile!"
+# Check if there is an http(s) server lisening on [url]
+_ping url:
+	@if ! curl -k --silent --connect-timeout 2 {{url}} >/dev/null 2>&1; then echo 'No server at {{url}}!' && exit 1; fi

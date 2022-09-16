@@ -61,11 +61,12 @@ const deploy = async () => {
 		const C = await ethers.getContractFactory(contract, deployer);
 		let c;
 		if (deployAsProxy.includes(contract)) {
+			// TODO need to use upgrades.upgradeProxy here if it has already been deployed.
+			// TODO How to track deployments in prod? Make a /deployments dir and check it in?
 			c = await upgrades.deployProxy(C, [...args]);
 		} else {
 			c = await C.deploy(...args);
 		}
-
 		const inst = await c.deployed();
 		instances[contract] = inst;
 		addresses[contract] = c.address;

@@ -4,291 +4,63 @@ Scratchpad for easily running hardhat tasks.
 
 In VSCode, set a keyboard shortcut for `workbench.action.terminal.runSelectedText` (I used F2) then put the cursor on the line you want to run and hit the shortcut key.
 
-### List all tasks with docs
 
-```
-npx hardhat
-```
+```sh
+# List all tasks with docs
+just contracts-task
+# Help is avail for each task
+just contracts-task help minipool:create
 
-### Select hardhat network
 
-```
-export HARDHAT_NETWORK=hardhat
-export ETH_RPC_URL=http://127.0.0.1:8545
-```
-
-### Select anr network (custom)
-
-Make sure you have ANR running locally. Instructions can be found in the ANR repo here: https://github.com/multisig-labs/anr
-
-```
-export HARDHAT_NETWORK=custom
-export ETH_RPC_URL=`curl --silent -X POST -k http://localhost:8081/v1/control/uris -d '' | jq -j '.uris | .[0]'`
-export RIALTO=`curl --silent -X GET -k https://127.0.0.1:7400/info -H "Authorization: Bearer sekret" | jq -j '.CChainAddr'`
-```
-
-### Start a node in a terminal, then set it up with this:
-
-If using ANR skip the node command:
-
-```
+# Select hardhat node
+export HARDHAT_NETWORK=localhost # DO NOT use hardhat
+export ETH_RPC_URL=http://localhost:8545
 just node
-```
 
-```
-npx hardhat debug:setup_anr_accounts
-just deploy-base
-just deploy
-npx hardhat debug:setup
-```
-
-### Commands
-
-```
-npx hardhat debug:list_contracts
-npx hardhat debug:list_vars
-npx hardhat debug:list_actor_balances
-npx hardhat debug:topup_actor_balance --actor rialto --amt 10000
-npx hardhat debug:topup_actor_balance --actor alice --amt 10000
-npx hardhat debug:topup_actor_balance --actor bob --amt 1000
-npx hardhat debug:topup_actor_balance --actor nodeOp1 --amt 10000
-npx hardhat debug:topup_actor_balance --actor rewarder --amt 10000
-npx hardhat debug:skip --duration 14d
-npx hardhat mine
-```
-
-```
-npx hardhat multisig:list
-npx hardhat multisig:disable --addr 0x78A23300E04FB5d5D2820E23cc679738982e1fd5
-npx hardhat multisig:register --addr 0xB654A60A22b9c307B4a0B8C200CdB75A78c4187c
-npx hardhat debug:topup_actor_balance --actor rialto --amt 10000 &
-
-```
-npx hardhat minipool:list
-npx hardhat minipool:list_claimable --actor rialto
-npx hardhat minipool:can_claim --nodeaddr 0xfFea5e64F3818859d75b26050C094e40C4783884 --actor rialto
-npx hardhat minipool:claim --nodeaddr 0xfFea5e64F3818859d75b26050C094e40C4783884 --actor rialto
-npx hardhat minipool:calculate_slash --amt 1000
-npx hardhat minipool:cancel --actor nodeOp1 --node node1
-npx hardhat minipool:expected_reward --duration 14d --amt 1000
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node1
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node1 --reward 300
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node1
-npx hardhat ggp:deal --recip nodeOp1 --amt 10000
-npx hardhat ggavax:liqstaker_deposit_avax --actor alice --amt 2000
-npx hardhat ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000
-npx hardhat ggavax:sync_rewards --actor rialto1
-npx hardhat oracle:get_ggp
-npx hardhat oracle:set_ggp --price 2 --timestamp 0
-npx hardhat oracle:set_ggp --price 1 --interval 1d
-npx hardhat oracle:get_ggp_price_oneinch
-npx hardhat oracle:set_ggp_price_oneinch --price 1.1
-npx hardhat vault:list
-```
-
-### This is a full cycle
-
+# Select ANR network (custom)
+Make sure you have ANR running locally. Instructions can be found in the ANR repo here: https://github.com/multisig-labs/anr
 export HARDHAT_NETWORK=custom
-export ETH_RPC_URL=`curl --silent -X POST -k http://localhost:8081/v1/control/uris -d '' | jq -j '.uris | .[0]'`
+export ETH_RPC_URL=http://localhost:8545
 
-```
-just deploy-base
-just deploy
-npx hardhat debug:list_contracts
-npx hardhat debug:setup
+# Commands
 
-npx hardhat multisig:list
-npx hardhat multisig:disable --addr 0x78A23300E04FB5d5D2820E23cc679738982e1fd5
-npx hardhat multisig:register --addr 0xB654A60A22b9c307B4a0B8C200CdB75A78c4187c
-npx hardhat debug:topup_actor_balance --actor rialto --amt 10000 &
+# TODO Make sure there are examples of every task in this list
 
-```
-npx hardhat debug:topup_actor_balance --actor alice --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor bob --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor cam --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor nodeOp1 --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor nodeOp2 --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor rialto1 --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor rialto2 --amt 10000 &
-npx hardhat debug:topup_actor_balance --actor rewarder --amt 10000 &
-npx hardhat ggp:deal --recip nodeOp1 --amt 800 &
-```
-
-```
-npx hardhat debug:list_actor_balances
-```
-
-```
-npx hardhat staking:get_ggp --actor nodeOp1 --amt 500
-npx hardhat staking:stake_ggp --actor nodeOp1 --ggp 500
-
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node1 --reward 0 &
-npx hardhat minipool:create --actor nodeOp1 --node NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 --duration 5m --avax 1000 &
-npx hardhat minipool:create --actor nodeOp1 --node node2 --duration 4m &
-npx hardhat minipool:create --actor nodeOp1 --node node3 --duration 3m &
-npx hardhat minipool:create --actor nodeOp1 --node node4 --duration 2m &
-npx hardhat ggavax:liqstaker_deposit_avax --actor alice --amt 2000 &
-npx hardhat ggavax:liqstaker_deposit_avax --actor bob --amt 2000 &
-npx hardhat ggavax:available_staking
-```
-
-```
-npx hardhat minipool:list
-npx hardhat minipool:list_claimable --actor rialto1
-npx hardhat minipool:claim --actor rialto1
-```
-
-```
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node1 &
-npx hardhat minipool:recordStakingStart --actor rialto1 --node NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 &
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node2 &
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node3 &
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node4 &
-npx hardhat minipool:list
-```
-
-```
-npx hardhat debug:skip --duration 14d
-npx hardhat mine
-```
-
-```
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node1 --reward 0 &
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 --reward 300 &
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node2 --reward 300 &
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node3 --reward 300 &
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node4 --reward 300 &
-npx hardhat minipool:list
-```
-
-```
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node1 &
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 &
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node2 &
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node3 &
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node4 &
-```
-
-```
-npx hardhat debug:list_actor_balances
-```
-
-```
-npx hardhat ggavax:sync_rewards --actor rialto1
-npx hardhat debug:skip --duration 14d
-npx hardhat ggavax:sync_rewards --actor rialto1
-```
-
-```
-npx hardhat ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000 &
-npx hardhat ggavax:liqstaker_redeem_ggavax --actor bob --amt 1000 &
-```
-
-```
-npx hardhat debug:list_actor_balances
+just contracts-task debug:list_contracts
+just contracts-task debug:list_vars
+just contracts-task debug:list_actor_balances
+just contracts-task debug:topup_actor_balance --actor rialto --amt 10000
+just contracts-task debug:topup_actor_balance --actor alice --amt 10000
+just contracts-task debug:topup_actor_balance --actor bob --amt 1000
+just contracts-task debug:topup_actor_balance --actor nodeOp1 --amt 10000
+just contracts-task debug:topup_actor_balance --actor rewarder --amt 10000
+just contracts-task debug:skip --duration 14d
+just contracts-task mine
+just contracts-task multisig:list
+just contracts-task multisig:disable --name rialto1
+just contracts-task multisig:register --name rialto
+just contracts-task debug:topup_actor_balance --actor rialto --amt 10000
+just contracts-task minipool:list
+just contracts-task minipool:list_claimable --actor rialto
+just contracts-task minipool:can_claim --node 0xfFea5e64F3818859d75b26050C094e40C4783884 --actor rialto
+just contracts-task minipool:claim --node NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5 --actor rialto
+just contracts-task minipool:calculate_slash --amt 1000
+just contracts-task minipool:cancel --actor nodeOp1 --node node1
+just contracts-task minipool:expected_reward --duration 14d --amt 1000
+just contracts-task minipool:recordStakingStart --actor rialto1 --node node1
+just contracts-task minipool:recordStakingEnd --actor rialto1 --node node1 --reward 300
+just contracts-task minipool:withdrawMinipoolFunds --actor nodeOp1 --node node1
+just contracts-task ggp:deal --recip nodeOp1 --amt 10000
+just contracts-task ggavax:liqstaker_deposit_avax --actor alice --amt 2000
+just contracts-task ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000
+just contracts-task ggavax:sync_rewards --actor rialto1
+just contracts-task oracle:get_ggp
+just contracts-task oracle:set_ggp --price 2 --timestamp 0
+just contracts-task oracle:set_ggp --price 1 --interval 1d
+just contracts-task oracle:get_ggp_price_oneinch
+just contracts-task oracle:set_ggp_price_oneinch --price 1.1
+just contracts-task vault:list
 ```
 
 
-### Simple full test with two deposits and staking rewards
 
-```
-just deploy-base
-just deploy
-npx hardhat debug:list_contracts
-npx hardhat debug:setup
-
-npx hardhat multisig:list
-
-npx hardhat debug:list_actor_balances
-```
-
-
-```
-npx hardhat staking:get_ggp --actor nodeOp1 --amt 300 &
-npx hardhat staking:stake_ggp --actor nodeOp1 --ggp 300 &
-
-npx hardhat dao:set_ggavax_reserve --reserve 0 &
-npx hardhat ggavax:liqstaker_deposit_avax --actor alice --amt 2000 &
-npx hardhat ggavax:liqstaker_deposit_avax --actor bob --amt 1000 &
-
-
-npx hardhat minipool:create --actor nodeOp1 --node node2 --duration 4m &
-npx hardhat minipool:create --actor nodeOp1 --node node3 --duration 3m &
-npx hardhat minipool:create --actor nodeOp1 --node node4 --duration 2m &
-npx hardhat ggavax:available_for_staking
-```
-
-```
-npx hardhat minipool:list
-npx hardhat minipool:list_claimable --actor rialto1
-npx hardhat minipool:claim --actor rialto1
-npx hardhat ggavax:available_for_staking
-```
-
-----
-1. sync rewards
-2. skip forward
-3. sync rewards
-4. make sure total assets are still 0.
-5. preview withdraw
-
-```
-npx hardhat ggavax:sync_rewards --actor rialto1
-npx hardhat debug:skip --duration 14d
-npx hardhat ggavax:sync_rewards --actor rialto1
-npx hardhat ggavax:available_for_staking
-npx hardhat ggavax:total_assets
-npx hardhat ggavax:preview_withdraw --amt 2000
-```
-
-
-```
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node2 &
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node3 &
-npx hardhat minipool:recordStakingStart --actor rialto1 --node node4 &
-npx hardhat minipool:list
-```
-
-```
-npx hardhat debug:skip --duration 14d
-```
-
-```
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node2 --reward 300 &
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node3 --reward 300 &
-npx hardhat minipool:recordStakingEnd --actor rialto1 --node node4 --reward 300 &
-npx hardhat minipool:list
-
-```
-
-```
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node2 &
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node3 &
-npx hardhat minipool:withdrawMinipoolFunds --actor nodeOp1 --node node4 &
-```
-
-```
-npx hardhat debug:list_actor_balances
-```
-
-```
-npx hardhat ggavax:sync_rewards --actor rialto1
-npx hardhat debug:skip --duration 14d
-npx hardhat ggavax:sync_rewards --actor rialto1
-
-npx hardhat ggavax:preview_withdraw --amt 2000
-npx hardhat ggavax:preview_withdraw --amt 1000
-npx hardhat ggavax:total_assets
-
-npx hardhat wavax:balance
-npx hardhat ggavax:balance
-```
-
-```
-npx hardhat ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000 &
-npx hardhat ggavax:liqstaker_redeem_ggavax --actor bob --amt 1000 &
-```
-
-```
-npx hardhat debug:list_actor_balances
-```

@@ -18,14 +18,27 @@ Most commands used in the project are in the `Justfile`. To get a list of whats 
 
 ## Hardhat Deploy
 
-A deploy script `scripts/deploy-local.ts` can be used to deploy and register all of the GoGo contracts.
+A deploy scripts in `scripts/` can be used to deploy and register all of the GoGo contracts.
 
-`just deploy-local`
+`just deploy-base`
+`just deploy`
 
 ## Hardhat Tasks
 
 The `tasks` directory is automatically loaded, and all defined tasks can be run from the command line.
 
-`npx hardhat` will show you all the available tasks with a description
+`just contracts-task` will show you all the available tasks with a description
 
-`npx hardhat <taskname> <args>`
+`just contracts-task <taskname> <args>`
+
+`just contracts-task help <taskname>`
+
+## Debugging
+
+If you want to see into the matrix, you can say
+
+`export DEBUG="*"`
+
+before you run hardhat commands, and get detailed logs. To get just specific ones:
+
+`export DEBUG=@openzeppelin:*` or `export DEBUG=hardhat:*`
