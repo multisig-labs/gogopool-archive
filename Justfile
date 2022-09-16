@@ -65,16 +65,16 @@ setup-evm:
 	just clean
 	just deploy-base
 	just deploy
-	just contracts-task debug:setup
-	just contracts-task debug:topup_actor_balances --amt 20000
+	just task debug:setup
+	just task debug:topup_actor_balances --amt 20000
 	@sleep 2
-	just contracts-task ggp:deal --recip nodeOp1 --amt 10000
-	just contracts-task ggavax:liqstaker_deposit_avax --actor alice --amt 10000
-	just contracts-task ggavax:liqstaker_deposit_avax --actor bob --amt 10000
+	just task ggp:deal --recip nodeOp1 --amt 10000
+	just task ggavax:liqstaker_deposit_avax --actor alice --amt 10000
+	just task ggavax:liqstaker_deposit_avax --actor bob --amt 10000
 
 # Having these recipies named the same as the ones in the anr repo makes copypasta of scenarios easier
-# Run a hardhat task
-contracts-task *cmd:
+# Run a hardhat task (or list all available tasks)
+task *cmd:
 	npx hardhat {{cmd}}
 
 # just cast send MultisigManager "registerMultisig(address)" 0xf39f...

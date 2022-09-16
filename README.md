@@ -27,11 +27,11 @@ A deploy scripts in `scripts/` can be used to deploy and register all of the GoG
 
 The `tasks` directory is automatically loaded, and all defined tasks can be run from the command line.
 
-`just contracts-task` will show you all the available tasks with a description
+`just task` will show you all the available tasks with a description
 
-`just contracts-task <taskname> <args>`
+`just task <taskname> <args>`
 
-`just contracts-task help <taskname>`
+`just task help <taskname>`
 
 ## Debugging
 
