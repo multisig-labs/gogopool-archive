@@ -9,7 +9,7 @@ task("ggavax:sync_rewards", "")
 		const signer = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", signer);
 		tx = await ggAVAX.syncRewards();
-		logtx(tx);
+		await logtx(tx);
 	});
 
 task("ggavax:liqstaker_deposit_avax")
@@ -22,7 +22,7 @@ task("ggavax:liqstaker_deposit_avax")
 			...overrides,
 			value: ethers.utils.parseEther(amt.toString()),
 		});
-		logtx(tx);
+		await logtx(tx);
 	});
 
 task("ggavax:liqstaker_redeem_ggavax")
@@ -39,7 +39,7 @@ task("ggavax:liqstaker_redeem_ggavax")
 			ethers.utils.parseEther(amt.toString()),
 			overrides
 		);
-		logtx(tx);
+		await logtx(tx);
 	});
 
 task("ggavax:available_for_staking", "AVAX available for staking").setAction(
@@ -98,12 +98,12 @@ task("ggp:deal")
 
 		const ggp = await get("TokenGGP");
 		let tx = await ggp.transfer(recip.address, amt);
-		logtx(tx);
+		await logtx(tx);
 
 		const minipoolManager = await get("MinipoolManager");
 		const ggpAsRecip = await get("TokenGGP", recip);
 		tx = await ggpAsRecip.approve(minipoolManager.address, amt);
-		logtx(tx);
+		await logtx(tx);
 	});
 
 task("ggp:balance_of")

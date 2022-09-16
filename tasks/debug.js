@@ -27,7 +27,7 @@ task(
 		addr: oneinch.address,
 	});
 	await hre.run("multisig:register", { name: "rialto1" });
-	await hre.run("debug:topup_actor_balances", { amt: 20000 });
+	await hre.run("debug:topup_actor_balances", { amt: 50000 });
 	await hre.run("ggavax:liqstaker_deposit_avax", {
 		actor: "alice",
 		amt: 10000,
@@ -98,14 +98,16 @@ task("debug:topup_actor_balance")
 		const a = actors[actor];
 		const balAVAX = await hre.ethers.provider.getBalance(a.address);
 		const desiredBalAVAX = ethers.utils.parseEther(amt.toString());
+		const txs = [];
 		if (balAVAX.lt(desiredBalAVAX)) {
 			log(`Topping up ${actor}`);
 			const tx = await signer.sendTransaction({
 				to: a.address,
 				value: desiredBalAVAX.sub(balAVAX),
 			});
-			logtx(tx);
+			txs.push(logtx(tx));
 		}
+		await Promise.all(txs);
 	});
 
 task("debug:topup_actor_balances")
