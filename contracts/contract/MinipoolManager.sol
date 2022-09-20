@@ -553,9 +553,9 @@ contract MinipoolManager is Base, IWithdrawer {
 		} else if (currentStatus == MinipoolStatus.Launched) {
 			isValid = (to == MinipoolStatus.Staking || to == MinipoolStatus.Error);
 		} else if (currentStatus == MinipoolStatus.Staking) {
-			isValid = (to == MinipoolStatus.Withdrawable);
+			isValid = (to == MinipoolStatus.Withdrawable || to == MinipoolStatus.Error);
 		} else if (currentStatus == MinipoolStatus.Withdrawable) {
-			isValid = (to == MinipoolStatus.Finished);
+			isValid = (to == MinipoolStatus.Finished || to == MinipoolStatus.Error);
 		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled || currentStatus == MinipoolStatus.Error) {
 			// Once a node is finished/canceled/errored, if they re-validate they go back to beginning state
 			isValid = (to == MinipoolStatus.Prelaunch);
