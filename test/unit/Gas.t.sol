@@ -7,18 +7,35 @@ import "./utils/BaseTest.sol";
 // +-----------+-----------+--------+---------+
 // |    Gas    | Gas Price | Avax $ | Tx $    |
 // +-----------+-----------+--------+---------+
-// |        50 |       120 |     80 | 0.00048 |
-// |       100 |       120 |     80 | 0.00096 |
-// |       500 |       120 |     80 |  0.0048 |
-// |     1,000 |       120 |     80 |  0.0096 |
-// |     5,000 |       120 |     80 |   0.048 |
+// |    10,000 |       30  |     20 |   0.006 |
+// |   100,000 |       30  |     20 |   0.06  |
+// | 1,000,000 |       30  |     20 |   0.60  |
+// | 3,000,000 |       30  |     20 |   1.80  |
+// +-----------+-----------+--------+---------+
 // |    10,000 |       120 |     80 |   0.096 |
-// |    50,000 |       120 |     80 |    0.48 |
 // |   100,000 |       120 |     80 |    0.96 |
-// |   500,000 |       120 |     80 |     4.8 |
 // | 1,000,000 |       120 |     80 |     9.6 |
 // | 3,000,000 |       120 |     80 |    28.8 |
 // +-----------+-----------+--------+---------+
+
+contract GasSettingsTest is BaseTest {
+	bytes32 private settingNamespace;
+
+	function setUp() public override {
+		super.setUp();
+		settingNamespace = keccak256(abi.encodePacked("mysettingnamespace."));
+	}
+
+	// gas: 7849
+	function testNoNamespace() public {
+		store.getUint(keccak256(abi.encodePacked("mykey.")));
+	}
+
+	// gas: 10047
+	function testWithNamespace() public {
+		store.getUint(keccak256(abi.encodePacked(settingNamespace, "mykey.")));
+	}
+}
 
 contract GasTest is BaseTest {
 	function testGas() public {
