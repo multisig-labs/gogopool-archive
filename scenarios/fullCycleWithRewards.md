@@ -28,12 +28,6 @@ just task debug:list_actor_balances
 ```
 
 ```
-just task debug:skip --duration 2d
-just task inflation:transferGGP
-just task inflation:startCycle --actor rialto1
-just task nopClaim:distributeRewards
-
-
 just task staking:stake_ggp --actor nodeOp1 --amt 300 &
 just task staking:stake_ggp --actor nodeOp2 --amt 300 &
 just task staking:list

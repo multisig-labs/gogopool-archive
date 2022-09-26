@@ -34,6 +34,8 @@ task(
 	});
 	await hre.run("ggavax:liqstaker_deposit_avax", { actor: "bob", amt: 10000 });
 	await hre.run("ggp:deal", { recip: "nodeOp1", amt: 10000 });
+	await hre.run("inflation:transferGGP");
+	await hre.run("inflation:startCycle", { actor: "rialto1" });
 });
 
 task(
