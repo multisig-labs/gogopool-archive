@@ -107,22 +107,29 @@ task("ggp:deal")
 	});
 
 task("ggp:balance_of")
-	.addParam("actor", "actor to check balance of")
-	.setAction(async ({ actor }) => {
-		const a = (await getNamedAccounts())[actor];
+	.addParam("actor", "actor to check balance of", "")
+	.addParam("addr", "addr to check balance of", "")
+	.setAction(async ({ actor, addr }) => {
+		if (actor !== "") {
+			addr = (await getNamedAccounts())[actor].address;
+		}
 		const ggp = await get("TokenGGP");
-		const bal = await ggp.balanceOf(a.address);
+		const bal = await ggp.balanceOf(addr);
 		console.log("balance", ethers.utils.formatUnits(bal));
 	});
 
 task("ggp:allowance")
-	.addParam("actor", "actor to check allowance of")
-	.addParam("spender", "contract doing the spending")
-	.setAction(async ({ actor, spender }) => {
-		const a = (await getNamedAccounts())[actor];
-		// const s = (await getNamedAccounts())[spender];
-		const s = await get("Staking");
+	.addParam("actor", "actor to check allowance of", "")
+	.addParam("addr", "addr to check balance of", "")
+	.addParam("spender", "contract doing the spending (defaults to Staking)", "")
+	.setAction(async ({ actor, addr, spender }) => {
+		if (actor !== "") {
+			addr = (await getNamedAccounts())[actor].address;
+		}
+		if (spender === "") {
+			spender = (await get("Staking")).address;
+		}
 		const ggp = await get("TokenGGP");
-		const bal = await ggp.allowance(a.address, s.address);
-		console.log("balance", ethers.utils.formatUnits(bal));
+		const allowance = await ggp.allowance(addr, spender);
+		console.log("allowance", ethers.utils.formatUnits(allowance));
 	});
