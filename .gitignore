@@ -22,6 +22,7 @@ _private
 # Forge
 artifacts-forge
 broadcast
+out
 
 # IntelliJ
 .idea

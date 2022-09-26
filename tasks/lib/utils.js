@@ -126,7 +126,7 @@ function logMinipools(minipools) {
 		"owner",
 		"multisig",
 		"avaxNopAmt",
-		"avaxLiqStkrAmt",
+		"avaxLqdStkrAmt",
 		"delFee",
 		"dur",
 		"start",
@@ -157,6 +157,32 @@ function logMinipools(minipools) {
 			hre.ethers.utils.formatUnits(mp.avaxLiquidStakerRewardAmt),
 			hre.ethers.utils.formatUnits(mp.ggpSlashAmt),
 			ethers.utils.parseBytes32String(mp.errorCode)
+		);
+	}
+}
+
+function logStakers(stakers) {
+	log("===== STAKERS =====");
+	logf(
+		"%-42s %-6s %-12s %-12s %-10s %-10s %-10s",
+		"stakerAddr",
+		"ggpStaked",
+		"avaxStaked",
+		"avaxAssigned",
+		"minipoolCount",
+		"rewardsStartTime",
+		"ggpRewards"
+	);
+	for (s of stakers) {
+		logf(
+			"%-42s %-6s %-12s %-12s %-10s %-10s %-10s",
+			formatAddr(s.stakerAddr),
+			hre.ethers.utils.formatUnits(s.ggpStaked),
+			hre.ethers.utils.formatUnits(s.avaxStaked),
+			hre.ethers.utils.formatUnits(s.avaxAssigned),
+			s.minipoolCount,
+			s.rewardsStartTime,
+			hre.ethers.utils.formatUnits(s.ggpRewards)
 		);
 	}
 }
@@ -199,8 +225,28 @@ async function getMinipoolsFor(status, addr) {
 			log("error", e);
 		}
 	}
-
 	return minipools;
+}
+
+async function getStakers() {
+	const staking = await get("Staking");
+	const totalCount = await staking.getStakerCount();
+	const totalPages = parseInt(totalCount / PAGE_SIZE) + 1;
+
+	const stakers = [];
+
+	// Use pagination to grab all minipools
+	for (let page = 0; page < totalPages; page++) {
+		try {
+			const stkrs = await staking.getStakers(page * PAGE_SIZE, PAGE_SIZE);
+			for (stkr of stkrs) {
+				stakers.push(stkr);
+			}
+		} catch (e) {
+			log("error", e);
+		}
+	}
+	return stakers;
 }
 
 // NOT really random, only used for generating test data
@@ -276,4 +322,6 @@ module.exports = {
 	now,
 	nodeIDToHex,
 	nodeHexToID,
+	getStakers,
+	logStakers,
 };

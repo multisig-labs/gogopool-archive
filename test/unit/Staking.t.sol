@@ -18,7 +18,7 @@ contract StakingTest is BaseTest {
 	}
 
 	function testStake() public {
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		staking.stakeGGP(100 ether);
 		assertEq(staking.getTotalGGPStake(), 100 ether);
 		assertEq(staking.getStakerCount(), 1);
@@ -28,6 +28,7 @@ contract StakingTest is BaseTest {
 
 		// Manually assign some AVAX
 		staking.increaseAVAXAssigned(nodeOp, 1000 ether);
+		assertEq(staking.getAVAXAssigned(nodeOp), 1000 ether);
 
 		assertEq(staking.getMinimumGGPStake(nodeOp), 100 ether);
 		assertEq(staking.getCollateralizationRatio(nodeOp), 0.1 ether);
@@ -40,6 +41,7 @@ contract StakingTest is BaseTest {
 		assertEq(staking.getCollateralizationRatio(nodeOp), 0.2 ether);
 
 		staking.increaseAVAXAssigned(nodeOp, 1000 ether);
+		assertEq(staking.getAVAXAssigned(nodeOp), 2000 ether);
 
 		assertEq(staking.getMinimumGGPStake(nodeOp), 200 ether);
 		assertEq(staking.getCollateralizationRatio(nodeOp), 0.1 ether);
@@ -55,7 +57,7 @@ contract StakingTest is BaseTest {
 
 	function testUnstake() public {
 		uint256 amt = 100 ether;
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		uint256 startingGGPAmt = ggp.balanceOf(nodeOp);
 		staking.stakeGGP(amt);
 		assertEq(ggp.balanceOf(nodeOp), startingGGPAmt - amt);

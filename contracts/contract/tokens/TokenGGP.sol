@@ -34,6 +34,7 @@ contract TokenGGP is Base, ERC20Burnable {
 	constructor(Storage storageAddress) Base(storageAddress) ERC20("GoGoPool Protocol", "GGP", 18) {
 		version = 1;
 		settingNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
+		//TODO:shouldnt we mint this to the valut?
 		_mint(msg.sender, TOTAL_INITIAL_SUPPLY);
 	}
 }

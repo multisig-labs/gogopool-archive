@@ -57,7 +57,7 @@ contract MinipoolManagerTest is BaseTest {
 		uint256 validationAmt = depositAmt + avaxAssignmentRequest;
 		uint128 ggpStakeAmt = 200 ether;
 
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
 		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
@@ -119,7 +119,7 @@ contract MinipoolManagerTest is BaseTest {
 		uint128 ggpStakeAmt = 200 ether;
 		uint256 amountAvailForStaking = ggAVAX.amountAvailableForStaking();
 
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
 		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
@@ -168,7 +168,7 @@ contract MinipoolManagerTest is BaseTest {
 	}
 
 	function testUndercollateralized() public {
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		address nodeID = randAddress();
 		uint256 avaxAmt = 1000 ether;
 		uint256 ggpStakeAmt = 50 ether; // 5%
@@ -224,7 +224,7 @@ contract MinipoolManagerTest is BaseTest {
 		uint256 avaxAssignmentRequest = 1000 ether;
 		uint128 ggpStakeAmt = 200 ether;
 
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
 		startMeasuringGas("testGasCreateMinipool");
@@ -237,7 +237,7 @@ contract MinipoolManagerTest is BaseTest {
 	}
 
 	function testCreateAndGetMany() public {
-		vm.startPrank(nodeOp);
+		vm.startPrank(nodeOp, nodeOp);
 		address nodeID;
 		uint256 avaxAssignmentRequest = 1000 ether;
 

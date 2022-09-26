@@ -177,6 +177,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.increaseAVAXStake(msg.sender, msg.value);
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
+		staking.increaseMinipoolCount(msg.sender);
 		uint256 ratio = staking.getCollateralizationRatio(msg.sender);
 		if (ratio < staking.minCollateralizationPercent()) {
 			revert InsufficientGGPCollateralization();
@@ -278,6 +279,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
+		staking.decreaseMinipoolCount(owner);
 
 		Vault vault = Vault(getContractAddress("Vault"));
 		vault.withdrawAvax(avaxNodeOpAmt);
@@ -397,6 +399,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt + avaxLiquidStakerRewardAmt}(avaxLiquidStakerAmt, avaxLiquidStakerRewardAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
 		decreaseTotalAvaxLiquidStakerAmt(avaxLiquidStakerAmt);
+		staking.decreaseMinipoolCount(owner);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}

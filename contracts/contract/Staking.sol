@@ -7,7 +7,6 @@ import {MinipoolManager} from "./MinipoolManager.sol";
 import {Oracle} from "./Oracle.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
-
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
@@ -51,6 +50,9 @@ contract Staking is Base {
 		uint256 ggpStaked;
 		uint256 avaxStaked;
 		uint256 avaxAssigned;
+		uint256 minipoolCount;
+		uint256 rewardsStartTime;
+		uint256 ggpRewards;
 	}
 
 	event GGPStaked(address indexed from, uint256 amount);
@@ -119,6 +121,53 @@ contract Staking is Base {
 		subUint(keccak256(abi.encodePacked("staker.item", index, ".avaxAssigned")), amount);
 	}
 
+	/* MINIPOOL COUNT */
+	function getMinipoolCount(address stakerAddr) public view returns (uint256) {
+		int256 index = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")));
+	}
+
+	function increaseMinipoolCount(address stakerAddr) public {
+		if (getMinipoolCount(stakerAddr) == 0) {
+			//minipool count will go from 0->1 so set rewards time now
+			setRewardsStartTime(stakerAddr, block.timestamp);
+		}
+		int256 index = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")), 1);
+	}
+
+	function decreaseMinipoolCount(address stakerAddr) public {
+		int256 index = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")), 1);
+	}
+
+	/* REWARDS START TIME */
+	function getRewardsStartTime(address stakerAddr) public view returns (uint256) {
+		int256 index = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", index, ".rewardsStartTime")));
+	}
+
+	function setRewardsStartTime(address stakerAddr, uint256 time) public {
+		int256 index = requireValidStaker(stakerAddr);
+		setUint(keccak256(abi.encodePacked("staker.item", index, ".rewardsStartTime")), time);
+	}
+
+	/* GGP REWARDS */
+	function getGGPRewards(address stakerAddr) public view returns (uint256) {
+		int256 index = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")));
+	}
+
+	function increaseGGPRewards(address stakerAddr, uint256 amount) public {
+		int256 index = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")), amount);
+	}
+
+	function decreaseGGPRewards(address stakerAddr, uint256 amount) public {
+		int256 index = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")), amount);
+	}
+
 	// Get a stakers's minimum ggp stake to collateralize their minipools. Returned in GGP
 	function getMinimumGGPStake(address stakerAddr) public view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
@@ -148,26 +197,35 @@ contract Staking is Base {
 	// user must approve the transfer request for amount first
 	function stakeGGP(uint256 amount) external {
 		// Transfer GGP tokens from staker to this contract
-		// TODO this reverts with a arithmetic error if approvals are not correct
-		// should we spend gas here to do a better check? How do other protocols handle it?
 		ggp.transferFrom(msg.sender, address(this), amount);
+		_stakeGGP(msg.sender, amount);
+	}
 
+	//TODO: only allow our contracts to call this function so other people cannot stake on others behalf
+	function restakeGGP(address stakerAddress, uint256 amount) public {
+		// Transfer GGP tokens from the NOPClaims contract to this contract
+		ggp.transferFrom(msg.sender, address(this), amount);
+		_stakeGGP(stakerAddress, amount);
+	}
+
+	function _stakeGGP(address stakerAddress, uint256 amount) internal {
 		// Deposit GGP tokens from this contract to vault
 		Vault vault = Vault(getContractAddress("Vault"));
 		ggp.approve(address(vault), amount);
 		vault.depositToken("Staking", ggp, amount);
 
-		int256 index = getIndexOf(msg.sender);
+		//need tx.origin rather than msg.sender so we can use this to restake ggp rewards on the stakers behalf
+		int256 index = getIndexOf(stakerAddress);
 		if (index == -1) {
 			// create index for the new staker
 			index = int256(getUint(keccak256("staker.count")));
 			addUint(keccak256("staker.count"), 1);
-			setUint(keccak256(abi.encodePacked("staker.index", msg.sender)), uint256(index + 1));
-			setAddress(keccak256(abi.encodePacked("staker.item", index, ".stakerAddr")), msg.sender);
+			setUint(keccak256(abi.encodePacked("staker.index", stakerAddress)), uint256(index + 1));
+			setAddress(keccak256(abi.encodePacked("staker.item", index, ".stakerAddr")), stakerAddress);
 		}
-		increaseGGPStake(msg.sender, amount);
+		increaseGGPStake(stakerAddress, amount);
 
-		emit GGPStaked(msg.sender, amount);
+		emit GGPStaked(stakerAddress, amount);
 	}
 
 	function withdrawGGP(uint256 amount) external {
@@ -215,6 +273,9 @@ contract Staking is Base {
 		staker.avaxAssigned = getUint(keccak256(abi.encodePacked("staker.item", index, ".avaxAssigned")));
 		staker.avaxStaked = getUint(keccak256(abi.encodePacked("staker.item", index, ".avaxStaked")));
 		staker.stakerAddr = getAddress(keccak256(abi.encodePacked("staker.item", index, ".stakerAddr")));
+		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")));
+		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", index, ".rewardsStartTime")));
+		staker.ggpRewards = getUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")));
 	}
 
 	// Get all stakers (limit=0 means no pagination)

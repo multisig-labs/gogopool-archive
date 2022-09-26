@@ -154,21 +154,8 @@ contract RewardsTest is BaseTest {
 	// 	assertEq(ggp.balanceOf(nodeOp), claimingContractAllowance / 2);
 	// }
 
-	function testGetInflationCalcTime() public view {
-		assert(rewardsPool.getInflationCalcTime() == 0);
-	}
-
-	function testGetInflationIntervalTime() public view {
-		assert(rewardsPool.getInflationIntervalTime() == 1 days);
-	}
-
-	function testGetInflationIntervalRate() public view {
-		assert(rewardsPool.getInflationIntervalRate() == uint256(1000133680617113500));
-	}
-
-	// TODO figure out how we handle time-based tests like this
-	function testGetInflationIntervalStartTime() public view {
-		assert(rewardsPool.getInflationIntervalStartTime() == (block.timestamp + 1 days));
+	function testGetLastInflationCalcTime() public view {
+		assert(rewardsPool.getLastInflationCalcTime() == 0);
 	}
 
 	function testGetInflationIntervalsPassed() public view {

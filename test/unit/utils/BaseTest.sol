@@ -108,7 +108,7 @@ abstract contract BaseTest is Test {
 		rewardsPool = new RewardsPool(store);
 		registerContract(store, "RewardsPool", address(rewardsPool));
 
-		nopClaim = new NOPClaim(store);
+		nopClaim = new NOPClaim(store, ggp);
 		registerContract(store, "NOPClaim", address(nopClaim));
 
 		// Initialize the rewards cycle
@@ -123,6 +123,7 @@ abstract contract BaseTest is Test {
 		bytes32 protocolDaoSettingsNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
 		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.rate")), 1000133680617113500);
 		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.start")), block.timestamp + 1 days);
+		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval")), 1 days);
 	}
 
 	// Register a contract in Storage

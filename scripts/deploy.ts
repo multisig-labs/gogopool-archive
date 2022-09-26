@@ -28,10 +28,9 @@ const contracts: IFU = {
 	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
 	RewardsPool: ["Storage"],
-	NOPClaim: ["Storage"],
+	NOPClaim: ["Storage", "TokenGGP"],
 	Staking: ["Storage", "TokenGGP"],
 	ProtocolDAOClaim: ["Storage"],
-	ProtocolDAOSettingsInflation: ["Storage"],
 };
 
 const deployAsProxy = ["TokenggAVAX"];

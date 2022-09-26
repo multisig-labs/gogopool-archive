@@ -1,4 +1,5 @@
 const { get, logtx } = require("./lib/utils.js");
+const { ethers } = require("ethers");
 const { task } = require("hardhat/config");
 
 task("dao:set_ggavax_reserve", "Set ggAVAX reserve rate")

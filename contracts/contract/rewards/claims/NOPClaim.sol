@@ -9,7 +9,7 @@ import {TokenGGP} from "../../tokens/TokenGGP.sol";
 import {RewardsPool} from "../RewardsPool.sol";
 import {Staking} from "../../Staking.sol";
 import {MinipoolManager} from "../../MinipoolManager.sol";
-
+import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 // RPL Rewards claiming by the DAO
@@ -17,10 +17,19 @@ contract NOPClaim is Base {
 	// Libs
 	// Construct
 	using FixedPointMathLib for uint256;
+	event GGPRewardsClaimed(address indexed to, uint256 amount);
+	/// @notice There are no rewards for the user to claim
+	error NoRewardsToClaim();
+	/// @notice Invalid amount requested
+	error InvalidAmount();
+	ERC20 public immutable ggp;
 
-	constructor(Storage storageAddress) Base(storageAddress) {
+	uint256 internal constant TENTH = 0.1 ether;
+
+	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
 		// Version
 		version = 1;
+		ggp = ggp_;
 	} // Get whether the contract is enabled for claims
 
 	function getEnabled() external pure returns (bool) {
@@ -29,64 +38,85 @@ contract NOPClaim is Base {
 		// return rewardsPool.getClaimingContractEnabled("NOPClaim");
 	}
 
+	function getRewardsCycleTotal() public view returns (uint256) {
+		return getUint(keccak256("rewards.cycle.total"));
+	}
+
+	function setRewardsCycleTotal(uint256 amount) public {
+		return setUint(keccak256("rewards.cycle.total"), amount);
+	}
+
 	// Get whether a node can make a claim
-	// TODO include onlyRegisteredNode modifer
-	function canClaim(address ownerAddress) public view returns (bool) {
-		// Load contracts
-		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
+	// Rialto will call this
+	function isEligible(address ownerAddress) public view returns (bool) {
+		//rewardsStartTime has to be at least 28 days.
+		//Must have at least 10% collatoralized minipool
 		Staking staking = Staking(getContractAddress("Staking"));
-		// Return claim possible status
-		return (rewardsPool.getClaimingContractUserCanClaim("NOPClaim", ownerAddress) &&
-			staking.getGGPStake(ownerAddress) >= staking.getMinimumGGPStake(ownerAddress));
+		uint256 rewardsStartTime = staking.getRewardsStartTime(ownerAddress);
+		if (staking.getCollateralizationRatio(ownerAddress) < TENTH) {
+			return false;
+		}
+		uint256 daysDiff = (block.timestamp - rewardsStartTime) / 60 / 60 / 24;
+		//TODO get 28 days frpm setting somewhere
+		if (daysDiff < 14) {
+			return false;
+		}
+		return true;
 	}
 
 	// Get the share of rewards for a node as a fraction of 1 ether
-	function getClaimRewardsPerc(address ownerAddress) public view returns (uint256) {
-		// Check node can claim
-		if (!canClaim(ownerAddress)) {
-			return 0;
-		}
+	// Rialto will call this
+	//TODO: Set some limitor on this. Right now it can be called and new rewards will be distributed at any time
+	function calculateAndDistributeRewards(address ownerAddress, uint256 totalEligibleGGPStaked) public {
 		// Load contracts
 		Staking staking = Staking(getContractAddress("Staking"));
-		// Calculate and return share
-
-		// TODO: Maybe make this come from storage rather than calc each time. See MinipoolManager for details
-		uint256 totalGgpStake = staking.getTotalGGPStake(); //should return the amoutn of ggp that is staked in the protocol up to the 150% collat ratio
-		if (totalGgpStake == 0) {
-			return 0;
+		//TODO: use their effective stake, not thier total stake
+		uint256 ggpStaked = staking.getGGPStake(ownerAddress);
+		if (totalEligibleGGPStaked == 0) {
+			return;
 		}
-		//should return how much userGGPstaked / totalGGPStaked
-		return staking.getGGPStake(ownerAddress).divWadDown(totalGgpStake);
+		//should return how much userGGPstaked / totalEligibleGGPStaked
+		uint256 percentage = ggpStaked.divWadDown(totalEligibleGGPStaked);
+
+		uint256 nodesRewardsCycleTotal = getRewardsCycleTotal();
+
+		uint256 rewardsAmt = percentage.mulWadDown(nodesRewardsCycleTotal);
+
+		staking.increaseGGPRewards(ownerAddress, rewardsAmt);
+
+		//check if their rewards time should be reset
+		uint256 minipoolCount = staking.getMinipoolCount(ownerAddress);
+		if (minipoolCount == 0) {
+			staking.setRewardsStartTime(ownerAddress, 0);
+		}
 	}
 
-	// Front end call probably
-	// Get the amount of rewards for a node for the reward period
-	function getClaimRewardsAmount(address ownerAddress) external view returns (uint256) {
-		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
-		return rewardsPool.getClaimAmount("NOPClaim", ownerAddress, getClaimRewardsPerc(ownerAddress));
-	}
+	// Make an ggp claim and automatically restake the unclaimed rewards
+	function claimAndRestake(uint256 claimAmount) external {
+		Staking staking = Staking(getContractAddress("Staking"));
+		Vault vault = Vault(getContractAddress("Vault"));
 
-	// Register or deregister a node for GGP claims
-	// Only accepts calls from the RocketNodeManager contract
-	function register(address ownerAddress, bool enable) external {
-		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
-		rewardsPool.registerClaimer(ownerAddress, enable);
-	}
+		uint256 ggpRewards = staking.getGGPRewards(msg.sender);
+		if (ggpRewards == 0) {
+			revert NoRewardsToClaim();
+		}
+		if (claimAmount > ggpRewards) {
+			revert InvalidAmount();
+		}
 
-	// Make an RPL claim
-	// Only accepts calls from registered nodes
-	function claim() external {
-		// Check that the node can claim
-		// TODO require(getClaimPossible(msg.sender), "The node is currently unable to claim");
+		uint256 restakeAmount = ggpRewards - claimAmount;
+		if (restakeAmount > 0) {
+			vault.withdrawToken(address(this), ggp, restakeAmount);
+			ggp.approve(address(staking), restakeAmount);
+			staking.restakeGGP(msg.sender, restakeAmount);
+		}
 
-		// Get node withdrawal address
-		// Get user's wallet address
-		// TODO setup withdrawal address for nodes, for now just using msg.sender
-		// https://github.com/multisig-labs/gogopool-contracts/issues/88
-		address nodeWithdrawalAddress = msg.sender;
-		// address nodeWithdrawalAddress = gogoStorage.getNodeWithdrawalAddress(msg.sender);
-		// Claim RPL
-		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
-		rewardsPool.claim(msg.sender, nodeWithdrawalAddress, getClaimRewardsPerc(msg.sender));
+		if (claimAmount > 0) {
+			vault.withdrawToken(msg.sender, ggp, claimAmount);
+		}
+
+		//reset rewards number
+		staking.decreaseGGPRewards(msg.sender, ggpRewards);
+		emit GGPRewardsClaimed(msg.sender, claimAmount);
 	}
 }

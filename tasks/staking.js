@@ -1,7 +1,13 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
 const { task } = require("hardhat/config");
-const { get, getNamedAccounts, logf } = require("./lib/utils");
+const {
+	get,
+	getNamedAccounts,
+	logf,
+	getStakers,
+	logStakers,
+} = require("./lib/utils");
 
 task("staking:info", "Staking protocol info").setAction(async () => {
 	const staking = await get("Staking");
@@ -63,3 +69,8 @@ task("staking:stake_ggp", "Stake ggp for actor")
 		tx = await staking.stakeGGP(ethers.utils.parseEther(amt.toString()));
 		await tx.wait();
 	});
+
+task("staking:list", "List all stakers").setAction(async () => {
+	const stakers = await getStakers();
+	if (stakers.length > 0) logStakers(stakers);
+});
