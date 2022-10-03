@@ -49,6 +49,24 @@ task(
 	}
 });
 
+task("nopClaim:isEligible", "is a staker eligible")
+	.addParam("staker", "Account used to send tx")
+	.setAction(async ({ staker }) => {
+		const signer = (await getNamedAccounts())[staker];
+		const nopClaim = await get("NOPClaim");
+		const staking = await get("Staking");
+		log(signer.address);
+		const index = await staking.getIndexOf(signer.address);
+		const user = await staking.getStaker(index);
+		log(
+			utils.formatEther(
+				`${await staking.getCollateralizationRatio(user.stakerAddr)}`
+			)
+		);
+		const isEligible = await nopClaim.isEligible(user.stakerAddr);
+		log(`Is ${staker} eligible for rewards?: ${isEligible}`);
+	});
+
 task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")
 	.addParam("staker", "Account used to send tx")
 	.setAction(async ({ staker }) => {
@@ -64,6 +82,10 @@ task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")
 		);
 		try {
 			tx = await nopClaim.claimAndRestake(utils.parseEther(`${halfRewardAmt}`));
+			// tx = await staking.decreaseGGPRewards(
+			// 	signer.address,
+			// 	utils.parseEther(`${rewardAmt}`)
+			// );
 			logtx(tx);
 		} catch (error) {
 			log(error.reason);

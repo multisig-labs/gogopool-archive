@@ -16,8 +16,10 @@ contract RewardsPool is Base {
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		setUint("rewards.pool.reward.cycle.length", 28 days); // The time in which a claim period will span in seconds - 28 days by default
+		//TODO: change to 28 days after alpha
+		setUint("rewards.pool.reward.cycle.length", 2 minutes); // The time in which a claim period will span in seconds - 28 days by default
 		setUint("ggp.total.circulating.supply", 18000000 ether);
+		// setUint(keccak256("rewards.pool.reward.cycle.start.time"), block.timestamp);
 		// setUint("ggp.total.inflation.calculated.time", 0 seconds);
 		setUint(keccak256(abi.encodePacked("rewards.percentage", "ProtocolDAOClaim")), 0.10 ether);
 		setUint(keccak256(abi.encodePacked("rewards.percentage", "NOPClaim")), 0.70 ether);
@@ -207,13 +209,7 @@ contract RewardsPool is Base {
 	}
 
 	//Rialto calls this to see if the new cycle can start
-	function canCycleStart() public view returns (bool) {
-		// uint256 claimIntervalTime = getClaimIntervalTime();
-
-		// Get the start of the last claim interval as this may have just changed for a new interval beginning
-		// uint256 claimIntervalTimeStart = getClaimIntervalTimeStart();
-		// uint256 claimIntervalTimeStartComputed = _getClaimIntervalTimeStartComputed(claimIntervalTimeStart, claimIntervalTime);
-
+	function canCycleStart() external view returns (bool) {
 		uint256 cyclesPassed = getRewardCyclesPassed();
 
 		// Has it been atleast 28 days since the last distribution? If so, set the rewards total for this interval
@@ -227,15 +223,10 @@ contract RewardsPool is Base {
 
 	//Ralto calls this
 	function startCycle() external {
-		// Check to see if this registered claimer has waited one interval before collecting
-		// uint256 claimIntervalTime = getClaimIntervalTime();
 		NOPClaim nopClaim = NOPClaim(getContractAddress("NOPClaim"));
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
-		// Get the vault contract instance
 		Vault vault = Vault(getContractAddress("Vault"));
-		// Get the start of the last claim interval as this may have just changed for a new interval beginning
-		// uint256 claimIntervalTimeStart = getClaimIntervalTimeStart();
-		// uint256 claimIntervalTimeStartComputed = _getClaimIntervalTimeStartComputed(claimIntervalTimeStart, claimIntervalTime);
+
 		uint256 rewardCyclesPassed = getRewardCyclesPassed();
 
 		// Has it been atleast 28 days since the last distribution?
@@ -244,11 +235,15 @@ contract RewardsPool is Base {
 			// note: this will always 'mint' (release) new tokens if the reward cycle length requirement is met
 			// since inflation is on a 1 day interval and it needs atleast one cycle since last calculation
 			inflationMintTokens();
+
 			// Set this as the start of the new rewards cycle
+			//TODO: need to add something to ANR to continuously send transactions so that 'time' actually passes for the cycles calculations.
 			setUint(keccak256("rewards.pool.reward.cycle.start.time"), block.timestamp);
+
 			// Soon as we mint new tokens, send the DAO's share to it's claiming contract, then attempt to transfer them to the dao if possible
 			uint256 daoClaimContractAllotment = getClaimingContractDistribution("ProtocolDAOClaim");
 			uint256 nopClaimContractAllotment = getClaimingContractDistribution("NOPClaim");
+
 			if (daoClaimContractAllotment + nopClaimContractAllotment > getRewardCycleTotalAmount()) {
 				revert IncorrectRewardDistribution();
 			}
@@ -268,8 +263,7 @@ contract RewardsPool is Base {
 
 				emit NOPClaimRewardsTransfered(nopClaimContractAllotment);
 			}
+			emit NewRewardsCycleStarted(getRewardCycleTotalAmount());
 		}
-
-		emit NewRewardsCycleStarted(getRewardCycleTotalAmount());
 	}
 }

@@ -48,7 +48,7 @@ contract NOPClaim is Base {
 
 	// Get whether a node can make a claim
 	// Rialto will call this
-	function isEligible(address ownerAddress) public view returns (bool) {
+	function isEligible(address ownerAddress) external view returns (bool) {
 		//rewardsStartTime has to be at least 28 days.
 		//Must have at least 10% collatoralized minipool
 		Staking staking = Staking(getContractAddress("Staking"));
@@ -57,8 +57,9 @@ contract NOPClaim is Base {
 			return false;
 		}
 		uint256 daysDiff = (block.timestamp - rewardsStartTime) / 60 / 60 / 24;
-		//TODO get 28 days frpm setting somewhere
-		if (daysDiff < 14) {
+		//TODO get 14 days from setting somewhere
+		//TODO: change back to 14 days after alpha
+		if (daysDiff < 0) {
 			return false;
 		}
 		return true;
@@ -67,21 +68,34 @@ contract NOPClaim is Base {
 	// Get the share of rewards for a node as a fraction of 1 ether
 	// Rialto will call this
 	//TODO: Set some limitor on this. Right now it can be called and new rewards will be distributed at any time
-	function calculateAndDistributeRewards(address ownerAddress, uint256 totalEligibleGGPStaked) public {
+	function calculateAndDistributeRewards(address ownerAddress, uint256 totalEligibleGGPStaked) external {
 		// Load contracts
 		Staking staking = Staking(getContractAddress("Staking"));
+
 		//TODO: use their effective stake, not thier total stake
-		uint256 ggpStaked = staking.getGGPStake(ownerAddress);
+		// uint256 ggpStaked = staking.getGGPStake(ownerAddress);
 		if (totalEligibleGGPStaked == 0) {
 			return;
 		}
+
 		//should return how much userGGPstaked / totalEligibleGGPStaked
-		uint256 percentage = ggpStaked.divWadDown(totalEligibleGGPStaked);
+		//TODO: uncomment below when alpha is done
+		// uint256 percentage = ggpStaked.divWadDown(totalEligibleGGPStaked);
 
+		// uint256 nodesRewardsCycleTotal = getRewardsCycleTotal();
+
+		// uint256 rewardsAmt = percentage.mulWadDown(nodesRewardsCycleTotal);
+
+		// if (rewardsAmt > nodesRewardsCycleTotal) {
+		// 	revert InvalidAmount();
+		// }
+
+		// staking.increaseGGPRewards(ownerAddress, rewardsAmt);
+
+		//TODO: Remove below when alpha is done
+		uint256 percentage = 0.1 ether;
 		uint256 nodesRewardsCycleTotal = getRewardsCycleTotal();
-
 		uint256 rewardsAmt = percentage.mulWadDown(nodesRewardsCycleTotal);
-
 		staking.increaseGGPRewards(ownerAddress, rewardsAmt);
 
 		//check if their rewards time should be reset

@@ -22,26 +22,26 @@ just task debug:setup
 just task multisig:list
 
 just task debug:topup_actor_balances --amt 10000
-just task ggp:deal --recip nodeOp1 --amt 800 &
-just task ggp:deal --recip nodeOp2 --amt 800 &
+just task ggp:deal --recip nodeOp1 --amt 800
+just task ggp:deal --recip nodeOp2 --amt 800
 just task debug:list_actor_balances
 ```
 
 ```
-just task staking:stake_ggp --actor nodeOp1 --amt 300 &
-just task staking:stake_ggp --actor nodeOp2 --amt 300 &
+just task staking:stake_ggp --actor nodeOp1 --amt 300
+just task staking:stake_ggp --actor nodeOp2 --amt 300
 just task staking:list
 
-just task dao:set_ggavax_reserve --reserve 0 &
-just task ggavax:liqstaker_deposit_avax --actor alice --amt 2000 &
-just task ggavax:liqstaker_deposit_avax --actor bob --amt 3000 &
+just task dao:set_ggavax_reserve --reserve 0
+just task ggavax:liqstaker_deposit_avax --actor alice --amt 2000
+just task ggavax:liqstaker_deposit_avax --actor bob --amt 3000
 
 
-just task minipool:create --actor nodeOp1 --node node2 --duration 4m &
-just task minipool:create --actor nodeOp1 --node node3 --duration 3m &
-just task minipool:create --actor nodeOp1 --node node4 --duration 2m &
-just task minipool:create --actor nodeOp2 --node node5 --duration 2m &
-just task minipool:create --actor nodeOp2 --node node6 --duration 5m &
+just task minipool:create --actor nodeOp1 --node node2 --duration 4m
+just task minipool:create --actor nodeOp1 --node node3 --duration 3m
+just task minipool:create --actor nodeOp1 --node node4 --duration 2m
+just task minipool:create --actor nodeOp2 --node node5 --duration 2m
+just task minipool:create --actor nodeOp2 --node node6 --duration 5m
 
 just task ggavax:available_for_staking
 ```
@@ -71,11 +71,11 @@ just task ggavax:preview_withdraw --amt 2000
 ```
 
 ```
-just task minipool:recordStakingStart --actor rialto1 --node node2 &
-just task minipool:recordStakingStart --actor rialto1 --node node3 &
-just task minipool:recordStakingStart --actor rialto1 --node node4 &
-just task minipool:recordStakingStart --actor rialto1 --node node5 &
-just task minipool:recordStakingStart --actor rialto1 --node node6 &
+just task minipool:recordStakingStart --actor rialto1 --node node2
+just task minipool:recordStakingStart --actor rialto1 --node node3
+just task minipool:recordStakingStart --actor rialto1 --node node4
+just task minipool:recordStakingStart --actor rialto1 --node node5
+just task minipool:recordStakingStart --actor rialto1 --node node6
 just task minipool:list
 ```
 
