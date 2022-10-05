@@ -52,16 +52,21 @@ contract NOPClaim is Base {
 		//rewardsStartTime has to be at least 28 days.
 		//Must have at least 10% collatoralized minipool
 		Staking staking = Staking(getContractAddress("Staking"));
-		uint256 rewardsStartTime = staking.getRewardsStartTime(ownerAddress);
-		if (staking.getCollateralizationRatio(ownerAddress) < TENTH) {
+
+		try staking.getRewardsStartTime(ownerAddress) returns (uint256 rewardsStartTime) {
+			if (staking.getCollateralizationRatio(ownerAddress) < TENTH) {
+				return false;
+			}
+			uint256 daysDiff = (block.timestamp - rewardsStartTime) / 60 / 60 / 24;
+			//TODO get 28 days frpm setting somewhere
+			//TODO: change back to 14 days after alpha
+			if (daysDiff < 0) {
+				return false;
+			}
+		} catch {
 			return false;
 		}
-		uint256 daysDiff = (block.timestamp - rewardsStartTime) / 60 / 60 / 24;
-		//TODO get 14 days from setting somewhere
-		//TODO: change back to 14 days after alpha
-		if (daysDiff < 0) {
-			return false;
-		}
+
 		return true;
 	}
 
