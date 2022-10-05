@@ -17,9 +17,8 @@ contract RewardsPool is Base {
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
 		//TODO: change to 28 days after alpha
-		setUint("rewards.pool.reward.cycle.length", 2 minutes); // The time in which a claim period will span in seconds - 28 days by default
+		setUint("rewards.pool.reward.cycle.length", 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
 		setUint("ggp.total.circulating.supply", 18000000 ether);
-		// setUint(keccak256("rewards.pool.reward.cycle.start.time"), block.timestamp);
 		// setUint("ggp.total.inflation.calculated.time", 0 seconds);
 		setUint(keccak256(abi.encodePacked("rewards.percentage", "ProtocolDAOClaim")), 0.10 ether);
 		setUint(keccak256(abi.encodePacked("rewards.percentage", "NOPClaim")), 0.70 ether);

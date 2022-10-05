@@ -72,15 +72,14 @@ contract NOPClaim is Base {
 		// Load contracts
 		Staking staking = Staking(getContractAddress("Staking"));
 
-		//TODO: use their effective stake, not thier total stake
-		// uint256 ggpStaked = staking.getGGPStake(ownerAddress);
+		// uint256 ggpEffectiveStaked = staking.getEffectiveGGPStaked(ownerAddress);
 		if (totalEligibleGGPStaked == 0) {
 			return;
 		}
 
 		//should return how much userGGPstaked / totalEligibleGGPStaked
 		//TODO: uncomment below when alpha is done
-		// uint256 percentage = ggpStaked.divWadDown(totalEligibleGGPStaked);
+		// uint256 percentage = ggpEffectiveStaked.divWadDown(totalEligibleGGPStaked);
 
 		// uint256 nodesRewardsCycleTotal = getRewardsCycleTotal();
 

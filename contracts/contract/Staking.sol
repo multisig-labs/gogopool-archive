@@ -29,8 +29,8 @@ contract Staking is Base {
 	using FixedPointMathLib for uint256;
 
 	// 1 ether = 100%
-	uint256 public constant maxCollateralizationPercent = 1.5 ether;
-	uint256 public constant minCollateralizationPercent = 0.1 ether;
+	uint256 public constant MAX_COLLATERALIZATION_PERCENT = 1.5 ether;
+	uint256 public constant MIN_COLLATERALIZATION_PERCENT = 0.1 ether;
 	ERC20 public immutable ggp;
 
 	uint256 internal constant WAD = 1e18; // The scalar of ETH and most ERC20s.
@@ -175,7 +175,7 @@ contract Staking is Base {
 
 		uint256 avaxAssigned = getAVAXAssigned(stakerAddr);
 		uint256 ggp100pct = avaxAssigned.divWadDown(ggpPriceInAvax);
-		return ggp100pct.mulWadDown(minCollateralizationPercent);
+		return ggp100pct.mulWadDown(MIN_COLLATERALIZATION_PERCENT);
 	}
 
 	// Returns 0 = 0%, 1 ether = 100%
@@ -191,6 +191,22 @@ contract Staking is Base {
 			return type(uint256).max;
 		}
 		return ggpStakedInAvax.divWadDown(avaxAssigned);
+	}
+
+	function getEffectiveGGPStaked(address ownerAddress) external view returns (uint256) {
+		uint256 ggpStaked = getGGPStake(ownerAddress);
+
+		uint256 collateralizationRatio = getCollateralizationRatio(ownerAddress);
+		if (collateralizationRatio > MAX_COLLATERALIZATION_PERCENT) {
+			//calculate effective stake
+			Oracle oracle = Oracle(getContractAddress("Oracle"));
+			(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+			uint256 avaxAssigned = getAVAXAssigned(ownerAddress);
+			uint256 ggpStakedInAvax = avaxAssigned.mulWadDown(MAX_COLLATERALIZATION_PERCENT);
+			uint256 ggpEffectiveStake = ggpStakedInAvax.divWadDown(ggpPriceInAvax);
+			return ggpEffectiveStake;
+		}
+		return ggpStaked;
 	}
 
 	// Accept a GGP stake
@@ -235,7 +251,7 @@ contract Staking is Base {
 
 		decreaseGGPStake(msg.sender, amount);
 
-		if (getCollateralizationRatio(msg.sender) < maxCollateralizationPercent) {
+		if (getCollateralizationRatio(msg.sender) < MAX_COLLATERALIZATION_PERCENT) {
 			revert CannotWithdrawUnder150CollateralizationRatio();
 		}
 
