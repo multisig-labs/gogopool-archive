@@ -179,7 +179,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
 		staking.increaseMinipoolCount(msg.sender);
 		uint256 ratio = staking.getCollateralizationRatio(msg.sender);
-		if (ratio < staking.minCollateralizationPercent()) {
+		if (ratio < staking.MIN_COLLATERALIZATION_PERCENT()) {
 			revert InsufficientGGPCollateralization();
 		}
 

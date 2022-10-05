@@ -204,6 +204,7 @@ contract Staking is Base {
 			uint256 avaxAssigned = getAVAXAssigned(ownerAddress);
 			uint256 ggpStakedInAvax = avaxAssigned.mulWadDown(MAX_COLLATERALIZATION_PERCENT);
 			uint256 ggpEffectiveStake = ggpStakedInAvax.divWadDown(ggpPriceInAvax);
+
 			return ggpEffectiveStake;
 		}
 		return ggpStaked;
