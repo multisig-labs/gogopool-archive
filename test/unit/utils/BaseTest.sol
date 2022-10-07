@@ -192,6 +192,11 @@ abstract contract BaseTest is Test {
 		return minipoolMgr.getMinipool(index);
 	}
 
+	function randHash() internal returns (bytes32) {
+		randNonce++;
+		return keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)));
+	}
+
 	function randAddress() internal returns (address) {
 		randNonce++;
 		return address(uint160(uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp))))));

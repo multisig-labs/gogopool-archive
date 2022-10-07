@@ -9,6 +9,15 @@ const {
 	getStakers,
 } = require("./lib/utils");
 
+task("nopClaim:isEligible", "Is an address eligible?")
+	.addParam("addr", "Address", "")
+	.setAction(async ({ addr }) => {
+		const nopClaim = await get("NOPClaim");
+
+		const isEligible = await nopClaim.isEligible(addr);
+		log(`Eligible: ${isEligible}`);
+	});
+
 task(
 	"nopClaim:distributeRewards",
 	"Calculate and distribute rewards to the node operators"
@@ -21,6 +30,7 @@ task(
 	let totalEligibleGGPStaked = ethers.BigNumber.from("0");
 	for (staker of stakers) {
 		const isEligible = await nopClaim.isEligible(staker.stakerAddr);
+		log(`Eligible ${staker.stakerAddr} ${isEligible}`);
 		if (isEligible) {
 			// TODO: get their effective stake not their total staked
 			// add their ggp staked to the total ggp staked

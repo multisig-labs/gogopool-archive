@@ -186,7 +186,7 @@ contract Staking is Base {
 		uint256 ggpStaked = getGGPStake(stakerAddr);
 		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
 		uint256 avaxAssigned = getAVAXAssigned(stakerAddr);
-		if (ggpStaked == 0 || avaxAssigned == 0) {
+		if (avaxAssigned == 0) {
 			// Infinite collat ratio
 			return type(uint256).max;
 		}

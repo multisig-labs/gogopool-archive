@@ -492,6 +492,11 @@ contract MinipoolManager is Base, IWithdrawer {
 		mp.errorCode = getBytes32(keccak256(abi.encodePacked("minipool.item", index, ".errorCode")));
 	}
 
+	function getMinipoolByNodeID(address nodeID) public view returns (Minipool memory mp) {
+		int256 index = getIndexOf(nodeID);
+		return getMinipool(index);
+	}
+
 	// Get minipools in a certain status (limit=0 means no pagination)
 	function getMinipools(
 		MinipoolStatus status,

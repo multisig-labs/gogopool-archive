@@ -27,12 +27,12 @@ contract GasSettingsTest is BaseTest {
 	}
 
 	// gas: 7849
-	function testNoNamespace() public {
+	function testNoNamespace() public view {
 		store.getUint(keccak256(abi.encodePacked("mykey.")));
 	}
 
 	// gas: 10047
-	function testWithNamespace() public {
+	function testWithNamespace() public view {
 		store.getUint(keccak256(abi.encodePacked(settingNamespace, "mykey.")));
 	}
 }
