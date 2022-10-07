@@ -30,7 +30,7 @@ var (
 
 // RewardsPoolMetaData contains all meta data concerning the RewardsPool contract.
 var RewardsPoolMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inflationCalcTime\",\"type\":\"uint256\"}],\"name\":\"GGPInflationLog\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"NOPClaimRewardsTransfered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalRewardAmt\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"NewRewardsCycleStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"ProtocolDAORewardsTransfered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canCycleStart\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractAllowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractPerc\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalFirstStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalsPassed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLastInflationCalcTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getPublicContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCyclesPassed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inflationCalculate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startCycle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"IncorrectRewardDistribution\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inflationCalcTime\",\"type\":\"uint256\"}],\"name\":\"GGPInflationLog\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"NOPClaimRewardsTransfered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalRewardAmt\",\"type\":\"uint256\"}],\"name\":\"NewRewardsCycleStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ProtocolDAORewardsTransfered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canCycleStart\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractDistribution\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractPerc\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalsPassed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLastInflationCalcTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCyclesPassed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalGGPCirculatingSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inflationCalculate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startCycle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // RewardsPoolABI is the input ABI used to generate the binding from.
@@ -210,12 +210,12 @@ func (_RewardsPool *RewardsPoolCallerSession) CanCycleStart() (bool, error) {
 	return _RewardsPool.Contract.CanCycleStart(&_RewardsPool.CallOpts)
 }
 
-// GetClaimingContractAllowance is a free data retrieval call binding the contract method 0x0a9630c2.
+// GetClaimingContractDistribution is a free data retrieval call binding the contract method 0xc32d0f72.
 //
-// Solidity: function getClaimingContractAllowance(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetClaimingContractAllowance(opts *bind.CallOpts, _claimingContract string) (*big.Int, error) {
+// Solidity: function getClaimingContractDistribution(string _claimingContract) view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetClaimingContractDistribution(opts *bind.CallOpts, _claimingContract string) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getClaimingContractAllowance", _claimingContract)
+	err := _RewardsPool.contract.Call(opts, &out, "getClaimingContractDistribution", _claimingContract)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -227,18 +227,18 @@ func (_RewardsPool *RewardsPoolCaller) GetClaimingContractAllowance(opts *bind.C
 
 }
 
-// GetClaimingContractAllowance is a free data retrieval call binding the contract method 0x0a9630c2.
+// GetClaimingContractDistribution is a free data retrieval call binding the contract method 0xc32d0f72.
 //
-// Solidity: function getClaimingContractAllowance(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetClaimingContractAllowance(_claimingContract string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetClaimingContractAllowance(&_RewardsPool.CallOpts, _claimingContract)
+// Solidity: function getClaimingContractDistribution(string _claimingContract) view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetClaimingContractDistribution(_claimingContract string) (*big.Int, error) {
+	return _RewardsPool.Contract.GetClaimingContractDistribution(&_RewardsPool.CallOpts, _claimingContract)
 }
 
-// GetClaimingContractAllowance is a free data retrieval call binding the contract method 0x0a9630c2.
+// GetClaimingContractDistribution is a free data retrieval call binding the contract method 0xc32d0f72.
 //
-// Solidity: function getClaimingContractAllowance(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetClaimingContractAllowance(_claimingContract string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetClaimingContractAllowance(&_RewardsPool.CallOpts, _claimingContract)
+// Solidity: function getClaimingContractDistribution(string _claimingContract) view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetClaimingContractDistribution(_claimingContract string) (*big.Int, error) {
+	return _RewardsPool.Contract.GetClaimingContractDistribution(&_RewardsPool.CallOpts, _claimingContract)
 }
 
 // GetClaimingContractPerc is a free data retrieval call binding the contract method 0xf6a3f6ef.
@@ -272,97 +272,35 @@ func (_RewardsPool *RewardsPoolCallerSession) GetClaimingContractPerc(_claimingC
 	return _RewardsPool.Contract.GetClaimingContractPerc(&_RewardsPool.CallOpts, _claimingContract)
 }
 
-// GetInflationIntervalFirstStartTime is a free data retrieval call binding the contract method 0x83a0b5bb.
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getInflationIntervalFirstStartTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalFirstStartTime(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getContractAddress(string _contractName) view returns(address)
+func (_RewardsPool *RewardsPoolCaller) GetContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getInflationIntervalFirstStartTime")
+	err := _RewardsPool.contract.Call(opts, &out, "getContractAddress", _contractName)
 
 	if err != nil {
-		return *new(*big.Int), err
+		return *new(common.Address), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
 
 }
 
-// GetInflationIntervalFirstStartTime is a free data retrieval call binding the contract method 0x83a0b5bb.
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getInflationIntervalFirstStartTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetInflationIntervalFirstStartTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalFirstStartTime(&_RewardsPool.CallOpts)
+// Solidity: function getContractAddress(string _contractName) view returns(address)
+func (_RewardsPool *RewardsPoolSession) GetContractAddress(_contractName string) (common.Address, error) {
+	return _RewardsPool.Contract.GetContractAddress(&_RewardsPool.CallOpts, _contractName)
 }
 
-// GetInflationIntervalFirstStartTime is a free data retrieval call binding the contract method 0x83a0b5bb.
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getInflationIntervalFirstStartTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalFirstStartTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalFirstStartTime(&_RewardsPool.CallOpts)
-}
-
-// GetInflationIntervalRate is a free data retrieval call binding the contract method 0xee96d774.
-//
-// Solidity: function getInflationIntervalRate() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalRate(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getInflationIntervalRate")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetInflationIntervalRate is a free data retrieval call binding the contract method 0xee96d774.
-//
-// Solidity: function getInflationIntervalRate() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetInflationIntervalRate() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalRate(&_RewardsPool.CallOpts)
-}
-
-// GetInflationIntervalRate is a free data retrieval call binding the contract method 0xee96d774.
-//
-// Solidity: function getInflationIntervalRate() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalRate() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalRate(&_RewardsPool.CallOpts)
-}
-
-// GetInflationIntervalTime is a free data retrieval call binding the contract method 0x63657510.
-//
-// Solidity: function getInflationIntervalTime() pure returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalTime(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getInflationIntervalTime")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetInflationIntervalTime is a free data retrieval call binding the contract method 0x63657510.
-//
-// Solidity: function getInflationIntervalTime() pure returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetInflationIntervalTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalTime(&_RewardsPool.CallOpts)
-}
-
-// GetInflationIntervalTime is a free data retrieval call binding the contract method 0x63657510.
-//
-// Solidity: function getInflationIntervalTime() pure returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalTime(&_RewardsPool.CallOpts)
+// Solidity: function getContractAddress(string _contractName) view returns(address)
+func (_RewardsPool *RewardsPoolCallerSession) GetContractAddress(_contractName string) (common.Address, error) {
+	return _RewardsPool.Contract.GetContractAddress(&_RewardsPool.CallOpts, _contractName)
 }
 
 // GetInflationIntervalsPassed is a free data retrieval call binding the contract method 0xb933c49e.
@@ -425,37 +363,6 @@ func (_RewardsPool *RewardsPoolSession) GetLastInflationCalcTime() (*big.Int, er
 // Solidity: function getLastInflationCalcTime() view returns(uint256)
 func (_RewardsPool *RewardsPoolCallerSession) GetLastInflationCalcTime() (*big.Int, error) {
 	return _RewardsPool.Contract.GetLastInflationCalcTime(&_RewardsPool.CallOpts)
-}
-
-// GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
-//
-// Solidity: function getPublicContractAddress(string _contractName) view returns(address)
-func (_RewardsPool *RewardsPoolCaller) GetPublicContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getPublicContractAddress", _contractName)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
-//
-// Solidity: function getPublicContractAddress(string _contractName) view returns(address)
-func (_RewardsPool *RewardsPoolSession) GetPublicContractAddress(_contractName string) (common.Address, error) {
-	return _RewardsPool.Contract.GetPublicContractAddress(&_RewardsPool.CallOpts, _contractName)
-}
-
-// GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
-//
-// Solidity: function getPublicContractAddress(string _contractName) view returns(address)
-func (_RewardsPool *RewardsPoolCallerSession) GetPublicContractAddress(_contractName string) (common.Address, error) {
-	return _RewardsPool.Contract.GetPublicContractAddress(&_RewardsPool.CallOpts, _contractName)
 }
 
 // GetRewardCycleLength is a free data retrieval call binding the contract method 0xf10fc5b9.
@@ -673,6 +580,37 @@ func (_RewardsPool *RewardsPoolSession) GetSettingUint(settingNameSpace [32]byte
 // Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
 func (_RewardsPool *RewardsPoolCallerSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
 	return _RewardsPool.Contract.GetSettingUint(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
+}
+
+// GetTotalGGPCirculatingSupply is a free data retrieval call binding the contract method 0x2ffc52ee.
+//
+// Solidity: function getTotalGGPCirculatingSupply() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetTotalGGPCirculatingSupply(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _RewardsPool.contract.Call(opts, &out, "getTotalGGPCirculatingSupply")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetTotalGGPCirculatingSupply is a free data retrieval call binding the contract method 0x2ffc52ee.
+//
+// Solidity: function getTotalGGPCirculatingSupply() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetTotalGGPCirculatingSupply() (*big.Int, error) {
+	return _RewardsPool.Contract.GetTotalGGPCirculatingSupply(&_RewardsPool.CallOpts)
+}
+
+// GetTotalGGPCirculatingSupply is a free data retrieval call binding the contract method 0x2ffc52ee.
+//
+// Solidity: function getTotalGGPCirculatingSupply() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetTotalGGPCirculatingSupply() (*big.Int, error) {
+	return _RewardsPool.Contract.GetTotalGGPCirculatingSupply(&_RewardsPool.CallOpts)
 }
 
 // InflationCalculate is a free data retrieval call binding the contract method 0xc1a26006.
@@ -964,13 +902,12 @@ func (it *RewardsPoolNOPClaimRewardsTransferedIterator) Close() error {
 // RewardsPoolNOPClaimRewardsTransfered represents a NOPClaimRewardsTransfered event raised by the RewardsPool contract.
 type RewardsPoolNOPClaimRewardsTransfered struct {
 	Value *big.Int
-	Time  *big.Int
 	Raw   types.Log // Blockchain specific contextual infos
 }
 
-// FilterNOPClaimRewardsTransfered is a free log retrieval operation binding the contract event 0xe54ffab462b130bc9223730565081bb3148be63c764aa0153827a7a33c42d9f0.
+// FilterNOPClaimRewardsTransfered is a free log retrieval operation binding the contract event 0x82c02c8f9f42f7ad10a17c2b6dd1d52619ca310cae1c2e9638174fd53217284b.
 //
-// Solidity: event NOPClaimRewardsTransfered(uint256 value, uint256 time)
+// Solidity: event NOPClaimRewardsTransfered(uint256 value)
 func (_RewardsPool *RewardsPoolFilterer) FilterNOPClaimRewardsTransfered(opts *bind.FilterOpts) (*RewardsPoolNOPClaimRewardsTransferedIterator, error) {
 
 	logs, sub, err := _RewardsPool.contract.FilterLogs(opts, "NOPClaimRewardsTransfered")
@@ -980,9 +917,9 @@ func (_RewardsPool *RewardsPoolFilterer) FilterNOPClaimRewardsTransfered(opts *b
 	return &RewardsPoolNOPClaimRewardsTransferedIterator{contract: _RewardsPool.contract, event: "NOPClaimRewardsTransfered", logs: logs, sub: sub}, nil
 }
 
-// WatchNOPClaimRewardsTransfered is a free log subscription operation binding the contract event 0xe54ffab462b130bc9223730565081bb3148be63c764aa0153827a7a33c42d9f0.
+// WatchNOPClaimRewardsTransfered is a free log subscription operation binding the contract event 0x82c02c8f9f42f7ad10a17c2b6dd1d52619ca310cae1c2e9638174fd53217284b.
 //
-// Solidity: event NOPClaimRewardsTransfered(uint256 value, uint256 time)
+// Solidity: event NOPClaimRewardsTransfered(uint256 value)
 func (_RewardsPool *RewardsPoolFilterer) WatchNOPClaimRewardsTransfered(opts *bind.WatchOpts, sink chan<- *RewardsPoolNOPClaimRewardsTransfered) (event.Subscription, error) {
 
 	logs, sub, err := _RewardsPool.contract.WatchLogs(opts, "NOPClaimRewardsTransfered")
@@ -1017,9 +954,9 @@ func (_RewardsPool *RewardsPoolFilterer) WatchNOPClaimRewardsTransfered(opts *bi
 	}), nil
 }
 
-// ParseNOPClaimRewardsTransfered is a log parse operation binding the contract event 0xe54ffab462b130bc9223730565081bb3148be63c764aa0153827a7a33c42d9f0.
+// ParseNOPClaimRewardsTransfered is a log parse operation binding the contract event 0x82c02c8f9f42f7ad10a17c2b6dd1d52619ca310cae1c2e9638174fd53217284b.
 //
-// Solidity: event NOPClaimRewardsTransfered(uint256 value, uint256 time)
+// Solidity: event NOPClaimRewardsTransfered(uint256 value)
 func (_RewardsPool *RewardsPoolFilterer) ParseNOPClaimRewardsTransfered(log types.Log) (*RewardsPoolNOPClaimRewardsTransfered, error) {
 	event := new(RewardsPoolNOPClaimRewardsTransfered)
 	if err := _RewardsPool.contract.UnpackLog(event, "NOPClaimRewardsTransfered", log); err != nil {
@@ -1099,13 +1036,12 @@ func (it *RewardsPoolNewRewardsCycleStartedIterator) Close() error {
 // RewardsPoolNewRewardsCycleStarted represents a NewRewardsCycleStarted event raised by the RewardsPool contract.
 type RewardsPoolNewRewardsCycleStarted struct {
 	TotalRewardAmt *big.Int
-	Time           *big.Int
 	Raw            types.Log // Blockchain specific contextual infos
 }
 
-// FilterNewRewardsCycleStarted is a free log retrieval operation binding the contract event 0x132a9a84d56348feb67101428362f6c31b45578dd51b6919ead3e4ffdd2fa2d8.
+// FilterNewRewardsCycleStarted is a free log retrieval operation binding the contract event 0x6b1d3dc5fce42913ead941789ebaa30a3b9d2f7d03eb1b72664ef963af99a4c8.
 //
-// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt, uint256 time)
+// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt)
 func (_RewardsPool *RewardsPoolFilterer) FilterNewRewardsCycleStarted(opts *bind.FilterOpts) (*RewardsPoolNewRewardsCycleStartedIterator, error) {
 
 	logs, sub, err := _RewardsPool.contract.FilterLogs(opts, "NewRewardsCycleStarted")
@@ -1115,9 +1051,9 @@ func (_RewardsPool *RewardsPoolFilterer) FilterNewRewardsCycleStarted(opts *bind
 	return &RewardsPoolNewRewardsCycleStartedIterator{contract: _RewardsPool.contract, event: "NewRewardsCycleStarted", logs: logs, sub: sub}, nil
 }
 
-// WatchNewRewardsCycleStarted is a free log subscription operation binding the contract event 0x132a9a84d56348feb67101428362f6c31b45578dd51b6919ead3e4ffdd2fa2d8.
+// WatchNewRewardsCycleStarted is a free log subscription operation binding the contract event 0x6b1d3dc5fce42913ead941789ebaa30a3b9d2f7d03eb1b72664ef963af99a4c8.
 //
-// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt, uint256 time)
+// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt)
 func (_RewardsPool *RewardsPoolFilterer) WatchNewRewardsCycleStarted(opts *bind.WatchOpts, sink chan<- *RewardsPoolNewRewardsCycleStarted) (event.Subscription, error) {
 
 	logs, sub, err := _RewardsPool.contract.WatchLogs(opts, "NewRewardsCycleStarted")
@@ -1152,9 +1088,9 @@ func (_RewardsPool *RewardsPoolFilterer) WatchNewRewardsCycleStarted(opts *bind.
 	}), nil
 }
 
-// ParseNewRewardsCycleStarted is a log parse operation binding the contract event 0x132a9a84d56348feb67101428362f6c31b45578dd51b6919ead3e4ffdd2fa2d8.
+// ParseNewRewardsCycleStarted is a log parse operation binding the contract event 0x6b1d3dc5fce42913ead941789ebaa30a3b9d2f7d03eb1b72664ef963af99a4c8.
 //
-// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt, uint256 time)
+// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt)
 func (_RewardsPool *RewardsPoolFilterer) ParseNewRewardsCycleStarted(log types.Log) (*RewardsPoolNewRewardsCycleStarted, error) {
 	event := new(RewardsPoolNewRewardsCycleStarted)
 	if err := _RewardsPool.contract.UnpackLog(event, "NewRewardsCycleStarted", log); err != nil {
@@ -1234,13 +1170,12 @@ func (it *RewardsPoolProtocolDAORewardsTransferedIterator) Close() error {
 // RewardsPoolProtocolDAORewardsTransfered represents a ProtocolDAORewardsTransfered event raised by the RewardsPool contract.
 type RewardsPoolProtocolDAORewardsTransfered struct {
 	Value *big.Int
-	Time  *big.Int
 	Raw   types.Log // Blockchain specific contextual infos
 }
 
-// FilterProtocolDAORewardsTransfered is a free log retrieval operation binding the contract event 0x836296663f2e8d221acfc330f1e49892a282ed50d2c168f75a2472e7a39226dd.
+// FilterProtocolDAORewardsTransfered is a free log retrieval operation binding the contract event 0x08839a63ce86957af0da1fd5b80ebfffeeb19d123ab6709e765ccae050041b10.
 //
-// Solidity: event ProtocolDAORewardsTransfered(uint256 value, uint256 time)
+// Solidity: event ProtocolDAORewardsTransfered(uint256 value)
 func (_RewardsPool *RewardsPoolFilterer) FilterProtocolDAORewardsTransfered(opts *bind.FilterOpts) (*RewardsPoolProtocolDAORewardsTransferedIterator, error) {
 
 	logs, sub, err := _RewardsPool.contract.FilterLogs(opts, "ProtocolDAORewardsTransfered")
@@ -1250,9 +1185,9 @@ func (_RewardsPool *RewardsPoolFilterer) FilterProtocolDAORewardsTransfered(opts
 	return &RewardsPoolProtocolDAORewardsTransferedIterator{contract: _RewardsPool.contract, event: "ProtocolDAORewardsTransfered", logs: logs, sub: sub}, nil
 }
 
-// WatchProtocolDAORewardsTransfered is a free log subscription operation binding the contract event 0x836296663f2e8d221acfc330f1e49892a282ed50d2c168f75a2472e7a39226dd.
+// WatchProtocolDAORewardsTransfered is a free log subscription operation binding the contract event 0x08839a63ce86957af0da1fd5b80ebfffeeb19d123ab6709e765ccae050041b10.
 //
-// Solidity: event ProtocolDAORewardsTransfered(uint256 value, uint256 time)
+// Solidity: event ProtocolDAORewardsTransfered(uint256 value)
 func (_RewardsPool *RewardsPoolFilterer) WatchProtocolDAORewardsTransfered(opts *bind.WatchOpts, sink chan<- *RewardsPoolProtocolDAORewardsTransfered) (event.Subscription, error) {
 
 	logs, sub, err := _RewardsPool.contract.WatchLogs(opts, "ProtocolDAORewardsTransfered")
@@ -1287,9 +1222,9 @@ func (_RewardsPool *RewardsPoolFilterer) WatchProtocolDAORewardsTransfered(opts 
 	}), nil
 }
 
-// ParseProtocolDAORewardsTransfered is a log parse operation binding the contract event 0x836296663f2e8d221acfc330f1e49892a282ed50d2c168f75a2472e7a39226dd.
+// ParseProtocolDAORewardsTransfered is a log parse operation binding the contract event 0x08839a63ce86957af0da1fd5b80ebfffeeb19d123ab6709e765ccae050041b10.
 //
-// Solidity: event ProtocolDAORewardsTransfered(uint256 value, uint256 time)
+// Solidity: event ProtocolDAORewardsTransfered(uint256 value)
 func (_RewardsPool *RewardsPoolFilterer) ParseProtocolDAORewardsTransfered(log types.Log) (*RewardsPoolProtocolDAORewardsTransfered, error) {
 	event := new(RewardsPoolProtocolDAORewardsTransfered)
 	if err := _RewardsPool.contract.UnpackLog(event, "ProtocolDAORewardsTransfered", log); err != nil {

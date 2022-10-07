@@ -30,7 +30,7 @@ var (
 
 // NopClaimMetaData contains all meta data concerning the NopClaim contract.
 var NopClaimMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoRewardsToClaim\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPRewardsClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ownerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalEligibleGGPStaked\",\"type\":\"uint256\"}],\"name\":\"calculateAndSetRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimAmount\",\"type\":\"uint256\"}],\"name\":\"claimAndRestake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getEnabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getPublicContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ownerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"rewardsStartTime\",\"type\":\"uint256\"}],\"name\":\"isEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"setRewardsCycleTotal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoRewardsToClaim\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPRewardsClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ownerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalEligibleGGPStaked\",\"type\":\"uint256\"}],\"name\":\"calculateAndDistributeRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimAmount\",\"type\":\"uint256\"}],\"name\":\"claimAndRestake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getEnabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ownerAddress\",\"type\":\"address\"}],\"name\":\"isEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"setRewardsCycleTotal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // NopClaimABI is the input ABI used to generate the binding from.
@@ -179,6 +179,37 @@ func (_NopClaim *NopClaimTransactorRaw) Transact(opts *bind.TransactOpts, method
 	return _NopClaim.Contract.contract.Transact(opts, method, params...)
 }
 
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
+//
+// Solidity: function getContractAddress(string _contractName) view returns(address)
+func (_NopClaim *NopClaimCaller) GetContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
+	var out []interface{}
+	err := _NopClaim.contract.Call(opts, &out, "getContractAddress", _contractName)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
+//
+// Solidity: function getContractAddress(string _contractName) view returns(address)
+func (_NopClaim *NopClaimSession) GetContractAddress(_contractName string) (common.Address, error) {
+	return _NopClaim.Contract.GetContractAddress(&_NopClaim.CallOpts, _contractName)
+}
+
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
+//
+// Solidity: function getContractAddress(string _contractName) view returns(address)
+func (_NopClaim *NopClaimCallerSession) GetContractAddress(_contractName string) (common.Address, error) {
+	return _NopClaim.Contract.GetContractAddress(&_NopClaim.CallOpts, _contractName)
+}
+
 // GetEnabled is a free data retrieval call binding the contract method 0x18de0afd.
 //
 // Solidity: function getEnabled() pure returns(bool)
@@ -208,37 +239,6 @@ func (_NopClaim *NopClaimSession) GetEnabled() (bool, error) {
 // Solidity: function getEnabled() pure returns(bool)
 func (_NopClaim *NopClaimCallerSession) GetEnabled() (bool, error) {
 	return _NopClaim.Contract.GetEnabled(&_NopClaim.CallOpts)
-}
-
-// GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
-//
-// Solidity: function getPublicContractAddress(string _contractName) view returns(address)
-func (_NopClaim *NopClaimCaller) GetPublicContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
-	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "getPublicContractAddress", _contractName)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
-//
-// Solidity: function getPublicContractAddress(string _contractName) view returns(address)
-func (_NopClaim *NopClaimSession) GetPublicContractAddress(_contractName string) (common.Address, error) {
-	return _NopClaim.Contract.GetPublicContractAddress(&_NopClaim.CallOpts, _contractName)
-}
-
-// GetPublicContractAddress is a free data retrieval call binding the contract method 0xcff0b648.
-//
-// Solidity: function getPublicContractAddress(string _contractName) view returns(address)
-func (_NopClaim *NopClaimCallerSession) GetPublicContractAddress(_contractName string) (common.Address, error) {
-	return _NopClaim.Contract.GetPublicContractAddress(&_NopClaim.CallOpts, _contractName)
 }
 
 // GetRewardsCycleTotal is a free data retrieval call binding the contract method 0xc7379d47.
@@ -396,12 +396,12 @@ func (_NopClaim *NopClaimCallerSession) Ggp() (common.Address, error) {
 	return _NopClaim.Contract.Ggp(&_NopClaim.CallOpts)
 }
 
-// IsEligible is a free data retrieval call binding the contract method 0xd80a8434.
+// IsEligible is a free data retrieval call binding the contract method 0x66e305fd.
 //
-// Solidity: function isEligible(address ownerAddress, uint256 rewardsStartTime) view returns(bool)
-func (_NopClaim *NopClaimCaller) IsEligible(opts *bind.CallOpts, ownerAddress common.Address, rewardsStartTime *big.Int) (bool, error) {
+// Solidity: function isEligible(address ownerAddress) view returns(bool)
+func (_NopClaim *NopClaimCaller) IsEligible(opts *bind.CallOpts, ownerAddress common.Address) (bool, error) {
 	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "isEligible", ownerAddress, rewardsStartTime)
+	err := _NopClaim.contract.Call(opts, &out, "isEligible", ownerAddress)
 
 	if err != nil {
 		return *new(bool), err
@@ -413,18 +413,18 @@ func (_NopClaim *NopClaimCaller) IsEligible(opts *bind.CallOpts, ownerAddress co
 
 }
 
-// IsEligible is a free data retrieval call binding the contract method 0xd80a8434.
+// IsEligible is a free data retrieval call binding the contract method 0x66e305fd.
 //
-// Solidity: function isEligible(address ownerAddress, uint256 rewardsStartTime) view returns(bool)
-func (_NopClaim *NopClaimSession) IsEligible(ownerAddress common.Address, rewardsStartTime *big.Int) (bool, error) {
-	return _NopClaim.Contract.IsEligible(&_NopClaim.CallOpts, ownerAddress, rewardsStartTime)
+// Solidity: function isEligible(address ownerAddress) view returns(bool)
+func (_NopClaim *NopClaimSession) IsEligible(ownerAddress common.Address) (bool, error) {
+	return _NopClaim.Contract.IsEligible(&_NopClaim.CallOpts, ownerAddress)
 }
 
-// IsEligible is a free data retrieval call binding the contract method 0xd80a8434.
+// IsEligible is a free data retrieval call binding the contract method 0x66e305fd.
 //
-// Solidity: function isEligible(address ownerAddress, uint256 rewardsStartTime) view returns(bool)
-func (_NopClaim *NopClaimCallerSession) IsEligible(ownerAddress common.Address, rewardsStartTime *big.Int) (bool, error) {
-	return _NopClaim.Contract.IsEligible(&_NopClaim.CallOpts, ownerAddress, rewardsStartTime)
+// Solidity: function isEligible(address ownerAddress) view returns(bool)
+func (_NopClaim *NopClaimCallerSession) IsEligible(ownerAddress common.Address) (bool, error) {
+	return _NopClaim.Contract.IsEligible(&_NopClaim.CallOpts, ownerAddress)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
@@ -458,25 +458,25 @@ func (_NopClaim *NopClaimCallerSession) Version() (uint8, error) {
 	return _NopClaim.Contract.Version(&_NopClaim.CallOpts)
 }
 
-// CalculateAndSetRewards is a paid mutator transaction binding the contract method 0x158d16cb.
+// CalculateAndDistributeRewards is a paid mutator transaction binding the contract method 0xd8a64c07.
 //
-// Solidity: function calculateAndSetRewards(address ownerAddress, uint256 totalEligibleGGPStaked) returns()
-func (_NopClaim *NopClaimTransactor) CalculateAndSetRewards(opts *bind.TransactOpts, ownerAddress common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
-	return _NopClaim.contract.Transact(opts, "calculateAndSetRewards", ownerAddress, totalEligibleGGPStaked)
+// Solidity: function calculateAndDistributeRewards(address ownerAddress, uint256 totalEligibleGGPStaked) returns()
+func (_NopClaim *NopClaimTransactor) CalculateAndDistributeRewards(opts *bind.TransactOpts, ownerAddress common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
+	return _NopClaim.contract.Transact(opts, "calculateAndDistributeRewards", ownerAddress, totalEligibleGGPStaked)
 }
 
-// CalculateAndSetRewards is a paid mutator transaction binding the contract method 0x158d16cb.
+// CalculateAndDistributeRewards is a paid mutator transaction binding the contract method 0xd8a64c07.
 //
-// Solidity: function calculateAndSetRewards(address ownerAddress, uint256 totalEligibleGGPStaked) returns()
-func (_NopClaim *NopClaimSession) CalculateAndSetRewards(ownerAddress common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.CalculateAndSetRewards(&_NopClaim.TransactOpts, ownerAddress, totalEligibleGGPStaked)
+// Solidity: function calculateAndDistributeRewards(address ownerAddress, uint256 totalEligibleGGPStaked) returns()
+func (_NopClaim *NopClaimSession) CalculateAndDistributeRewards(ownerAddress common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
+	return _NopClaim.Contract.CalculateAndDistributeRewards(&_NopClaim.TransactOpts, ownerAddress, totalEligibleGGPStaked)
 }
 
-// CalculateAndSetRewards is a paid mutator transaction binding the contract method 0x158d16cb.
+// CalculateAndDistributeRewards is a paid mutator transaction binding the contract method 0xd8a64c07.
 //
-// Solidity: function calculateAndSetRewards(address ownerAddress, uint256 totalEligibleGGPStaked) returns()
-func (_NopClaim *NopClaimTransactorSession) CalculateAndSetRewards(ownerAddress common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.CalculateAndSetRewards(&_NopClaim.TransactOpts, ownerAddress, totalEligibleGGPStaked)
+// Solidity: function calculateAndDistributeRewards(address ownerAddress, uint256 totalEligibleGGPStaked) returns()
+func (_NopClaim *NopClaimTransactorSession) CalculateAndDistributeRewards(ownerAddress common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
+	return _NopClaim.Contract.CalculateAndDistributeRewards(&_NopClaim.TransactOpts, ownerAddress, totalEligibleGGPStaked)
 }
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
