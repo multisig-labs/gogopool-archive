@@ -9,15 +9,6 @@ const {
 	getStakers,
 } = require("./lib/utils");
 
-task("nopClaim:isEligible", "Is an address eligible?")
-	.addParam("addr", "Address", "")
-	.setAction(async ({ addr }) => {
-		const nopClaim = await get("NOPClaim");
-
-		const isEligible = await nopClaim.isEligible(addr);
-		log(`Eligible: ${isEligible}`);
-	});
-
 task(
 	"nopClaim:distributeRewards",
 	"Calculate and distribute rewards to the node operators"
