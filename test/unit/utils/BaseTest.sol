@@ -97,7 +97,7 @@ abstract contract BaseTest is Test {
 
 		dao = new ProtocolDAO(store);
 		registerContract(store, "ProtocolDAO", address(dao));
-		dao.initialize();
+		initDao();
 
 		staking = new Staking(store, ggp);
 		registerContract(store, "Staking", address(staking));
@@ -118,12 +118,25 @@ abstract contract BaseTest is Test {
 		deal(guardian, type(uint128).max);
 	}
 
-	function initStorage(Storage s) internal {
-		// Init any default values we want in storage
-		bytes32 protocolDaoSettingsNamespace = keccak256(abi.encodePacked("dao.protocol.setting.", "dao.protocol."));
-		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.rate")), 1000133680617113500);
-		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval.start")), block.timestamp + 1 days);
-		s.setUint(keccak256(abi.encodePacked(protocolDaoSettingsNamespace, "ggp.inflation.interval")), 1 days);
+	// Global settings we need for tests
+	function initStorage(Storage s) internal {}
+
+	// Override DAO values for tests
+	function initDao() internal {
+		dao.setSettingUint("avalanche.expectedRewardRate", 0.1 ether); // Annual rate as pct of 1 avax
+		// GGP Inflation settings
+		// these may change when we finialize tokenomics
+		dao.setSettingUint("ggp.inflation.interval.rate", 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
+		dao.setSettingUint("ggp.inflation.interval.start", block.timestamp + 1 days); // Set the default start date for inflation to begin as 1 day after deployment
+		dao.setSettingUint("ggp.inflation.interval", 1 days);
+		dao.setSettingUint("ggavax.reserve.target", 0.1 ether); // 10% collateral held in reserver
+		//Delegation duration limit set to 2 Months
+		dao.setSettingUint("delegation.maxDuration", 5097600);
+
+		// Minipool Settings
+		dao.setSettingUint("minipool.maxAvaxAssignment", 10_000 ether);
+		dao.setSettingUint("minipool.minAvaxAssignment", 1_000 ether);
+		dao.setSettingUint("minipool.ggpCollateralRate", 0.1 ether);
 	}
 
 	// Register a contract in Storage

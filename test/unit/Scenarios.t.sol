@@ -22,39 +22,24 @@ contract ScenariosTest is BaseTest {
 		liqStaker1 = getActorWithTokens("liqStaker1", ONE_K, 0);
 		liqStaker2 = getActorWithTokens("liqStaker2", ONE_K, 0);
 
-		distributeInitialGGPSupply();
+		fundGGPRewardsPool();
 		oracle.setGGPPrice(1 ether, block.timestamp);
 	}
 
-	function distributeInitialGGPSupply() public {
-		// note: guardian is minted 100% of the supply
+	function fundGGPRewardsPool() public {
+		// guardian is minted 100% of the supply
 		vm.startPrank(guardian);
-		uint256 companyAllocation = (TOTAL_INITIAL_GGP_SUPPLY * .32 ether) / 1 ether;
-		uint256 pDaoAllo = (TOTAL_INITIAL_GGP_SUPPLY * .3233 ether) / 1 ether;
-		uint256 seedInvestorAllo = (TOTAL_INITIAL_GGP_SUPPLY * .1567 ether) / 1 ether;
-		uint256 rewardsPoolAllo = (TOTAL_INITIAL_GGP_SUPPLY * .20 ether) / 1 ether;
-
-		// approve vault deposits for all tokens that won't be in company wallet
-		ggp.approve(address(vault), TOTAL_INITIAL_GGP_SUPPLY - companyAllocation);
-
-		// 33% to the pDAO wallet
-		vault.depositToken("ProtocolDAO", ggp, pDaoAllo);
-
-		// TODO make an actual vesting contract
-		// 15.67% to vesting smart contract
-		vault.depositToken("ProtocolDAO", ggp, seedInvestorAllo);
-
-		// 20% to staking rewards contract
-		vault.depositToken("RewardsPool", ggp, rewardsPoolAllo);
+		uint256 rewardsPoolAmt = TOTAL_INITIAL_GGP_SUPPLY.mulWadDown(.20 ether);
+		ggp.approve(address(vault), rewardsPoolAmt);
+		vault.depositToken("RewardsPool", ggp, rewardsPoolAmt);
 		vm.stopPrank();
 	}
 
 	// For this test we wont do lots of intermediate asserts, just focus on end results
 	function testFullCycleHappyPath() public {
 		uint256 duration = 2 weeks;
-		uint256 depositAmt = 1000 ether;
-		uint128 ggpStakeAmt = 200 ether;
-
+		uint256 depositAmt = dao.getMinipoolAvaxAssignmentMin();
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinipoolGgpCollateralRate());
 		// Liq Stakers deposit all their AVAX and get ggAVAX in return
 		vm.prank(liqStaker1);
 		ggAVAX.depositAVAX{value: ONE_K}();
@@ -83,12 +68,10 @@ contract ScenariosTest is BaseTest {
 		assertEq((nodeOp1.balance - priorBalance_nodeOp1), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
 
 		// Skip forward 2 cycles so all rewards are available
-		rewardsPool.startCycle();
 		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
 		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
-
 		rialtoProcessGGPRewards();
 
 		// nopeOp1 can claim and restake GGP rewards
@@ -113,8 +96,75 @@ contract ScenariosTest is BaseTest {
 		vm.prank(liqStaker2);
 		ggAVAX.withdrawAVAX(amt);
 		assertEq(liqStaker2.balance, amt);
+	}
 
-		//
+	function testFullCycleNoRewards() public {
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = dao.getMinipoolAvaxAssignmentMin();
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinipoolGgpCollateralRate());
+
+		// Liq Stakers deposit all their AVAX and get ggAVAX in return
+		vm.prank(liqStaker1);
+		ggAVAX.depositAVAX{value: ONE_K}();
+
+		vm.prank(liqStaker2);
+		ggAVAX.depositAVAX{value: ONE_K}();
+
+		vm.startPrank(nodeOp1);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, depositAmt, duration);
+		vm.stopPrank();
+
+		// Cannot unstake GGP at this point
+		vm.expectRevert(Staking.CannotWithdrawUnder150CollateralizationRatio.selector);
+		vm.prank(nodeOp1);
+		staking.withdrawGGP(ggpStakeAmt);
+
+		// Rialto will process and skip time, then we reload the mp
+		mp = rialtoProcessMinipoolToSuccessWithNoRewards(mp.nodeID);
+
+		// test that the node op can withdraw the funds they are due
+		uint256 priorBalance_nodeOp1 = nodeOp1.balance;
+		vm.prank(nodeOp1);
+		minipoolMgr.withdrawMinipoolFunds(mp.nodeID);
+		assertEq((nodeOp1.balance - priorBalance_nodeOp1), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
+
+		// nodeOp1 should have been slashed
+		uint256 expectedAvaxRewardAmt = minipoolMgr.expectedRewardAmt(mp.duration, depositAmt);
+		uint256 slashedGGPAmt = minipoolMgr.calculateSlashAmt(expectedAvaxRewardAmt);
+		assertEq(staking.getGGPStake(nodeOp1), ggpStakeAmt - slashedGGPAmt);
+
+		// Skip forward 2 cycles so all rewards are available
+		rewardsPool.startCycle();
+		skip(ggAVAX.rewardsCycleLength());
+		ggAVAX.syncRewards();
+		skip(ggAVAX.rewardsCycleLength());
+		ggAVAX.syncRewards();
+		rialtoProcessGGPRewards();
+
+		// nopeOp1 is still "eligible" even though they were slashed
+		assertTrue(nopClaim.isEligible(nodeOp1));
+		uint256 ggpRewards = staking.getGGPRewards(nodeOp1);
+		// Not testing if the rewards are "correct", depends on elapsed time too much
+		// So just restake it all
+		vm.prank(nodeOp1);
+		nopClaim.claimAndRestake(0);
+		assertEq(staking.getGGPStake(nodeOp1), ggpStakeAmt + ggpRewards - slashedGGPAmt);
+
+		// liqStaker1 can withdraw all their funds
+		uint256 amt = ggAVAX.balanceOf(liqStaker1);
+		vm.prank(liqStaker1);
+		ggAVAX.redeemAVAX(amt);
+		uint256 expectedTotal = ONE_K + (mp.avaxLiquidStakerRewardAmt / 2);
+		assertEq(liqStaker1.balance, expectedTotal);
+
+		// liqStaker2 can not withdraw all because of the float
+		assertEq(ggAVAX.maxWithdraw(liqStaker2), expectedTotal);
+		amt = ggAVAX.amountAvailableForStaking();
+		vm.prank(liqStaker2);
+		ggAVAX.withdrawAVAX(amt);
+		assertEq(liqStaker2.balance, amt);
 	}
 
 	// Simulates Rialto launching/finalizing minipool, and returns a mp with current data
@@ -130,7 +180,6 @@ contract ScenariosTest is BaseTest {
 		skip(mp.duration);
 		uint256 totalAvax = mp.avaxNodeOpAmt + mp.avaxLiquidStakerAmt;
 		uint256 rewards = minipoolMgr.expectedRewardAmt(mp.duration, totalAvax);
-		// console.log("expectedRewards", format.parseEther(rewards));
 		deal(rialto, rialto.balance + rewards);
 		minipoolMgr.recordStakingEnd{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
 		vm.stopPrank();
@@ -158,6 +207,7 @@ contract ScenariosTest is BaseTest {
 
 	// Simulate what Rialto would do
 	function rialtoProcessGGPRewards() public {
+		vm.startPrank(rialto);
 		rewardsPool.startCycle();
 
 		Staking.Staker[] memory allStakers = staking.getStakers(0, 0);
@@ -175,5 +225,6 @@ contract ScenariosTest is BaseTest {
 				nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, totalEligibleStakedGGP);
 			}
 		}
+		vm.stopPrank();
 	}
 }

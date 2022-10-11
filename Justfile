@@ -89,7 +89,7 @@ remix:
 	remixd -s `pwd` --remix-ide https://remix.ethereum.org
 
 # Generate Go code interface for contracts
-gen:
+gen: compile
 	#!/bin/bash
 	CORETH=0.8.16
 	echo "Generating GO code with Coreth v${CORETH}"
