@@ -177,6 +177,15 @@ task("minipool:recordStakingStart", "")
 		await logtx(tx);
 	});
 
+task("minipool:getIndexOf", "")
+	.addParam("node", "id of node")
+	.setAction(async ({ node }) => {
+		const minipoolManager = await get("MinipoolManager");
+		const i = await minipoolManager.getIndexOf(nodeID(node));
+		console.log("node id", nodeID(node));
+		console.log("index", i);
+	});
+
 task("minipool:recordStakingEnd", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID")

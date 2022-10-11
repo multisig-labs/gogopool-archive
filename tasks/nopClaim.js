@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
 const { ethers, utils } = require("ethers");
+const { task } = require("hardhat/config");
 const {
 	get,
 	log,
@@ -56,6 +57,38 @@ task("nopClaim:isEligible", "is a staker eligible")
 		);
 		const isEligible = await nopClaim.isEligible(user.stakerAddr);
 		log(`Is ${staker} eligible for rewards?: ${isEligible}`);
+	});
+
+task("staking:getMinipoolCount", "get minipool count for actor")
+	.addParam("actor")
+	.setAction(async ({ actor }) => {
+		const a = (await getNamedAccounts())[actor];
+		const staking = await get("Staking");
+
+		const count = await staking.getMinipoolCount(a.address);
+		console.log("minipool count", count);
+	});
+
+task("staking:getGGPRewards")
+	.addParam("actor")
+	.setAction(async ({ actor }) => {
+		const a = (await getNamedAccounts())[actor];
+		const staking = await get("Staking");
+		const nop = await get("NOPClaim", a);
+		const preview = await nop.previewClaimAmount();
+		console.log("preview amount", preview);
+		const rewardsAmount = await staking.getGGPRewards(a.address);
+		console.log("rewards amount", utils.formatEther(rewardsAmount));
+	});
+
+task("staking:claimAndRestake")
+	.addParam("actor")
+	.addParam("amt", "test", "amount to claim")
+	.setAction(async ({ actor, rewards }) => {
+		const a = (await getNamedAccounts())[actor];
+		const nopClaim = await get("NOPClaim", a);
+		tx = await await nopClaim.claimAndRestake(utils.parseEther(rewards));
+		logtx(tx);
 	});
 
 task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")

@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
 const { addrs, get, log, logf } = require("./lib/utils");
+const { getNamedAccounts, logtx } = require("./lib/utils");
 
 task("vault:list", "List contract balances").setAction(async () => {
 	const vault = await get("Vault");
@@ -23,3 +24,21 @@ task("vault:list", "List contract balances").setAction(async () => {
 	const balWAVAX = await wavax.balanceOf(addrs.TokenggAVAX);
 	logf("%-20s %-10s", "WAVAX", hre.ethers.utils.formatUnits(balWAVAX));
 });
+
+task("vault:deposit_token", "deposit a token from to vault")
+	.addParam("actor")
+	.addParam("contract")
+	.addParam("amt", "", 0, types.int)
+	.setAction(async ({ actor, contract, amt }) => {
+		const signer = (await getNamedAccounts())[actor];
+
+		const vault = await get("Vault", signer);
+		const ggp = await get("TokenGGP", signer);
+		amt = ethers.utils.parseEther(amt.toString());
+
+		let tx = await ggp.approve(vault.address, amt);
+		await logtx(tx);
+
+		tx = await vault.depositToken("NOPClaim", ggp.address, amt);
+		await logtx(tx);
+	});
