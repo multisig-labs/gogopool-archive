@@ -133,3 +133,19 @@ task("ggp:allowance")
 		const allowance = await ggp.allowance(addr, spender);
 		console.log("allowance", ethers.utils.formatUnits(allowance));
 	});
+
+task("ggp:approve")
+	.addParam("actor", "actor to allow")
+	.addParam("contract", "address you want to authorize")
+	.addParam("amt", "amount to approve", 0, types.int)
+	.setAction(async ({ actor, contract, amt }) => {
+		const a = (await getNamedAccounts())[actor];
+		const c = await get(contract);
+		const ggp = await get("TokenGGP", a);
+
+		let tx = await ggp.approve(
+			c.address,
+			ethers.utils.parseEther(amt.toString())
+		);
+		await logtx(tx);
+	});

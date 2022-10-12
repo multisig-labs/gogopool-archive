@@ -20,6 +20,15 @@ task("staking:info", "Staking protocol info").setAction(async () => {
 	logf("%-15s %-15s", "Total Stakers:", await staking.getStakerCount());
 });
 
+task("staking:get_ggp_stake", "get actors stake amount")
+	.addParam("actor", "Actor to get stake")
+	.setAction(async ({ actor }) => {
+		const signer = (await getNamedAccounts())[actor];
+		const staking = await get("Staking");
+		const stake = await staking.getGGPStake(signer.address);
+		console.log("stake is ", stake);
+	});
+
 task("staking:staker_info", "GGP staking info for actor")
 	.addParam("actor", "Actor to check stake")
 	.setAction(async ({ actor }) => {
