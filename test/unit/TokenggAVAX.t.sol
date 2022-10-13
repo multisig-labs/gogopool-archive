@@ -192,7 +192,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		// 4. Skip ahead one rewards cycle
 		// Still no rewards should be distributed
-		skip(dao.getGGAVAXRewardCycleLength());
+		skip(ggAVAX.rewardsCycleLength());
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
@@ -203,7 +203,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.lastRewardAmount(), liquidStakerRewards);
 
 		// 6. Skip 1/3 of rewards length and see 1/3 rewards in totalReleasedAssets
-		skip(dao.getGGAVAXRewardCycleLength() / 3);
+		skip(ggAVAX.rewardsCycleLength() / 3);
 
 		uint256 oneThirdRewards = liquidStakerRewards / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
@@ -212,7 +212,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		// 7. Skip 2/3 of rewards length
 		// Rewards should be fully distributed
-		skip((dao.getGGAVAXRewardCycleLength() * 2) / 3);
+		skip((ggAVAX.rewardsCycleLength() * 2) / 3);
 		assertEq(ggAVAX.totalAssets(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + liquidStakerRewards);
 	}

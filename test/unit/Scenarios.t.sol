@@ -68,9 +68,9 @@ contract ScenariosTest is BaseTest {
 		assertEq((nodeOp1.balance - priorBalance_nodeOp1), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
 
 		// Skip forward 2 cycles so all rewards are available
-		skip(dao.getGGAVAXRewardCycleLength());
+		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
-		skip(dao.getGGAVAXRewardCycleLength());
+		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
 		rialtoProcessGGPRewards();
 
@@ -137,9 +137,9 @@ contract ScenariosTest is BaseTest {
 
 		// Skip forward 2 cycles so all rewards are available
 		rewardsPool.startCycle();
-		skip(dao.getGGAVAXRewardCycleLength());
+		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
-		skip(dao.getGGAVAXRewardCycleLength());
+		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
 		rialtoProcessGGPRewards();
 

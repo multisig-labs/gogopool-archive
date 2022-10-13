@@ -44,8 +44,7 @@ contract ProtocolDAO is Base {
 			setUint(keccak256("ggp.inflation.interval"), 1 minutes);
 
 			//TokenGGAvax settings
-			setUint(keccak256("ggAvax.rewards.cycleLength"), 10 days);
-			setUint(keccak256("ggAvax.reserveTarget"), 0.1 ether); // 10% collateral held in reserver
+			setUint(keccak256("ggAvax.reserveTarget"), 0.1 ether); // 10% collateral held in reserve
 
 			//TokenGGP settings
 
@@ -139,15 +138,6 @@ contract ProtocolDAO is Base {
 	 */
 	function getInflationInterval() public view returns (uint256) {
 		return getUint(keccak256("ggp.inflation.interval"));
-	}
-
-	//*** GGAVAX ***
-	/**
-	 * Get how many seconds in a reward cycle
-	 * @return uint256 Number of seconds in a reward interval
-	 */
-	function getGGAVAXRewardCycleLength() public view returns (uint256) {
-		return getUint(keccak256("ggAvax.rewards.cycleLength"));
 	}
 
 	// *** Minipool Settings ***
