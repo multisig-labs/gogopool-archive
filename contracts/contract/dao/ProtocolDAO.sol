@@ -33,9 +33,9 @@ contract ProtocolDAO is Base {
 			setBool(keccak256("RewardsPool.enabled"), true);
 			setUint(keccak256("ggp.rewards.cycleLength"), 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
 			setUint(keccak256("ggp.circulatingSupply"), 18000000 ether);
-			setUint(keccak256("ggp.rewards.percentageProtocolDAOClaim"), 0.10 ether);
-			setUint(keccak256("ggp.rewards.percentageNOPClaim"), 0.70 ether);
-			setUint(keccak256("ggp.rewards.percentageRialtoClaim"), 0.20 ether);
+			setUint(keccak256("ggp.rewards.percentage.ProtocolDAOClaim"), 0.10 ether);
+			setUint(keccak256("ggp.rewards.percentage.NOPClaim"), 0.70 ether);
+			setUint(keccak256("ggp.rewards.percentage.RialtoClaim"), 0.20 ether);
 
 			// GGP Inflation settings
 			// these may change when we finialize tokenomics
@@ -105,12 +105,12 @@ contract ProtocolDAO is Base {
 	 * @return uint256 Rewards percentage a contract will recieve this cycle
 	 */
 	function getClaimingContractPerc(string memory _claimingContract) public view returns (uint256) {
-		return getUint(keccak256(abi.encodePacked("ggp.rewards.percentage", _claimingContract)));
+		return getUint(keccak256(abi.encodePacked("ggp.rewards.percentage.", _claimingContract)));
 	}
 
 	//TODO: restrict who can set this
 	function setClaimingContractPerc(string memory _claimingContract, uint256 decimal) public {
-		setUint(keccak256(abi.encodePacked("ggp.rewards.percentage", _claimingContract)), decimal);
+		setUint(keccak256(abi.encodePacked("ggp.rewards.percentage.", _claimingContract)), decimal);
 	}
 
 	//*** GGP Inflation */
