@@ -110,6 +110,23 @@ gen: compile
 	cp $THATDIR/gen/oracle.go $THATDIR/../rialto/pkg/contracts/oracle
 	cp $THATDIR/gen/storage.go $THATDIR/../rialto/pkg/contracts/storage
 
+# Print a tab-separated list of all settings usage in contracts
+review-settings:
+	#!/usr/bin/env ruby
+	lines = []
+	Dir.glob('./contracts/**/*.sol').each do |file|
+		next if file =~ /(Storage|BaseAbstract).sol/
+		File.readlines(file).each do |line|
+			if line =~ /(etInt|etUint|etBool|etAddress|etBytes|etString)/
+				line = line[/^.*?([gs]et[^;]*);.*$/,1]
+				next unless line
+				line = line + "\t[#{file}]"
+				lines << line
+			end
+		end
+	end
+	puts lines.sort.uniq
+
 # Update foundry binaries to the nightly version
 update-foundry:
 	foundryup --version nightly
