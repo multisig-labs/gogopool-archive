@@ -9,6 +9,7 @@ import {TokenGGP} from "../../tokens/TokenGGP.sol";
 import {RewardsPool} from "../RewardsPool.sol";
 import {Staking} from "../../Staking.sol";
 import {MinipoolManager} from "../../MinipoolManager.sol";
+import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
@@ -30,12 +31,13 @@ contract NOPClaim is Base {
 		// Version
 		version = 1;
 		ggp = ggp_;
-	} // Get whether the contract is enabled for claims
+	}
 
-	function getEnabled() external pure returns (bool) {
-		return true;
-		// RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
-		// return rewardsPool.getClaimingContractEnabled("NOPClaim");
+	// Get whether the contract is enabled
+	//TODO: integrate this to be used
+	function getEnabled() external view returns (bool) {
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		return dao.getContractEnabled("NOPClaim");
 	}
 
 	function getRewardsCycleTotal() public view returns (uint256) {
@@ -49,18 +51,18 @@ contract NOPClaim is Base {
 	// Get whether a node can make a claim
 	// Rialto will call this
 	function isEligible(address ownerAddress) external view returns (bool) {
-		//rewardsStartTime has to be at least 28 days.
-		//Must have at least 10% collatoralized minipool
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		Staking staking = Staking(getContractAddress("Staking"));
 
 		try staking.getRewardsStartTime(ownerAddress) returns (uint256 rewardsStartTime) {
+			//Must have at least 10% collatoralized minipool
 			if (staking.getCollateralizationRatio(ownerAddress) < TENTH) {
 				return false;
 			}
+			//rewardsStartTime has to be at least the min length.
 			uint256 daysDiff = (block.timestamp - rewardsStartTime) / 60 / 60 / 24;
-			//TODO get 28 days frpm setting somewhere
-			//TODO: change back to 14 days after alpha
-			if (daysDiff < 0) {
+			uint256 minEligibleLength = dao.getGGPRewardsEligibilityMinLength();
+			if (daysDiff < minEligibleLength) {
 				return false;
 			}
 		} catch {

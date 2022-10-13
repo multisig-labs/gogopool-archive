@@ -46,7 +46,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	error TodoBetterMsg();
 
 	/// @dev emit every time a new rewards cycle starts
-	event NewRewardsCycle(uint32 indexed cycleEnd, uint256 rewardAmount);
+	event NewRewardsCycle(uint256 indexed cycleEnd, uint256 rewardAmount);
 
 	/// @notice the amount of avax removed for staking by a multisig
 	event WithdrawForStaking(address indexed caller, uint256 assets);
@@ -54,14 +54,11 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	/// @notice the amount of (non-rewards) avax deposited from staking by a multisig
 	event DepositFromStaking(address indexed caller, uint256 baseAmt, uint256 rewardAmt);
 
-	/// @notice the maximum length of a rewards cycle
-	uint32 public rewardsCycleLength;
-
 	/// @notice the effective start of the current cycle
 	uint32 public lastSync;
 
 	/// @notice the end of the current cycle. Will always be evenly divisible by `rewardsCycleLength`.
-	uint32 public rewardsCycleEnd;
+	uint256 public rewardsCycleEnd;
 
 	/// @notice the amount of rewards distributed in a the most recent cycle.
 	uint192 public lastRewardAmount;
@@ -87,8 +84,8 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		__Ownable_init();
 		__UUPSUpgradeable_init();
 
-		// TODO make this a param
-		rewardsCycleLength = 10 minutes;
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 rewardsCycleLength = dao.getGGAVAXRewardCycleLength();
 		// seed initial rewardsCycleEnd
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
 	}
@@ -198,7 +195,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 
 	function amountAvailableForStaking() public view returns (uint256) {
 		ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		uint256 targetCollateralRate = protocolDAO.getTargetggAVAXReserveRate();
+		uint256 targetCollateralRate = protocolDAO.getTargetGGAVAXReserveRate();
 
 		uint256 totalAssets_ = totalAssets();
 
@@ -214,7 +211,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		// cache global vars
 		uint256 totalReleasedAssets_ = totalReleasedAssets;
 		uint192 lastRewardAmount_ = lastRewardAmount;
-		uint32 rewardsCycleEnd_ = rewardsCycleEnd;
+		uint256 rewardsCycleEnd_ = rewardsCycleEnd;
 		uint32 lastSync_ = lastSync;
 
 		if (block.timestamp >= rewardsCycleEnd_) {
@@ -255,7 +252,8 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 
 		totalReleasedAssets = totalReleasedAssets_ + lastRewardAmount_; // SSTORE
 
-		uint32 end = timestamp + rewardsCycleLength;
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 end = timestamp + dao.getGGAVAXRewardCycleLength();
 
 		// Combined single SSTORE
 		lastRewardAmount = nextRewards.safeCastTo192();

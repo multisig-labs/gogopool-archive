@@ -56,9 +56,6 @@ contract MinipoolManager is Base, IWithdrawer {
 	ERC20 public immutable ggp;
 	TokenggAVAX public immutable ggAVAX;
 
-	// TODO make this a DAO setting so we can run on Fuji
-	uint256 public immutable MIN_STAKING_AMT = 2000 ether;
-
 	// Not used for storage, just for returning data from view functions
 	struct Minipool {
 		int256 index;
@@ -166,7 +163,7 @@ contract MinipoolManager is Base, IWithdrawer {
 			revert InvalidAvaxAssignmentRequest();
 		}
 
-		if (msg.value + avaxAssignmentRequest < MIN_STAKING_AMT) {
+		if (msg.value + avaxAssignmentRequest < dao.getMinipoolMinStakingAmount()) {
 			revert InsufficientAvaxForMinipoolCreation();
 		}
 
@@ -179,7 +176,7 @@ contract MinipoolManager is Base, IWithdrawer {
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
 		staking.increaseMinipoolCount(msg.sender);
 		uint256 ratio = staking.getCollateralizationRatio(msg.sender);
-		if (ratio < staking.MIN_COLLATERALIZATION_PERCENT()) {
+		if (ratio < dao.getMinCollateralizationPercent()) {
 			revert InsufficientGGPCollateralization();
 		}
 
@@ -381,8 +378,10 @@ contract MinipoolManager is Base, IWithdrawer {
 
 		// Calculate rewards splits (these will all be zero if no rewards were recvd)
 		uint256 avaxHalfRewards = avaxTotalRewardAmt / 2;
+
 		// we are giving node operators an additional 15% commission fee
-		uint256 avaxLiquidStakerRewardAmt = avaxHalfRewards - avaxHalfRewards.mulWadDown(0.15 ether);
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 avaxLiquidStakerRewardAmt = avaxHalfRewards - avaxHalfRewards.mulWadDown(dao.getMinipoolNodeCommissionFeePercentage());
 		uint256 avaxNodeOpRewardAmt = avaxTotalRewardAmt - avaxLiquidStakerRewardAmt;
 
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), avaxNodeOpRewardAmt);

@@ -13,9 +13,6 @@ import {format} from "sol-utils/format.sol";
 // Based on RocketBase by RocketPool
 
 abstract contract BaseAbstract {
-	// Calculate using this as the base
-	uint256 internal constant CALC_BASE = 1 ether;
-
 	// Version of the contract
 	uint8 public version;
 

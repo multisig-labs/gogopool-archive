@@ -7,6 +7,7 @@ import {MinipoolManager} from "./MinipoolManager.sol";
 import {Oracle} from "./Oracle.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
+import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
@@ -28,12 +29,7 @@ contract Staking is Base {
 	using SafeTransferLib for address;
 	using FixedPointMathLib for uint256;
 
-	// 1 ether = 100%
-	uint256 public constant MAX_COLLATERALIZATION_PERCENT = 1.5 ether;
-	uint256 public constant MIN_COLLATERALIZATION_PERCENT = 0.1 ether;
 	ERC20 public immutable ggp;
-
-	uint256 internal constant WAD = 1e18; // The scalar of ETH and most ERC20s.
 
 	/// @notice The staker address does not exist
 	error StakerNotFound();
@@ -170,12 +166,13 @@ contract Staking is Base {
 
 	// Get a stakers's minimum ggp stake to collateralize their minipools. Returned in GGP
 	function getMinimumGGPStake(address stakerAddr) public view returns (uint256) {
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
 
 		uint256 avaxAssigned = getAVAXAssigned(stakerAddr);
 		uint256 ggp100pct = avaxAssigned.divWadDown(ggpPriceInAvax);
-		return ggp100pct.mulWadDown(MIN_COLLATERALIZATION_PERCENT);
+		return ggp100pct.mulWadDown(dao.getMinCollateralizationRatio());
 	}
 
 	// Returns 0 = 0%, 1 ether = 100%
@@ -194,15 +191,16 @@ contract Staking is Base {
 	}
 
 	function getEffectiveGGPStaked(address ownerAddress) external view returns (uint256) {
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 ggpStaked = getGGPStake(ownerAddress);
 
 		uint256 collateralizationRatio = getCollateralizationRatio(ownerAddress);
-		if (collateralizationRatio > MAX_COLLATERALIZATION_PERCENT) {
+		if (collateralizationRatio > dao.getMaxCollateralizationRatio()) {
 			//calculate effective stake
 			Oracle oracle = Oracle(getContractAddress("Oracle"));
 			(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
 			uint256 avaxAssigned = getAVAXAssigned(ownerAddress);
-			uint256 ggpStakedInAvax = avaxAssigned.mulWadDown(MAX_COLLATERALIZATION_PERCENT);
+			uint256 ggpStakedInAvax = avaxAssigned.mulWadDown(dao.getMaxCollateralizationRatio());
 			uint256 ggpEffectiveStake = ggpStakedInAvax.divWadDown(ggpPriceInAvax);
 
 			return ggpEffectiveStake;
@@ -246,13 +244,14 @@ contract Staking is Base {
 	}
 
 	function withdrawGGP(uint256 amount) external {
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		if (amount > getGGPStake(msg.sender)) {
 			revert InsufficientBalance();
 		}
 
 		decreaseGGPStake(msg.sender, amount);
 
-		if (getCollateralizationRatio(msg.sender) < MAX_COLLATERALIZATION_PERCENT) {
+		if (getCollateralizationRatio(msg.sender) < dao.getMaxCollateralizationRatio()) {
 			revert CannotWithdrawUnder150CollateralizationRatio();
 		}
 

@@ -15,7 +15,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 	function setUp() public override {
 		super.setUp();
-		dao.setTargetggAVAXReserveRate(0);
+		dao.setTargetGGAVAXReserveRate(0);
 
 		alice = getActorWithTokens("alice", MAX_AMT, MAX_AMT);
 		bob = getActor("bob");
@@ -162,7 +162,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - depositAmount.mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether));
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - depositAmount.mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether));
 
 		// 2. 1000 tokens are withdrawn for staking
 		vm.prank(rialto);
@@ -192,7 +192,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		// 4. Skip ahead one rewards cycle
 		// Still no rewards should be distributed
-		skip(ggAVAX.rewardsCycleLength());
+		skip(dao.getGGAVAXRewardCycleLength());
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
@@ -203,7 +203,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.lastRewardAmount(), liquidStakerRewards);
 
 		// 6. Skip 1/3 of rewards length and see 1/3 rewards in totalReleasedAssets
-		skip(ggAVAX.rewardsCycleLength() / 3);
+		skip(dao.getGGAVAXRewardCycleLength() / 3);
 
 		uint256 oneThirdRewards = liquidStakerRewards / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
@@ -212,7 +212,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		// 7. Skip 2/3 of rewards length
 		// Rewards should be fully distributed
-		skip((ggAVAX.rewardsCycleLength() * 2) / 3);
+		skip((dao.getGGAVAXRewardCycleLength() * 2) / 3);
 		assertEq(ggAVAX.totalAssets(), depositAmount + liquidStakerRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + liquidStakerRewards);
 	}
@@ -228,7 +228,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
-		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether);
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
 		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
 	}
 
@@ -239,7 +239,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.prank(bob);
 		ggAVAX.depositAVAX{value: depositAmount}();
 
-		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetggAVAXReserveRate(), 1 ether);
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
 		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
 		ggAVAX.withdrawForStaking(withdrawAmount);
 

@@ -6,6 +6,7 @@ import "../../Base.sol";
 import {Storage} from "../../Storage.sol";
 import {Vault} from "../../Vault.sol";
 import {TokenGGP} from "../../tokens/TokenGGP.sol";
+import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
 
 // RPL Rewards claiming by the DAO
 contract ProtocolDAOClaim is Base {
@@ -18,14 +19,11 @@ contract ProtocolDAOClaim is Base {
 		version = 1;
 	}
 
-	// Determine if this contract is enabled or not for claims
-	function getEnabled() external pure returns (bool) {
-		// Init the rewards pool contract
-		// IRewardsPool rewardsPool = IRewardsPool(getContractAddress("RewardsPool"));
-
-		// TODO implement
-		// return rewardsPool.getClaimingContractEnabled("ProtocolDAOClaim");
-		return true;
+	// Get whether the contract is enabled
+	//TODO: integrate this to be used
+	function getEnabled() external view returns (bool) {
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		return dao.getContractEnabled("ProtocolDAOClaim");
 	}
 
 	// Spend the network DAOs RPL rewards

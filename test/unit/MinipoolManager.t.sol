@@ -24,7 +24,7 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(amt, 33333333333333333333);
 
 		// Set 5% annual expected reward rate
-		dao.setSettingUint("avalanche.expectedRewardRate", 5e16);
+		dao.setExpectedRewardRate(5e16);
 		amt = minipoolMgr.expectedRewardAmt(365 days, 1_000 ether);
 		assertEq(amt, 50 ether);
 		amt = minipoolMgr.expectedRewardAmt((365 days / 3), 1_000 ether);

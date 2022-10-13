@@ -16,13 +16,7 @@ contract RewardsPool is Base {
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		//TODO: change to 28 days after alpha
-		setUint("rewards.pool.reward.cycle.length", 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
-		setUint("ggp.total.circulating.supply", 18000000 ether);
 		// setUint("ggp.total.inflation.calculated.time", 0 seconds);
-		setUint(keccak256(abi.encodePacked("rewards.percentage", "ProtocolDAOClaim")), 0.10 ether);
-		setUint(keccak256(abi.encodePacked("rewards.percentage", "NOPClaim")), 0.70 ether);
-		setUint(keccak256(abi.encodePacked("rewards.percentage", "RialtoClaim")), 0.20 ether);
 	}
 
 	/**** Properties ***********/
@@ -39,15 +33,14 @@ contract RewardsPool is Base {
 	/// @notice Distribution cannot exceed total rewards
 	error IncorrectRewardDistribution();
 
-	/* INFLATION */
-
-	/**
-	 * The amount of ggp that has been released so far
-	 * @return uint256 The supply of ggp that is in circulation
-	 */
-	function getTotalGGPCirculatingSupply() public view returns (uint256) {
-		return getUint("ggp.total.circulating.supply");
+	// Get whether the contract is enabled
+	//TODO: integrate this to be used
+	function getEnabled() external view returns (bool) {
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		return dao.getContractEnabled("RewardsPool");
 	}
+
+	/* INFLATION */
 
 	/**
 	 * Get the last time that inflation was calculated at
@@ -102,7 +95,7 @@ contract RewardsPool is Base {
 			uint256 inflationRate = dao.getInflationIntervalRate();
 			if (inflationRate > 0) {
 				// Get the total supply now
-				uint256 totalSupplyCurrent = getTotalGGPCirculatingSupply();
+				uint256 totalSupplyCurrent = dao.getTotalGGPCirculatingSupply();
 				uint256 newTotalSupply = totalSupplyCurrent;
 
 				// Compute inflation for total inflation intervals elapsed
@@ -129,12 +122,14 @@ contract RewardsPool is Base {
 		uint256 intervalsSinceLastMint = _getInflationIntervalsPassed(inflationLastCalcTime);
 
 		uint256 newTokens = _inflationCalculate(intervalsSinceLastMint);
-		uint256 totalCirculatingSupply = getTotalGGPCirculatingSupply();
-		totalCirculatingSupply = totalCirculatingSupply + newTokens;
+		uint256 totalCirculatingSupply = dao.getTotalGGPCirculatingSupply();
+
+		//set new circulating supply
+		dao.setTotalGGPCirculatingSupply((totalCirculatingSupply + newTokens));
 		// Update last inflation calculation timestamp even if inflation rate is 0
 		//why isnt this set to the current time?
 		inflationCalcTime = inflationLastCalcTime + (inflationInterval * intervalsSinceLastMint); // Check if actually need to mint tokens (e.g. inflation rate > 0)
-		setUint(keccak256("rewards.pool.reward.cycle.total.amount"), newTokens);
+		setUint(keccak256("rewardsPool.reward.cycle.total.amount"), newTokens);
 	}
 
 	/* REWARDS */
@@ -144,17 +139,7 @@ contract RewardsPool is Base {
 	 * @return uint256 Last set start timestamp for a reward cycle
 	 */
 	function getRewardCycleStartTime() public view returns (uint256) {
-		return getUint(keccak256("rewards.pool.reward.cycle.start.time"));
-	}
-
-	/**
-	 * Get how many seconds in a reward cycle
-	 * @return uint256 Number of seconds in a reward interval
-	 */
-	// TODO implement dao settings
-	function getRewardCycleLength() public view returns (uint256) {
-		// Get from the DAO settings
-		return getUint("rewards.pool.reward.cycle.length");
+		return getUint(keccak256("rewardsPool.reward.cycle.start.time"));
 	}
 
 	/**
@@ -162,7 +147,7 @@ contract RewardsPool is Base {
 	 * @return uint256 Rewards amount for current cycle
 	 */
 	function getRewardCycleTotalAmount() public view returns (uint256) {
-		return getUint(keccak256("rewards.pool.reward.cycle.total.amount"));
+		return getUint(keccak256("rewardsPool.reward.cycle.total.amount"));
 	}
 
 	/**
@@ -170,7 +155,8 @@ contract RewardsPool is Base {
 	 * @return uint256 Time intervals since last distribution of rewards
 	 */
 	function getRewardCyclesPassed() public view returns (uint256) {
-		return _getRewardCyclesPassed(getRewardCycleStartTime(), getRewardCycleLength());
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		return _getRewardCyclesPassed(getRewardCycleStartTime(), dao.getGGPRewardCycleLength());
 	}
 
 	function _getRewardCyclesPassed(uint256 _rewardCycleStartTime, uint256 _rewardCycleLength) private view returns (uint256) {
@@ -181,9 +167,12 @@ contract RewardsPool is Base {
 	 * Get the percentage a contract is owed this reward cycle
 	 * @return uint256 Rewards percentage a contract will recieve this cycle
 	 */
-	// TODO implement
 	function getClaimingContractPerc(string memory _claimingContract) public view returns (uint256) {
-		return getUint(keccak256(abi.encodePacked("rewards.percentage", _claimingContract)));
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		if (dao.getContractEnabled(_claimingContract)) {
+			return dao.getClaimingContractPerc(_claimingContract);
+		}
+		return 0 ether;
 	}
 
 	/**
@@ -210,8 +199,7 @@ contract RewardsPool is Base {
 	//Rialto calls this to see if the new cycle can start
 	function canCycleStart() external view returns (bool) {
 		uint256 cyclesPassed = getRewardCyclesPassed();
-
-		// Has it been atleast 28 days since the last distribution? If so, set the rewards total for this interval
+		// Has atleast one cycle passed?
 		if (cyclesPassed >= 1 ether) {
 			return true;
 		}
@@ -228,7 +216,7 @@ contract RewardsPool is Base {
 
 		uint256 rewardCyclesPassed = getRewardCyclesPassed();
 
-		// Has it been atleast 28 days since the last distribution?
+		// Has atleast one cycle passed?
 		if (rewardCyclesPassed >= 1 ether) {
 			// Mint any new tokens from GGP inflation
 			// note: this will always 'mint' (release) new tokens if the reward cycle length requirement is met
@@ -236,9 +224,7 @@ contract RewardsPool is Base {
 			inflationMintTokens();
 
 			// Set this as the start of the new rewards cycle
-			//TODO: need to add something to ANR to continuously send transactions so that 'time' actually passes for the cycles calculations.
-			setUint(keccak256("rewards.pool.reward.cycle.start.time"), block.timestamp);
-
+			setUint(keccak256("rewardsPool.reward.cycle.start.time"), block.timestamp);
 			// Soon as we mint new tokens, send the DAO's share to it's claiming contract, then attempt to transfer them to the dao if possible
 			uint256 daoClaimContractAllotment = getClaimingContractDistribution("ProtocolDAOClaim");
 			uint256 nopClaimContractAllotment = getClaimingContractDistribution("NOPClaim");
