@@ -21,21 +21,21 @@ contract ProtocolDAO is Base {
 	}
 
 	function initialize() external onlyGuardian {
-		if (!getBool(keccak256(abi.encodePacked("protocolDAO", ".deployed")))) {
+		if (!getBool(keccak256("protocolDAO.deployed"))) {
 			//NOPClaim settings
-			setBool(keccak256(abi.encodePacked("NOPClaim", ".enabled")), true);
+			setBool(keccak256("NOPClaim.enabled"), true);
 			setUint(keccak256("ggp.rewards.eligibilityMinLength"), 0 days);
 
 			//ProtocolDAOClaim settings
-			setBool(keccak256(abi.encodePacked("ProtocolDAOClaim", ".enabled")), true);
+			setBool(keccak256("ProtocolDAOClaim.enabled"), true);
 
 			//RewardsPool Settings
-			setBool(keccak256(abi.encodePacked("RewardsPool", ".enabled")), true);
+			setBool(keccak256("RewardsPool.enabled"), true);
 			setUint(keccak256("ggp.rewards.cycleLength"), 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
 			setUint(keccak256("ggp.circulatingSupply"), 18000000 ether);
-			setUint(keccak256(abi.encodePacked("ggp.rewards.percentage", "ProtocolDAOClaim")), 0.10 ether);
-			setUint(keccak256(abi.encodePacked("ggp.rewards.percentage", "NOPClaim")), 0.70 ether);
-			setUint(keccak256(abi.encodePacked("ggp.rewards.percentage", "RialtoClaim")), 0.20 ether);
+			setUint(keccak256("ggp.rewards.percentageProtocolDAOClaim"), 0.10 ether);
+			setUint(keccak256("ggp.rewards.percentageNOPClaim"), 0.70 ether);
+			setUint(keccak256("ggp.rewards.percentageRialtoClaim"), 0.20 ether);
 
 			// GGP Inflation settings
 			// these may change when we finialize tokenomics
@@ -65,7 +65,7 @@ contract ProtocolDAO is Base {
 			setUint(keccak256("delegation.maxDuration"), 5097600);
 
 			// Deployment check
-			setBool(keccak256(abi.encodePacked("protocolDAO", ".deployed")), true); // Flag that this contract has been deployed, so default settings don't get reapplied on a contract upgrade
+			setBool(keccak256("protocolDAO.deployed"), true); // Flag that this contract has been deployed, so default settings don't get reapplied on a contract upgrade
 		}
 	}
 

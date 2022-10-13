@@ -39,7 +39,7 @@ contract ScenariosTest is BaseTest {
 	function testFullCycleHappyPath() public {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = dao.getMinipoolAvaxAssignmentMin();
-		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinipoolGgpCollateralRate());
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
 		// Liq Stakers deposit all their AVAX and get ggAVAX in return
 		vm.prank(liqStaker1);
 		ggAVAX.depositAVAX{value: ONE_K}();
@@ -68,9 +68,9 @@ contract ScenariosTest is BaseTest {
 		assertEq((nodeOp1.balance - priorBalance_nodeOp1), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
 
 		// Skip forward 2 cycles so all rewards are available
-		skip(ggAVAX.rewardsCycleLength());
+		skip(dao.getGGAVAXRewardCycleLength());
 		ggAVAX.syncRewards();
-		skip(ggAVAX.rewardsCycleLength());
+		skip(dao.getGGAVAXRewardCycleLength());
 		ggAVAX.syncRewards();
 		rialtoProcessGGPRewards();
 
@@ -101,7 +101,7 @@ contract ScenariosTest is BaseTest {
 	function testFullCycleNoRewards() public {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = dao.getMinipoolAvaxAssignmentMin();
-		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinipoolGgpCollateralRate());
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
 
 		// Liq Stakers deposit all their AVAX and get ggAVAX in return
 		vm.prank(liqStaker1);
@@ -137,9 +137,9 @@ contract ScenariosTest is BaseTest {
 
 		// Skip forward 2 cycles so all rewards are available
 		rewardsPool.startCycle();
-		skip(ggAVAX.rewardsCycleLength());
+		skip(dao.getGGAVAXRewardCycleLength());
 		ggAVAX.syncRewards();
-		skip(ggAVAX.rewardsCycleLength());
+		skip(dao.getGGAVAXRewardCycleLength());
 		ggAVAX.syncRewards();
 		rialtoProcessGGPRewards();
 

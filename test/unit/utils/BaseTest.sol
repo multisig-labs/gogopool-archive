@@ -123,20 +123,21 @@ abstract contract BaseTest is Test {
 
 	// Override DAO values for tests
 	function initDao() internal {
-		dao.setSettingUint("avalanche.expectedRewardRate", 0.1 ether); // Annual rate as pct of 1 avax
+		store.setUint(keccak256("avalanche.expectedRewardRate"), 0.1 ether);
 		// GGP Inflation settings
 		// these may change when we finialize tokenomics
-		dao.setSettingUint("ggp.inflation.interval.rate", 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
-		dao.setSettingUint("ggp.inflation.interval.start", block.timestamp + 1 days); // Set the default start date for inflation to begin as 1 day after deployment
-		dao.setSettingUint("ggp.inflation.interval", 1 days);
-		dao.setSettingUint("ggavax.reserve.target", 0.1 ether); // 10% collateral held in reserver
+		store.setUint(keccak256("ggp.inflation.intervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
+		store.setUint(keccak256("ggp.inflation.intervalStart"), (block.timestamp + 1 days)); // Set the default start date for inflation to begin as 1 day after deployment
+		store.setUint(keccak256("ggp.inflation.interval"), 1 days);
+		store.setUint(keccak256("ggAvax.reserveTarget"), 0.1 ether); // 10% collateral held in reserver
 		//Delegation duration limit set to 2 Months
-		dao.setSettingUint("delegation.maxDuration", 5097600);
+		store.setUint(keccak256("delegation.maxDuration"), 5097600);
 
 		// Minipool Settings
-		dao.setSettingUint("minipool.maxAvaxAssignment", 10_000 ether);
-		dao.setSettingUint("minipool.minAvaxAssignment", 1_000 ether);
-		dao.setSettingUint("minipool.ggpCollateralRate", 0.1 ether);
+		store.setUint(keccak256("minipool.minStakingAmount"), 2000 ether);
+		store.setUint(keccak256("minipool.nodeCommision"), 0.15 ether);
+		store.setUint(keccak256("minipool.maxAvaxAssignment"), 10_000 ether);
+		store.setUint(keccak256("minipool.minAvaxAssignment"), 1_000 ether);
 	}
 
 	// Register a contract in Storage
