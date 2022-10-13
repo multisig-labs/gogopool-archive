@@ -43,9 +43,7 @@ deploy contracts="": (_ping ETH_RPC_URL)
 node:
 	HARDHAT_NETWORK=hardhat npx hardhat node
 
-# Run all tests (hh/forge)
-test: test-forge test-hh
-
+alias test := test-forge
 # Run forge unit tests
 test-forge contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
@@ -55,10 +53,6 @@ test-forge contract="." test="." *flags="":
 test-forge-watch contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
 	forge test --allow-failure --block-timestamp `date '+%s'` --match-contract {{contract}} --match-test {{test}} {{flags}} --watch contracts test --watch-delay 1
-
-# Run hardhat tests
-test-hh:
-	npx hardhat test --network hardhat
 
 # Deploy contracts and init actors to a fresh EVM
 setup-evm:
