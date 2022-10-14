@@ -61,7 +61,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	uint32 public rewardsCycleLength;
 
 	/// @notice the end of the current cycle. Will always be evenly divisible by `rewardsCycleLength`.
-	uint256 public rewardsCycleEnd;
+	uint32 public rewardsCycleEnd;
 
 	/// @notice the amount of rewards distributed in a the most recent cycle.
 	uint192 public lastRewardAmount;
@@ -255,7 +255,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 
 		totalReleasedAssets = totalReleasedAssets_ + lastRewardAmount_; // SSTORE
 
-		uint256 end = timestamp + rewardsCycleLength;
+		uint32 end = timestamp + rewardsCycleLength;
 
 		// Combined single SSTORE
 		lastRewardAmount = nextRewards.safeCastTo192();
