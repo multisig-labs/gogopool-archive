@@ -14,7 +14,7 @@ import "../rewards/claims/ProtocolDAOClaim.sol";
 
 contract TokenGGP is Base, ERC20Burnable {
 	/**** Properties ***********/
-	//TODO: should this be a setting in protocol dao?
+
 	uint256 private constant TOTAL_INITIAL_SUPPLY = 22500000 ether;
 
 	constructor(Storage storageAddress) Base(storageAddress) ERC20("GoGoPool Protocol", "GGP", 18) {

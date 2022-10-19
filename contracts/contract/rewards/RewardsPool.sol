@@ -216,9 +216,10 @@ contract RewardsPool is Base {
 		Vault vault = Vault(getContractAddress("Vault"));
 
 		uint256 rewardCyclesPassed = getRewardCyclesPassed();
+		uint256 inflationIntervalsPassed = getInflationIntervalsPassed();
 
 		// Has atleast one cycle passed?
-		if (rewardCyclesPassed >= 1 ether) {
+		if (rewardCyclesPassed >= 1 ether && inflationIntervalsPassed > 0) {
 			// Mint any new tokens from GGP inflation
 			// note: this will always 'mint' (release) new tokens if the reward cycle length requirement is met
 			// since inflation is on a 1 day interval and it needs atleast one cycle since last calculation
