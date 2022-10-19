@@ -168,4 +168,15 @@ contract RewardsTest is BaseTest {
 		// so there should be no inflation
 		assert(rewardsPool.inflationCalculate() == 0);
 	}
+
+	function testRewardCyclesPassed() public {
+		uint256 expectedRewardCycles = 2;
+		uint256 rewardCycleLength = rewardsPool.getRewardCycleLength();
+		uint256 startingRewardCyclesPassed = rewardsPool.getRewardCyclesPassed();
+
+		skip(rewardCycleLength * expectedRewardCycles);
+
+		uint256 endingRewardCyclesPassed = rewardsPool.getRewardCyclesPassed();
+		assertEq((endingRewardCyclesPassed - startingRewardCyclesPassed) / 1 ether, expectedRewardCycles);
+	}
 }

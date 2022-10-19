@@ -160,6 +160,7 @@ contract RewardsPool is Base {
 	}
 
 	function _getRewardCyclesPassed(uint256 _rewardCycleStartTime, uint256 _rewardCycleLength) private view returns (uint256) {
+		// With two non-wad numbers, divWadDown results in a wad number.
 		return (block.timestamp - _rewardCycleStartTime).divWadDown(_rewardCycleLength);
 	}
 
