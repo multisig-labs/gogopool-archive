@@ -23,6 +23,8 @@ contract ScenariosTest is BaseTest {
 		liqStaker2 = getActorWithTokens("liqStaker2", ONE_K, 0);
 
 		fundGGPRewardsPool();
+
+		vm.prank(rialto);
 		oracle.setGGPPrice(1 ether, block.timestamp);
 	}
 
@@ -38,7 +40,7 @@ contract ScenariosTest is BaseTest {
 	// For this test we wont do lots of intermediate asserts, just focus on end results
 	function testFullCycleHappyPath() public {
 		uint256 duration = 2 weeks;
-		uint256 depositAmt = dao.getMinipoolAvaxAssignmentMin();
+		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
 		// Liq Stakers deposit all their AVAX and get ggAVAX in return
 		vm.prank(liqStaker1);
@@ -100,7 +102,7 @@ contract ScenariosTest is BaseTest {
 
 	function testFullCycleNoRewards() public {
 		uint256 duration = 2 weeks;
-		uint256 depositAmt = dao.getMinipoolAvaxAssignmentMin();
+		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
 
 		// Liq Stakers deposit all their AVAX and get ggAVAX in return
@@ -131,12 +133,11 @@ contract ScenariosTest is BaseTest {
 		assertEq((nodeOp1.balance - priorBalance_nodeOp1), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
 
 		// nodeOp1 should have been slashed
-		uint256 expectedAvaxRewardAmt = minipoolMgr.expectedRewardAmt(mp.duration, depositAmt);
-		uint256 slashedGGPAmt = minipoolMgr.calculateSlashAmt(expectedAvaxRewardAmt);
+		uint256 expectedAvaxRewardsAmt = minipoolMgr.expectedAVAXRewardsAmt(mp.duration, depositAmt);
+		uint256 slashedGGPAmt = minipoolMgr.calculateSlashAmt(expectedAvaxRewardsAmt);
 		assertEq(staking.getGGPStake(nodeOp1), ggpStakeAmt - slashedGGPAmt);
 
 		// Skip forward 2 cycles so all rewards are available
-		rewardsPool.startCycle();
 		skip(ggAVAX.rewardsCycleLength());
 		ggAVAX.syncRewards();
 		skip(ggAVAX.rewardsCycleLength());
@@ -179,7 +180,7 @@ contract ScenariosTest is BaseTest {
 		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
 		skip(mp.duration);
 		uint256 totalAvax = mp.avaxNodeOpAmt + mp.avaxLiquidStakerAmt;
-		uint256 rewards = minipoolMgr.expectedRewardAmt(mp.duration, totalAvax);
+		uint256 rewards = minipoolMgr.expectedAVAXRewardsAmt(mp.duration, totalAvax);
 		deal(rialto, rialto.balance + rewards);
 		minipoolMgr.recordStakingEnd{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
 		vm.stopPrank();
@@ -207,8 +208,9 @@ contract ScenariosTest is BaseTest {
 
 	// Simulate what Rialto would do
 	function rialtoProcessGGPRewards() public {
+		skip(dao.getRewardsCycleSeconds());
 		vm.startPrank(rialto);
-		rewardsPool.startCycle();
+		rewardsPool.startRewardsCycle();
 
 		Staking.Staker[] memory allStakers = staking.getStakers(0, 0);
 		uint256 totalEligibleStakedGGP = 0;

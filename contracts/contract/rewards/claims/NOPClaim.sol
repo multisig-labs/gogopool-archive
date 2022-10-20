@@ -13,18 +13,14 @@ import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
-// RPL Rewards claiming by the DAO
 contract NOPClaim is Base {
-	// Libs
-	// Construct
 	using FixedPointMathLib for uint256;
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
-	/// @notice There are no rewards for the user to claim
-	error NoRewardsToClaim();
-	/// @notice Invalid amount requested
-	error InvalidAmount();
-	ERC20 public immutable ggp;
 
+	error NoRewardsToClaim();
+	error InvalidAmount();
+
+	ERC20 public immutable ggp;
 	uint256 internal constant TENTH = 0.1 ether;
 
 	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
@@ -33,19 +29,12 @@ contract NOPClaim is Base {
 		ggp = ggp_;
 	}
 
-	// Get whether the contract is enabled
-	//TODO: integrate this to be used
-	function getEnabled() external view returns (bool) {
-		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		return dao.getContractEnabled("NOPClaim");
-	}
-
 	function getRewardsCycleTotal() public view returns (uint256) {
-		return getUint(keccak256("rewards.cycle.total"));
+		return getUint(keccak256("NOPClaim.RewardsCycleTotal"));
 	}
 
 	function setRewardsCycleTotal(uint256 amount) public {
-		return setUint(keccak256("rewards.cycle.total"), amount);
+		return setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 
 	// Get whether a node can make a claim
@@ -61,7 +50,7 @@ contract NOPClaim is Base {
 			}
 			//rewardsStartTime has to be at least the min length.
 			uint256 daysDiff = (block.timestamp - rewardsStartTime) / 60 / 60 / 24;
-			uint256 minEligibleLength = dao.getGGPRewardsEligibilityMinLength();
+			uint256 minEligibleLength = dao.getRewardsEligibilityMinSeconds();
 			if (daysDiff < minEligibleLength) {
 				return false;
 			}

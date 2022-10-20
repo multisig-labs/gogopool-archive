@@ -17,7 +17,6 @@ contract RewardsTest is BaseTest {
 
 	function setUp() public override {
 		super.setUp();
-		oracle.setGGPPrice(1 ether, block.timestamp);
 		distributeInitialSupply();
 	}
 
@@ -46,16 +45,14 @@ contract RewardsTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	function testCanCycleStart() public {
-		assert(rewardsPool.canCycleStart() == false);
-		//skip forward to the inflation start time
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
-		//now skip forward an interval
-		uint256 rewardsIntervalLength = dao.getGGPRewardCycleLength();
-		skip(rewardsIntervalLength);
+	function testCanRewardsCycleStart() public {
+		assert(rewardsPool.canRewardsCycleStart() == false);
+		skip(dao.getInflationInterval());
+		assert(rewardsPool.canRewardsCycleStart() == false);
+		uint256 rewardsCycleSeconds = dao.getRewardsCycleSeconds();
+		skip(rewardsCycleSeconds);
 
-		assert(rewardsPool.canCycleStart() == true);
+		assert(rewardsPool.canRewardsCycleStart() == true);
 	}
 
 	//commenting this out since it is failing, because effective stake only applies to minipools that have borrowed liquid stakers funds. But we will come back to focusing on rewards later
@@ -102,7 +99,7 @@ contract RewardsTest is BaseTest {
 	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 
-	// 	uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
+	// 	uint256 totalMinipools = store.getUint(keccak256("MinipoolManager.count"));
 	// 	assertEq(totalMinipools, 2);
 
 	// 	uint256 totalEffectiveNodeOpStake = staking.getUserEffectiveGGPStake(nodeOp);
@@ -119,7 +116,7 @@ contract RewardsTest is BaseTest {
 	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 	// 	uint256 ggpAfterStaking = ggp.balanceOf(nodeOp);
 
-	// 	uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
+	// 	uint256 totalMinipools = store.getUint(keccak256("MinipoolManager.count"));
 	// 	assertEq(totalMinipools, 1);
 
 	// 	vm.startPrank(nodeOp);
@@ -148,7 +145,7 @@ contract RewardsTest is BaseTest {
 	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
 
-	// 	uint256 totalMinipools = store.getUint(keccak256("minipool.count"));
+	// 	uint256 totalMinipools = store.getUint(keccak256("MinipoolManager.count"));
 	// 	assertEq(totalMinipools, 2);
 
 	// 	uint256 totalStake = staking.getTotalGGPStake();
@@ -163,125 +160,125 @@ contract RewardsTest is BaseTest {
 	// 	assertEq(ggp.balanceOf(nodeOp), claimingContractAllowance / 2);
 	// }
 
-	function testGetLastInflationCalcTime() public {
-		//note: current block.timestamp is 1, hence the subtraction of 1 second at the end
-		assert(rewardsPool.getLastInflationCalcTime() == 0);
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
-		assert(rewardsPool.getLastInflationCalcTime() == block.timestamp - 1 seconds);
-	}
+	// function testGetInflationCycleStartTime() public {
+	// 	//note: current block.timestamp is 1, hence the subtraction of 1 second at the end
+	// 	assert(rewardsPool.getInflationCycleStartTime() == 0);
+	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
+	// 	skip(inflationStartTime);
+	// 	assert(rewardsPool.getInflationCycleStartTime() == block.timestamp - 1 seconds);
+	// }
 
-	function testGetInflationIntervalsPassed() public {
-		// no inflation intervals have passed
-		assert(rewardsPool.getInflationIntervalsPassed() == 0);
-		//skip forward to the inflation start time
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
-		//now skip forward an interval
-		uint256 inflationIntervalLength = dao.getInflationInterval();
-		skip(inflationIntervalLength);
-		assert(rewardsPool.getInflationIntervalsPassed() == 1);
+	// function testGetInflationIntervalsElapsed() public {
+	// 	// no inflation intervals have passed
+	// 	assert(rewardsPool.getInflationIntervalsElapsed() == 0);
+	// 	//skip forward to the inflation start time
+	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
+	// 	skip(inflationStartTime);
+	// 	//now skip forward an interval
+	// 	uint256 inflationIntervalLength = dao.getInflationInterval();
+	// 	skip(inflationIntervalLength);
+	// 	assert(rewardsPool.getInflationIntervalsElapsed() == 1);
 
-		skip(inflationIntervalLength);
-		assert(rewardsPool.getInflationIntervalsPassed() == 2);
-	}
+	// 	skip(inflationIntervalLength);
+	// 	assert(rewardsPool.getInflationIntervalsElapsed() == 2);
+	// }
 
-	//TODO test this full 5 years
-	function testInflationCalculate() public {
-		// 0 cycles
-		assert(rewardsPool.inflationCalculate() == 0);
-		//skip forward to the inflation start time
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
-		//now skip forward an interval
-		uint256 inflationIntervalLength = dao.getInflationInterval();
-		skip(inflationIntervalLength);
+	// //TODO test this full 5 years
+	// function testInflationCalculate() public {
+	// 	// 0 cycles
+	// 	assert(rewardsPool.inflate() == [0, 0]);
+	// 	//skip forward to the inflation start time
+	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
+	// 	skip(inflationStartTime);
+	// 	//now skip forward an interval
+	// 	uint256 inflationIntervalLength = dao.getInflationInterval();
+	// 	skip(inflationIntervalLength);
 
-		//1 cycle, should be 2406.06
-		uint256 totalCirculatingSupply = dao.getTotalGGPCirculatingSupply();
-		assert(rewardsPool.inflationCalculate() == 2406251108043000000000);
+	// 	//1 cycle, should be 2406.06
+	// 	uint256 totalCirculatingSupply = dao.getTotalGGPCirculatingSupply();
+	// 	assert(rewardsPool.inflationCalculate() == 2406251108043000000000);
 
-		//this happens in inflationMintTokens()
-		dao.setTotalGGPCirculatingSupply((totalCirculatingSupply + 2406251108043000000000));
+	// 	//this happens in inflationMintTokens()
+	// 	dao.setTotalGGPCirculatingSupply((totalCirculatingSupply + 2406251108043000000000));
 
-		//2 cycles
-		totalCirculatingSupply = dao.getTotalGGPCirculatingSupply();
-		skip(inflationIntervalLength);
-		assert(rewardsPool.inflationCalculate() == 4813467266486087907130);
+	// 	//2 cycles
+	// 	totalCirculatingSupply = dao.getTotalGGPCirculatingSupply();
+	// 	skip(inflationIntervalLength);
+	// 	assert(rewardsPool.inflationCalculate() == 4813467266486087907130);
 
-		//test the inflationTokenAmount
-	}
+	// 	//test the inflationTokenAmount
+	// }
 
-	function testGetRewardsCyclesPassed() public {
-		rewind(block.timestamp);
-		assert(rewardsPool.getRewardCyclesPassed() == 0);
+	// function testGetRewardsCyclesPassed() public {
+	// 	rewind(block.timestamp);
+	// 	assert(rewardsPool.getRewardCyclesElapsed() == 0);
 
-		//now skip forward an interval
-		uint256 rewardsIntervalLength = dao.getGGPRewardCycleLength();
-		skip(rewardsIntervalLength);
-		assert(rewardsPool.getRewardCyclesPassed() == 1 ether);
+	// 	//now skip forward an interval
+	// 	uint256 rewardsIntervalLength = dao.getRewardCycleLength();
+	// 	skip(rewardsIntervalLength);
+	// 	assert(rewardsPool.getRewardCyclesElapsed() == 1 ether);
 
-		skip(rewardsIntervalLength);
-		assert(rewardsPool.getRewardCyclesPassed() == 2 ether);
-	}
+	// 	skip(rewardsIntervalLength);
+	// 	assert(rewardsPool.getRewardCyclesElapsed() == 2 ether);
+	// }
 
-	function testGetClaimingContractPerc() public {
-		assert(rewardsPool.getClaimingContractPerc("ProtocolDAOClaim") == 0.10 ether);
-		assert(rewardsPool.getClaimingContractPerc("NOPClaim") == 0.70 ether);
-		assert(rewardsPool.getClaimingContractPerc("RialtoClaim") == 0 ether);
-	}
+	// function testGetClaimingContractPerc() public {
+	// 	assert(rewardsPool.getClaimingContractPerc("ProtocolDAOClaim") == 0.10 ether);
+	// 	assert(rewardsPool.getClaimingContractPerc("NOPClaim") == 0.70 ether);
+	// 	assert(rewardsPool.getClaimingContractPerc("RialtoClaim") == 0 ether);
+	// }
 
-	function testGetClaimingContractDistribution() public {
-		assert(rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim") == 0);
-		assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == 0);
+	// function testGetClaimingContractDistribution() public {
+	// 	assert(rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim") == 0);
+	// 	assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == 0);
 
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
+	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
+	// 	skip(inflationStartTime);
 
-		rewardsPool.startCycle();
-		uint256 rewardsTotal = rewardsPool.getRewardCycleTotalAmount();
+	// 	rewardsPool.startCycle();
+	// 	uint256 rewardsTotal = rewardsPool.getRewardCycleTotalAmount();
 
-		uint256 protocolAllot = rewardsTotal.mulWadDown(0.10 ether);
-		assert(rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim") == protocolAllot);
+	// 	uint256 protocolAllot = rewardsTotal.mulWadDown(0.10 ether);
+	// 	assert(rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim") == protocolAllot);
 
-		uint256 nopAllot = rewardsTotal.mulWadDown(0.70 ether);
-		assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == nopAllot);
-	}
+	// 	uint256 nopAllot = rewardsTotal.mulWadDown(0.70 ether);
+	// 	assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == nopAllot);
+	// }
 
-	function testStartCycle() public {
-		//start cycle will fail
-		rewardsPool.startCycle();
-		assert(rewardsPool.getRewardCycleTotalAmount() == 0);
-		assert(dao.getTotalGGPCirculatingSupply() == 18000000 ether);
-		assert(rewardsPool.getRewardCycleStartTime() == 0);
-		assert(vault.balanceOfToken("ProtocolDAOClaim", ggp) == 0);
-		assert(vault.balanceOfToken("NOPClaim", ggp) == 0);
+	// function testStartCycle() public {
+	// 	//start cycle will fail
+	// 	rewardsPool.startCycle();
+	// 	assert(rewardsPool.getRewardCycleTotalAmount() == 0);
+	// 	assert(dao.getTotalGGPCirculatingSupply() == 18000000 ether);
+	// 	assert(rewardsPool.getRewardCycleStartTime() == 0);
+	// 	assert(vault.balanceOfToken("ProtocolDAOClaim", ggp) == 0);
+	// 	assert(vault.balanceOfToken("NOPClaim", ggp) == 0);
 
-		uint256 rewardsIntervalLength = dao.getGGPRewardCycleLength();
-		skip(rewardsIntervalLength);
+	// 	uint256 rewardsIntervalLength = dao.getRewardCycleLength();
+	// 	skip(rewardsIntervalLength);
 
-		//start cycle will fail because inflation has not started yet
-		rewardsPool.startCycle();
-		assert(rewardsPool.getRewardCycleTotalAmount() == 0);
-		assert(dao.getTotalGGPCirculatingSupply() == 18000000 ether);
-		assert(rewardsPool.getRewardCycleStartTime() == 0);
-		assert(vault.balanceOfToken("ProtocolDAOClaim", ggp) == 0);
-		assert(vault.balanceOfToken("NOPClaim", ggp) == 0);
+	// 	//start cycle will fail because inflation has not started yet
+	// 	rewardsPool.startCycle();
+	// 	assert(rewardsPool.getRewardCycleTotalAmount() == 0);
+	// 	assert(dao.getTotalGGPCirculatingSupply() == 18000000 ether);
+	// 	assert(rewardsPool.getRewardCycleStartTime() == 0);
+	// 	assert(vault.balanceOfToken("ProtocolDAOClaim", ggp) == 0);
+	// 	assert(vault.balanceOfToken("NOPClaim", ggp) == 0);
 
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
-		//now skip forward an interval
-		uint256 inflationIntervalLength = dao.getInflationInterval();
-		skip(inflationIntervalLength);
+	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
+	// 	skip(inflationStartTime);
+	// 	//now skip forward an interval
+	// 	uint256 inflationIntervalLength = dao.getInflationInterval();
+	// 	skip(inflationIntervalLength);
 
-		//start cycle will work
-		rewardsPool.startCycle();
-		assert(rewardsPool.getRewardCycleTotalAmount() > 0);
-		assert(dao.getTotalGGPCirculatingSupply() > 18000000 ether);
-		assert(rewardsPool.getRewardCycleStartTime() != 0);
-		assert(vault.balanceOfToken("ProtocolDAOClaim", ggp) > 0);
-		assert(vault.balanceOfToken("NOPClaim", ggp) > 0);
-	}
+	// 	//start cycle will work
+	// 	rewardsPool.startCycle();
+	// 	assert(rewardsPool.getRewardCycleTotalAmount() > 0);
+	// 	assert(dao.getTotalGGPCirculatingSupply() > 18000000 ether);
+	// 	assert(rewardsPool.getRewardCycleStartTime() != 0);
+	// 	assert(vault.balanceOfToken("ProtocolDAOClaim", ggp) > 0);
+	// 	assert(vault.balanceOfToken("NOPClaim", ggp) > 0);
+	// }
 
 	//inflationMintToken is internal so not visible
 	// function testInflationMintTokens() public {
@@ -290,7 +287,7 @@ contract RewardsTest is BaseTest {
 	// 	//no new tokens have been 'minted'
 	// 	assert(rewardsPool.getTotalGGPCirculatingSupply() == totalCirculatingSupply);
 	// 	//inflation calc time is still 0
-	// 	assert(rewardsPool.getLastInflationCalcTime() == 0);
+	// 	assert(rewardsPool.getInflationCycleStartTime() == 0);
 	// 	assert(store.getUint(keccak256("rewardsPool.reward.cycle.total.amount")) == 0);
 
 	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
@@ -303,14 +300,14 @@ contract RewardsTest is BaseTest {
 	// 	assertEq(store.getUint(keccak256("rewardsPool.reward.cycle.total.amount")), (dao.getTotalGGPCirculatingSupply() - totalCirculatingSupply));
 	// }
 
-  function testRewardCyclesPassed() public {
-		uint256 expectedRewardCycles = 2;
-		uint256 rewardCycleLength = rewardsPool.getRewardCycleLength();
-		uint256 startingRewardCyclesPassed = rewardsPool.getRewardCyclesPassed();
+	function testRewardsCyclesElapsed() public {
+		uint256 expectedRewardsCycles = 2;
+		uint256 rewardsCycleSeconds = dao.getRewardsCycleSeconds();
+		uint256 startingRewardsCyclesElapsed = rewardsPool.getRewardsCyclesElapsed();
 
-		skip(rewardCycleLength * expectedRewardCycles);
+		skip(rewardsCycleSeconds * expectedRewardsCycles);
 
-		uint256 endingRewardCyclesPassed = rewardsPool.getRewardCyclesPassed();
-		assertEq((endingRewardCyclesPassed - startingRewardCyclesPassed) / 1 ether, expectedRewardCycles);
+		uint256 endingRewardsCyclesElapsed = rewardsPool.getRewardsCyclesElapsed();
+		assert((endingRewardsCyclesElapsed - startingRewardsCyclesElapsed) == expectedRewardsCycles);
 	}
 }

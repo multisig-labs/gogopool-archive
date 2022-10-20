@@ -24,7 +24,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	NodeIDs can be added, but never removed. If a nodeID submits another validation request,
 	it will overwrite the old one (only allowed for specific statuses).
 
-	minipool.total.avaxLiquidStakerAmt = total for all active minipools (Prelaunch/Launched/Staking)
+	MinipoolManager.TotalAVAXLiquidStakerAmt = total for all active minipools (Prelaunch/Launched/Staking)
 
 	minipool.count = Starts at 0 and counts up by 1 after a node is added.
 	minipool.index<nodeID> = <index> of nodeID
@@ -94,7 +94,7 @@ contract MinipoolManager is Base, IWithdrawer {
 	error InvalidMultisigAddress();
 
 	/// @notice Requested over set maximum liquid staker AVAX amount
-	error InvalidAvaxAssignmentRequest();
+	error InvalidAVAXAssignmentRequest();
 
 	/// @notice Only minipool owners can cancel a minipool before validation starts
 	error OnlyOwnerCanCancel();
@@ -102,15 +102,13 @@ contract MinipoolManager is Base, IWithdrawer {
 	/// @notice Only minipool owners can withdraw minipool funds
 	error OnlyOwnerCanWithdraw();
 
-	error ErrorSendingAvax();
-
-	error InsufficientAvaxForStaking();
+	error ErrorSendingAVAX();
 
 	/// @notice Insufficient GGP stake for requested liquid staker AVAX amount
 	error InsufficientGGPCollateralization();
 
 	/// @notice Must have at least 2000 AVAX to create a minipool
-	error InsufficientAvaxForMinipoolCreation();
+	error InsufficientAVAXForMinipoolCreation();
 
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
@@ -128,16 +126,16 @@ contract MinipoolManager is Base, IWithdrawer {
 
 	/* TOTAL AVAX AMOUNT */
 	// Get/set the total AVAX *actually* withdrawn from ggAVAX and sent to Rialto
-	function getTotalAvaxLiquidStakerAmt() external view returns (uint256) {
-		return getUint(keccak256("minipool.total.avaxLiquidStakerAmt"));
+	function getTotalAVAXLiquidStakerAmt() external view returns (uint256) {
+		return getUint(keccak256("minipool.TotalAVAXLiquidStakerAmt"));
 	}
 
-	function increaseTotalAvaxLiquidStakerAmt(uint256 amount) private {
-		addUint(keccak256("minipool.total.avaxLiquidStakerAmt"), amount);
+	function increaseTotalAVAXLiquidStakerAmt(uint256 amount) private {
+		addUint(keccak256("minipool.TotalAVAXLiquidStakerAmt"), amount);
 	}
 
-	function decreaseTotalAvaxLiquidStakerAmt(uint256 amount) private {
-		subUint(keccak256("minipool.total.avaxLiquidStakerAmt"), amount);
+	function decreaseTotalAVAXLiquidStakerAmt(uint256 amount) private {
+		subUint(keccak256("minipool.TotalAVAXLiquidStakerAmt"), amount);
 	}
 
 	// Accept deposit from node operator
@@ -157,19 +155,19 @@ contract MinipoolManager is Base, IWithdrawer {
 		if (
 			// Current rule is funds must be 1:1 nodeOp:LiqStaker
 			msg.value != avaxAssignmentRequest ||
-			avaxAssignmentRequest > dao.getMinipoolAvaxAssignmentMax() ||
-			avaxAssignmentRequest < dao.getMinipoolAvaxAssignmentMin()
+			avaxAssignmentRequest > dao.getMinipoolMaxAVAXAssignment() ||
+			avaxAssignmentRequest < dao.getMinipoolMinAVAXAssignment()
 		) {
-			revert InvalidAvaxAssignmentRequest();
+			revert InvalidAVAXAssignmentRequest();
 		}
 
 		if (msg.value + avaxAssignmentRequest < dao.getMinipoolMinStakingAmount()) {
-			revert InsufficientAvaxForMinipoolCreation();
+			revert InsufficientAVAXForMinipoolCreation();
 		}
 
 		// All AVAX will be stored in the Vault contract
 		Vault vault = Vault(getContractAddress("Vault"));
-		vault.depositAvax{value: msg.value}();
+		vault.depositAVAX{value: msg.value}();
 
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.increaseAVAXStake(msg.sender, msg.value);
@@ -212,8 +210,8 @@ contract MinipoolManager is Base, IWithdrawer {
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
 	}
 
-	// TODO This forces a minipool into a specific state. Do we need this? For tests? For guardian?
-	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external {
+	// Directly update status in storage without doing anything else
+	function updateMinipoolStatus(address nodeID, MinipoolStatus status) external onlyGuardian {
 		int256 index = requireValidMinipool(nodeID);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".status")), uint256(status));
 	}
@@ -237,11 +235,11 @@ contract MinipoolManager is Base, IWithdrawer {
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
 
-		vault.withdrawAvax(totalAvax);
+		vault.withdrawAVAX(totalAvax);
 		// TODO should we be using safeTransferETH here?
 		(bool sent, ) = payable(owner).call{value: totalAvax}("");
 		if (!sent) {
-			revert ErrorSendingAvax();
+			revert ErrorSendingAVAX();
 		}
 	}
 
@@ -279,11 +277,11 @@ contract MinipoolManager is Base, IWithdrawer {
 		staking.decreaseMinipoolCount(owner);
 
 		Vault vault = Vault(getContractAddress("Vault"));
-		vault.withdrawAvax(avaxNodeOpAmt);
+		vault.withdrawAVAX(avaxNodeOpAmt);
 		// TODO should we be using safeTransferETH here?
 		(bool sent, ) = payable(owner).call{value: avaxNodeOpAmt}("");
 		if (!sent) {
-			revert ErrorSendingAvax();
+			revert ErrorSendingAVAX();
 		}
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);
@@ -319,8 +317,8 @@ contract MinipoolManager is Base, IWithdrawer {
 
 		// Transfer the user funds to this contract
 		ggAVAX.withdrawForStaking(avaxLiquidStakerAmt);
-		increaseTotalAvaxLiquidStakerAmt(avaxLiquidStakerAmt);
-		vault.withdrawAvax(avaxNodeOpAmt);
+		increaseTotalAVAXLiquidStakerAmt(avaxLiquidStakerAmt);
+		vault.withdrawAVAX(avaxNodeOpAmt);
 
 		// We know we have correct amounts since createMinipool enforces that
 		uint256 totalAvaxAmt = avaxNodeOpAmt + avaxLiquidStakerAmt;
@@ -381,7 +379,7 @@ contract MinipoolManager is Base, IWithdrawer {
 
 		// we are giving node operators an additional 15% commission fee
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		uint256 avaxLiquidStakerRewardAmt = avaxHalfRewards - avaxHalfRewards.mulWadDown(dao.getMinipoolNodeCommissionFeePercentage());
+		uint256 avaxLiquidStakerRewardAmt = avaxHalfRewards - avaxHalfRewards.mulWadDown(dao.getMinipoolNodeCommissionFeePct());
 		uint256 avaxNodeOpRewardAmt = avaxTotalRewardAmt - avaxLiquidStakerRewardAmt;
 
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpRewardAmt")), avaxNodeOpRewardAmt);
@@ -393,24 +391,23 @@ contract MinipoolManager is Base, IWithdrawer {
 		}
 
 		// Send the nodeOps AVAX + rewards to vault so they can claim later
-		vault.depositAvax{value: avaxNodeOpAmt + avaxNodeOpRewardAmt}();
+		vault.depositAVAX{value: avaxNodeOpAmt + avaxNodeOpRewardAmt}();
 		// Return Liq stakers funds + rewards
 		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt + avaxLiquidStakerRewardAmt}(avaxLiquidStakerAmt, avaxLiquidStakerRewardAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
-		decreaseTotalAvaxLiquidStakerAmt(avaxLiquidStakerAmt);
+		decreaseTotalAVAXLiquidStakerAmt(avaxLiquidStakerAmt);
 		staking.decreaseMinipoolCount(owner);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}
 
 	// Extracted this because of "stack too deep" errors.
-	// TODO maybe pass in the params we already know, is that cheaper? How much?
 	function slash(int256 index) private {
 		address nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
 		uint256 duration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".duration")));
 		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")));
-		uint256 expectedAmt = expectedRewardAmt(duration, avaxLiquidStakerAmt);
+		uint256 expectedAmt = expectedAVAXRewardsAmt(duration, avaxLiquidStakerAmt);
 		uint256 slashAmt = calculateSlashAmt(expectedAmt);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")), slashAmt);
 		Staking staking = Staking(getContractAddress("Staking"));
@@ -426,14 +423,13 @@ contract MinipoolManager is Base, IWithdrawer {
 	}
 
 	// Given a duration and an avax amt, calculate how much avax should be earned via staking rewards
-	function expectedRewardAmt(uint256 duration, uint256 avaxAmt) public view returns (uint256) {
+	function expectedAVAXRewardsAmt(uint256 duration, uint256 avaxAmt) public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		uint256 rate = dao.getExpectedRewardRate();
+		uint256 rate = dao.getExpectedAVAXRewardsRate();
 		return (avaxAmt.mulWadDown(rate) * duration) / 365 days;
 	}
 
-	// Rialto was for some reason unable to start the validation period, so cancel and refund all monies
-	// TODO
+	// Rialto was unable to start the validation period, so cancel and refund all monies
 	function recordStakingError(address nodeID, bytes32 errorCode) external payable {
 		int256 index = requireValidMultisig(nodeID);
 		requireValidStateTransition(index, MinipoolStatus.Error);
@@ -456,11 +452,11 @@ contract MinipoolManager is Base, IWithdrawer {
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerRewardAmt")), 0);
 
 		// Send the nodeOps AVAX to vault so they can claim later
-		vault.depositAvax{value: avaxNodeOpAmt}();
+		vault.depositAVAX{value: avaxNodeOpAmt}();
 		// Return Liq stakers funds
 		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt}(avaxLiquidStakerAmt, 0);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
-		decreaseTotalAvaxLiquidStakerAmt(avaxLiquidStakerAmt);
+		decreaseTotalAVAXLiquidStakerAmt(avaxLiquidStakerAmt);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Error);
 	}

@@ -231,7 +231,7 @@ contract DelegationManager is Base, IWithdrawer {
 		uint256 avaxValidatorRewardAmt = getUint(keccak256(abi.encodePacked("delegationNode.item", index, ".avaxValidatorRewardAmt")));
 
 		if (isMinipool && avaxValidatorRewardAmt > 0) {
-			vault.withdrawAvax(avaxValidatorRewardAmt);
+			vault.withdrawAVAX(avaxValidatorRewardAmt);
 			(bool sent, ) = payable(owner).call{value: avaxValidatorRewardAmt}("");
 			if (!sent) {
 				revert ErrorSendingAvax();

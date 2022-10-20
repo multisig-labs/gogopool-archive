@@ -31,7 +31,7 @@ contract Storage {
 	event GuardianChanged(address oldGuardian, address newGuardian);
 
 	/// @dev Only allow access from the latest version of a contract in the GoGoPool network after deployment
-	modifier onlyLatestGoGoNetworkContract() {
+	modifier onlyLatestNetworkContract() {
 		// solhint-disable
 		if (storageInit == true) {
 			// Make sure the access is permitted to only contracts in our Dapp
@@ -93,84 +93,84 @@ contract Storage {
 	}
 
 	/// @param _key The key for the record
-	function setAddress(bytes32 _key, address _value) external onlyLatestGoGoNetworkContract {
+	function setAddress(bytes32 _key, address _value) external onlyLatestNetworkContract {
 		addressStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setUint(bytes32 _key, uint256 _value) external onlyLatestGoGoNetworkContract {
+	function setUint(bytes32 _key, uint256 _value) external onlyLatestNetworkContract {
 		uintStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setString(bytes32 _key, string calldata _value) external onlyLatestGoGoNetworkContract {
+	function setString(bytes32 _key, string calldata _value) external onlyLatestNetworkContract {
 		stringStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setBytes(bytes32 _key, bytes calldata _value) external onlyLatestGoGoNetworkContract {
+	function setBytes(bytes32 _key, bytes calldata _value) external onlyLatestNetworkContract {
 		bytesStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setBool(bytes32 _key, bool _value) external onlyLatestGoGoNetworkContract {
+	function setBool(bytes32 _key, bool _value) external onlyLatestNetworkContract {
 		booleanStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setInt(bytes32 _key, int256 _value) external onlyLatestGoGoNetworkContract {
+	function setInt(bytes32 _key, int256 _value) external onlyLatestNetworkContract {
 		intStorage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function setBytes32(bytes32 _key, bytes32 _value) external onlyLatestGoGoNetworkContract {
+	function setBytes32(bytes32 _key, bytes32 _value) external onlyLatestNetworkContract {
 		bytes32Storage[_key] = _value;
 	}
 
 	/// @param _key The key for the record
-	function deleteAddress(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteAddress(bytes32 _key) external onlyLatestNetworkContract {
 		delete addressStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteUint(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteUint(bytes32 _key) external onlyLatestNetworkContract {
 		delete uintStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteString(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteString(bytes32 _key) external onlyLatestNetworkContract {
 		delete stringStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteBytes(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteBytes(bytes32 _key) external onlyLatestNetworkContract {
 		delete bytesStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteBool(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteBool(bytes32 _key) external onlyLatestNetworkContract {
 		delete booleanStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteInt(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteInt(bytes32 _key) external onlyLatestNetworkContract {
 		delete intStorage[_key];
 	}
 
 	/// @param _key The key for the record
-	function deleteBytes32(bytes32 _key) external onlyLatestGoGoNetworkContract {
+	function deleteBytes32(bytes32 _key) external onlyLatestNetworkContract {
 		delete bytes32Storage[_key];
 	}
 
 	/// @param _key The key for the record
 	/// @param _amount An amount to add to the record's value
-	function addUint(bytes32 _key, uint256 _amount) external onlyLatestGoGoNetworkContract {
+	function addUint(bytes32 _key, uint256 _amount) external onlyLatestNetworkContract {
 		uintStorage[_key] = uintStorage[_key] + _amount;
 	}
 
 	/// @param _key The key for the record
 	/// @param _amount An amount to subtract from the record's value
-	function subUint(bytes32 _key, uint256 _amount) external onlyLatestGoGoNetworkContract {
+	function subUint(bytes32 _key, uint256 _amount) external onlyLatestNetworkContract {
 		uintStorage[_key] = uintStorage[_key] - _amount;
 	}
 

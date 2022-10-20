@@ -21,69 +21,56 @@ contract ProtocolDAO is Base {
 	}
 
 	function initialize() external onlyGuardian {
-		if (!getBool(keccak256("protocolDAO.deployed"))) {
-			//NOPClaim settings
-			setBool(keccak256("NOPClaim.enabled"), true);
-			setUint(keccak256("ggp.rewards.eligibilityMinLength"), 0 days);
-
-			//ProtocolDAOClaim settings
-			setBool(keccak256("ProtocolDAOClaim.enabled"), true);
-
-			//RewardsPool Settings
-			setBool(keccak256("RewardsPool.enabled"), true);
-			setUint(keccak256("ggp.rewards.cycleLength"), 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
-			setUint(keccak256("ggp.circulatingSupply"), 18000000 ether);
-			setUint(keccak256("ggp.rewards.percentage.ProtocolDAOClaim"), 0.10 ether);
-			setUint(keccak256("ggp.rewards.percentage.NOPClaim"), 0.70 ether);
-			setUint(keccak256("ggp.rewards.percentage.RialtoClaim"), 0.20 ether);
-
-			// GGP Inflation settings
-			// these may change when we finialize tokenomics
-			setUint(keccak256("ggp.inflation.intervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
-			setUint(keccak256("ggp.inflation.intervalStart"), (block.timestamp + 1 days)); // Set the default start date for inflation to begin as 1 day after deployment
-			setUint(keccak256("ggp.inflation.interval"), 1 minutes);
-
-			//TokenGGAvax settings
-			setUint(keccak256("ggAvax.reserveTarget"), 0.1 ether); // 10% collateral held in reserve
-
-			//TokenGGP settings
-
-			//Minipool settings
-			setUint(keccak256("minipool.minStakingAmount"), 2000 ether);
-			setUint(keccak256("minipool.nodeCommision"), 0.15 ether);
-			setUint(keccak256("minipool.maxAvaxAssignment"), 10_000 ether);
-			setUint(keccak256("minipool.minAvaxAssignment"), 1_000 ether);
-			setUint(keccak256("avalanche.expectedRewardRate"), 0.1 ether); // Annual rate as pct of 1 avax
-
-			// Staking settings
-			setUint(keccak256("ggp.maxCollateralizationRatio"), 1.5 ether);
-			setUint(keccak256("ggp.minCollateralizationRatio"), 0.1 ether);
-
-			//Delegation Settings
-			//Delegation duration limit set to 2 Months
-			setUint(keccak256("delegation.maxDuration"), 5097600);
-
-			// Deployment check
-			setBool(keccak256("protocolDAO.deployed"), true); // Flag that this contract has been deployed, so default settings don't get reapplied on a contract upgrade
+		if (getBool(keccak256("ProtocolDAO.initialized"))) {
+			return;
 		}
-	}
+		setBool(keccak256("ProtocolDAO.initialized"), true);
 
-	function getContractEnabled(string memory contractName) public view returns (bool) {
-		return getBool(keccak256(abi.encodePacked(contractName, ".enabled")));
+		//NOPClaim settings
+		setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 0 days);
+
+		//RewardsPool Settings
+		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
+		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18000000 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
+
+		// GGP Inflation settings
+		// these may change when we finialize tokenomics
+		setUint(keccak256("ProtocolDAO.InflationIntervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
+		setUint(keccak256("ProtocolDAO.InflationIntervalStartTime"), (block.timestamp + 1 days)); // Set the default start date for inflation to begin as 1 day after deployment
+		setUint(keccak256("ProtocolDAO.InflationInterval"), 1 minutes);
+
+		//TokenGGAvax settings
+		setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserve
+
+		//TokenGGP settings
+
+		//Minipool settings
+		setUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"), 2000 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);
+		setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), 0.1 ether); // Annual rate as pct of 1 avax
+
+		// Staking settings
+		setUint(keccak256("ProtocolDAO.MaxCollateralizationRatio"), 1.5 ether);
+		setUint(keccak256("ProtocolDAO.MinCollateralizationRatio"), 0.1 ether);
 	}
 
 	// *** Rewards Pool ***
 
-	function getGGPRewardsEligibilityMinLength() public view returns (uint256) {
-		return getUint(keccak256("ggp.rewards.eligibilityMinLength"));
+	function getRewardsEligibilityMinSeconds() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"));
 	}
 
 	/**
-	 * Get how many seconds in a reward cycle
-	 * @return uint256 Number of seconds in a reward interval
+	 * Get how many seconds in a rewards cycle
+	 * @return uint256 Number of seconds in a rewards interval
 	 */
-	function getGGPRewardCycleLength() public view returns (uint256) {
-		return getUint(keccak256("ggp.rewards.cycleLength"));
+	function getRewardsCycleSeconds() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.RewardsCycleSeconds"));
 	}
 
 	/**
@@ -91,36 +78,35 @@ contract ProtocolDAO is Base {
 	 * @return uint256 The supply of ggp that is in circulation
 	 */
 	function getTotalGGPCirculatingSupply() public view returns (uint256) {
-		return getUint(keccak256("ggp.circulatingSupply"));
+		return getUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"));
 	}
 
-	//TODO: restrict who can access this
-	function setTotalGGPCirculatingSupply(uint256 amount) public {
-		return setUint(keccak256("ggp.circulatingSupply"), amount);
+	function setTotalGGPCirculatingSupply(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
+		return setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), amount);
 	}
 
 	/**
-	 * Get the percentage a contract is owed this reward cycle
-	 * @return uint256 Rewards percentage a contract will recieve this cycle
+	 * Get the percentage a contract is owed this rewards cycle
+	 * @return uint256 Rewards percentage a contract will receive this cycle
 	 */
-	function getClaimingContractPerc(string memory _claimingContract) public view returns (uint256) {
-		return getUint(keccak256(abi.encodePacked("ggp.rewards.percentage.", _claimingContract)));
+	function getClaimingContractPct(string memory _claimingContract) public view returns (uint256) {
+		return getUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", _claimingContract)));
 	}
 
-	//TODO: restrict who can set this
-	function setClaimingContractPerc(string memory _claimingContract, uint256 decimal) public {
-		setUint(keccak256(abi.encodePacked("ggp.rewards.percentage.", _claimingContract)), decimal);
+	function setClaimingContractPct(string memory _claimingContract, uint256 decimal) public onlyGuardian {
+		setUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", _claimingContract)), decimal);
 	}
 
 	//*** GGP Inflation */
 
 	/**
 	 * The current inflation rate per interval (eg 1000133680617113500 = 5% annual)
-	 * @return uint256 The current inflation rate per interval
+	 * @return uint256 The current inflation rate per interval (can never be < 1 ether)
 	 */
 	function getInflationIntervalRate() external view returns (uint256) {
 		// Inflation rate controlled by the DAO
-		return getUint(keccak256("ggp.inflation.intervalRate"));
+		uint256 rate = getUint(keccak256("ProtocolDAO.InflationIntervalRate"));
+		return rate < 1 ether ? 1 ether : rate;
 	}
 
 	/**
@@ -129,7 +115,7 @@ contract ProtocolDAO is Base {
 	 */
 	function getInflationIntervalStartTime() external view returns (uint256) {
 		// Inflation rate start time controlled by the DAO
-		return getUint(keccak256("ggp.inflation.intervalStart"));
+		return getUint(keccak256("ProtocolDAO.InflationIntervalStartTime"));
 	}
 
 	/**
@@ -137,50 +123,45 @@ contract ProtocolDAO is Base {
 	 * @return uint256 how many seconds to calculate inflation at
 	 */
 	function getInflationInterval() public view returns (uint256) {
-		return getUint(keccak256("ggp.inflation.interval"));
+		return getUint(keccak256("ProtocolDAO.InflationInterval"));
 	}
 
 	// *** Minipool Settings ***
 
 	function getMinipoolMinStakingAmount() public view returns (uint256) {
-		return getUint(keccak256("minipool.minStakingAmount"));
+		return getUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"));
 	}
 
-	function getMinipoolNodeCommissionFeePercentage() public view returns (uint256) {
-		return getUint(keccak256("minipool.nodeCommision"));
+	function getMinipoolNodeCommissionFeePct() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"));
 	}
 
 	// Maximum AVAX a Node Operator can be assigned from liquid staking funds
-	function getMinipoolAvaxAssignmentMax() public view returns (uint256) {
-		return getUint(keccak256("minipool.maxAvaxAssignment"));
+	function getMinipoolMaxAVAXAssignment() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"));
 	}
 
 	// Minimum AVAX a Node Operator can be assigned from liquid staking funds
-	function getMinipoolAvaxAssignmentMin() public view returns (uint256) {
-		return getUint(keccak256("minipool.minAvaxAssignment"));
+	function getMinipoolMinAVAXAssignment() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"));
 	}
 
-	function getExpectedRewardRate() public view returns (uint256) {
-		return getUint(keccak256("avalanche.expectedRewardRate"));
+	function getExpectedAVAXRewardsRate() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"));
 	}
 
 	//This is used in a test
-	function setExpectedRewardRate(uint256 rate) public {
-		setUint(keccak256("avalanche.expectedRewardRate"), rate);
+	function setExpectedAVAXRewardsRate(uint256 rate) public {
+		setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), rate);
 	}
 
 	//*** Staking ***
 	function getMaxCollateralizationRatio() public view returns (uint256) {
-		return getUint(keccak256("ggp.maxCollateralizationRatio"));
+		return getUint(keccak256("ProtocolDAO.MaxCollateralizationRatio"));
 	}
 
 	function getMinCollateralizationRatio() public view returns (uint256) {
-		return getUint(keccak256("ggp.minCollateralizationRatio"));
-	}
-
-	// *** Delegation Settings ***
-	function getDelegationDurationLimit() public view returns (uint256) {
-		return getUint(keccak256("delegation.maxDuration"));
+		return getUint(keccak256("ProtocolDAO.MinCollateralizationRatio"));
 	}
 
 	/**
@@ -190,11 +171,6 @@ contract ProtocolDAO is Base {
 	 * @return uint256 The current target reserve rate
 	 */
 	function getTargetGGAVAXReserveRate() external view returns (uint256) {
-		return getUint(keccak256("ggAvax.reserveTarget"));
-	}
-
-	//This is used in a test
-	function setTargetGGAVAXReserveRate(uint256 reserveRate) external {
-		setUint(keccak256("ggAvax.reserveTarget"), reserveRate); // 10% collateral held in reserve
+		return getUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"));
 	}
 }

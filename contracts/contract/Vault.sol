@@ -35,9 +35,9 @@ contract Vault is Base {
 	error VaultTokenWithdrawalFailed();
 
 	// Events
-	event AvaxDeposited(string indexed by, uint256 amount);
-	event AvaxWithdrawn(string indexed by, uint256 amount);
-	event AvaxTransfer(string indexed from, string indexed to, uint256 amount);
+	event AVAXDeposited(string indexed by, uint256 amount);
+	event AVAXWithdrawn(string indexed by, uint256 amount);
+	event AVAXTransfer(string indexed from, string indexed to, uint256 amount);
 	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
 	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
 	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
@@ -50,7 +50,7 @@ contract Vault is Base {
 
 	// Accept an AVAX deposit from a network contract
 	// Only accepts calls from GoGo Pool network contracts
-	function depositAvax() external payable onlyLatestNetworkContract {
+	function depositAVAX() external payable onlyLatestNetworkContract {
 		// Valid amount?
 		if (msg.value == 0) {
 			revert InvalidAmount();
@@ -60,34 +60,34 @@ contract Vault is Base {
 		// Update contract balance
 		avaxBalances[contractName] = avaxBalances[contractName] + msg.value;
 		// Emit ether deposited event
-		emit AvaxDeposited(contractName, msg.value);
+		emit AVAXDeposited(contractName, msg.value);
 	}
 
 	// Withdraw an amount of AVAX to a network contract
 	// Only accepts calls from GoGo Pool network contracts
-	function withdrawAvax(uint256 _amount) external onlyLatestNetworkContract {
+	function withdrawAVAX(uint256 amount) external onlyLatestNetworkContract {
 		// Valid amount?
-		if (_amount == 0) {
+		if (amount == 0) {
 			revert InvalidAmount();
 		}
 		// Get contract key
 		string memory contractName = getContractName(msg.sender);
 		// Check and update contract balance
-		if (avaxBalances[contractName] < _amount) {
+		if (avaxBalances[contractName] < amount) {
 			revert InsufficientContractBalance();
 		}
-		avaxBalances[contractName] = avaxBalances[contractName] - _amount;
+		avaxBalances[contractName] = avaxBalances[contractName] - amount;
 		// Withdraw
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
-		withdrawer.receiveWithdrawalAVAX{value: _amount}();
+		withdrawer.receiveWithdrawalAVAX{value: amount}();
 		// Emit ether withdrawn event
-		emit AvaxWithdrawn(contractName, _amount);
+		emit AVAXWithdrawn(contractName, amount);
 	}
 
 	// Transfer AVAX from one contract to another
 	// No funds actually move, just bookeeping
 	// Only accepts calls from Rocket Pool network contracts
-	function transferAvax(
+	function transferAVAX(
 		string memory fromContractName,
 		string memory toContractName,
 		uint256 amount
@@ -104,7 +104,7 @@ contract Vault is Base {
 		}
 		avaxBalances[fromContractName] = avaxBalances[fromContractName] - amount;
 		avaxBalances[toContractName] = avaxBalances[toContractName] + amount;
-		emit AvaxTransfer(fromContractName, toContractName, amount);
+		emit AVAXTransfer(fromContractName, toContractName, amount);
 	}
 
 	// Accept an token deposit and assign its balance to a network contract (saves a large amount of gas this way through not needing a double token transfer via a network contract first)

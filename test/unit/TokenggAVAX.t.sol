@@ -15,7 +15,8 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 	function setUp() public override {
 		super.setUp();
-		dao.setTargetGGAVAXReserveRate(0);
+		vm.prank(guardian, guardian);
+		store.setUint(keccak256("ggAvax.reserveTarget"), 0);
 
 		alice = getActorWithTokens("alice", MAX_AMT, MAX_AMT);
 		bob = getActor("bob");
@@ -200,7 +201,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		ggAVAX.syncRewards();
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
-		assertEq(ggAVAX.lastRewardAmount(), liquidStakerRewards);
+		assertEq(ggAVAX.lastRewardsAmount(), liquidStakerRewards);
 
 		// 6. Skip 1/3 of rewards length and see 1/3 rewards in totalReleasedAssets
 		skip(ggAVAX.rewardsCycleLength() / 3);
@@ -208,7 +209,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 oneThirdRewards = liquidStakerRewards / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + oneThirdRewards);
-		assertEq(ggAVAX.lastRewardAmount(), liquidStakerRewards);
+		assertEq(ggAVAX.lastRewardsAmount(), liquidStakerRewards);
 
 		// 7. Skip 2/3 of rewards length
 		// Rewards should be fully distributed
@@ -260,7 +261,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		console.log("staking assets", ggAVAX.stakingTotalAssets());
 
 		console.log("---rewards---");
-		console.log("last reward amount", ggAVAX.lastRewardAmount());
+		console.log("last rewards amount", ggAVAX.lastRewardsAmount());
 	}
 
 	function ggAVAXStateAsserts(

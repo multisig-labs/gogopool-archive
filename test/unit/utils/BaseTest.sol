@@ -60,7 +60,6 @@ abstract contract BaseTest is Test {
 		vm.startPrank(guardian, guardian);
 
 		store = new Storage();
-		initStorage(store);
 
 		dao = new ProtocolDAO(store);
 		registerContract(store, "ProtocolDAO", address(dao));
@@ -70,7 +69,6 @@ abstract contract BaseTest is Test {
 		registerContract(store, "Vault", address(vault));
 
 		oracle = new Oracle(store);
-		oracle.setGGPPrice(1 ether, block.timestamp);
 		registerContract(store, "Oracle", address(oracle));
 
 		ggp = new TokenGGP(store);
@@ -93,7 +91,8 @@ abstract contract BaseTest is Test {
 		registerContract(store, "MultisigManager", address(multisigMgr));
 
 		rialto = getActor("rialto");
-		registerMultisig(rialto);
+		multisigMgr.registerMultisig(rialto);
+		multisigMgr.enableMultisig(rialto);
 
 		dao = new ProtocolDAO(store);
 		registerContract(store, "ProtocolDAO", address(dao));
@@ -107,37 +106,43 @@ abstract contract BaseTest is Test {
 
 		rewardsPool = new RewardsPool(store);
 		registerContract(store, "RewardsPool", address(rewardsPool));
+		rewardsPool.initialize();
 
 		nopClaim = new NOPClaim(store, ggp);
 		registerContract(store, "NOPClaim", address(nopClaim));
+
+		// TODO We need to do this in prod, do we need it here too?
+		// store.setDeployedStatus();
 
 		// Initialize the rewards cycle
 		vm.stopPrank();
 		ggAVAX.syncRewards();
 
+		vm.prank(rialto);
+		oracle.setGGPPrice(1 ether, block.timestamp);
+
 		deal(guardian, type(uint128).max);
 	}
 
-	// Global settings we need for tests
-	function initStorage(Storage s) internal {}
-
 	// Override DAO values for tests
 	function initDao() internal {
-		store.setUint(keccak256("avalanche.expectedRewardRate"), 0.1 ether);
+		store.setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), 0.1 ether);
 		// GGP Inflation settings
 		// these may change when we finialize tokenomics
-		store.setUint(keccak256("ggp.inflation.intervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
-		store.setUint(keccak256("ggp.inflation.intervalStart"), (block.timestamp + 1 days)); // Set the default start date for inflation to begin as 1 day after deployment
-		store.setUint(keccak256("ggp.inflation.interval"), 1 days);
-		store.setUint(keccak256("ggAvax.reserveTarget"), 0.1 ether); // 10% collateral held in reserver
-		//Delegation duration limit set to 2 Months
-		store.setUint(keccak256("delegation.maxDuration"), 5097600);
-
-		// Minipool Settings
-		store.setUint(keccak256("minipool.minStakingAmount"), 2000 ether);
-		store.setUint(keccak256("minipool.nodeCommision"), 0.15 ether);
-		store.setUint(keccak256("minipool.maxAvaxAssignment"), 10_000 ether);
-		store.setUint(keccak256("minipool.minAvaxAssignment"), 1_000 ether);
+		store.setUint(keccak256("ProtocolDAO.InflationInterval"), 1 days);
+		store.setUint(keccak256("ProtocolDAO.InflationIntervalStartTime"), block.timestamp);
+		store.setUint(keccak256("ProtocolDAO.InflationIntervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
+		store.setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 0 days);
+		store.setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
+		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
+		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserver
+		store.setUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"), 2_000 ether);
+		store.setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
+		store.setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
+		store.setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);
 	}
 
 	// Register a contract in Storage
@@ -149,11 +154,6 @@ abstract contract BaseTest is Test {
 		s.setBool(keccak256(abi.encodePacked("contract.exists", addr)), true);
 		s.setAddress(keccak256(abi.encodePacked("contract.address", name)), addr);
 		s.setString(keccak256(abi.encodePacked("contract.name", addr)), string(name));
-	}
-
-	function registerMultisig(address addr) internal {
-		multisigMgr.registerMultisig(addr);
-		multisigMgr.enableMultisig(addr);
 	}
 
 	function getActor(string memory name) public returns (address) {

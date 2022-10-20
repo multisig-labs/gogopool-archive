@@ -46,13 +46,13 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	error TodoBetterMsg();
 
 	/// @dev emit every time a new rewards cycle starts
-	event NewRewardsCycle(uint256 indexed cycleEnd, uint256 rewardAmount);
+	event NewRewardsCycle(uint256 indexed cycleEnd, uint256 rewardsAmount);
 
 	/// @notice the amount of avax removed for staking by a multisig
 	event WithdrawForStaking(address indexed caller, uint256 assets);
 
 	/// @notice the amount of (non-rewards) avax deposited from staking by a multisig
-	event DepositFromStaking(address indexed caller, uint256 baseAmt, uint256 rewardAmt);
+	event DepositFromStaking(address indexed caller, uint256 baseAmt, uint256 rewardsAmt);
 
 	/// @notice the effective start of the current cycle
 	uint32 public lastSync;
@@ -64,7 +64,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	uint32 public rewardsCycleEnd;
 
 	/// @notice the amount of rewards distributed in a the most recent cycle.
-	uint192 public lastRewardAmount;
+	uint192 public lastRewardsAmount;
 
 	/// @notice the total amount of avax (including avax sent out for staking and all incoming rewards)
 	uint256 public totalReleasedAssets;
@@ -155,14 +155,14 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	}
 
 	// TODO ONLY minipoolmanager can call this, recvs avax from staking + rewards
-	function depositFromStaking(uint256 baseAmt, uint256 rewardAmt) public payable {
+	function depositFromStaking(uint256 baseAmt, uint256 rewardsAmt) public payable {
 		uint256 totalAmt = msg.value;
-		if (totalAmt != (baseAmt + rewardAmt) || baseAmt > stakingTotalAssets) {
+		if (totalAmt != (baseAmt + rewardsAmt) || baseAmt > stakingTotalAssets) {
 			revert TodoBetterMsg();
 		}
 		stakingTotalAssets -= baseAmt;
 		IWAVAX(address(asset)).deposit{value: totalAmt}();
-		emit DepositFromStaking(msg.sender, baseAmt, rewardAmt);
+		emit DepositFromStaking(msg.sender, baseAmt, rewardsAmt);
 	}
 
 	/*///////////////////////////////////////////////////////////////
@@ -209,23 +209,23 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	// REWARDS SYNC LOGIC
 
 	/// @notice Compute the amount of tokens available to share holders.
-	///         Increases linearly during a reward distribution period from the sync call, not the cycle start.
+	///         Increases linearly during a rewards distribution period from the sync call, not the cycle start.
 	function totalAssets() public view override returns (uint256) {
 		// cache global vars
 		uint256 totalReleasedAssets_ = totalReleasedAssets;
-		uint192 lastRewardAmount_ = lastRewardAmount;
+		uint192 lastRewardsAmount_ = lastRewardsAmount;
 		uint256 rewardsCycleEnd_ = rewardsCycleEnd;
 		uint32 lastSync_ = lastSync;
 
 		if (block.timestamp >= rewardsCycleEnd_) {
 			// no rewards or rewards fully unlocked
-			// entire reward amount is available
-			return totalReleasedAssets_ + lastRewardAmount_;
+			// entire rewards amount is available
+			return totalReleasedAssets_ + lastRewardsAmount_;
 		}
 
 		// rewards not fully unlocked
 		// add unlocked rewards to stored total
-		uint256 unlockedRewards = (lastRewardAmount_ * (block.timestamp - lastSync_)) / (rewardsCycleEnd_ - lastSync_);
+		uint256 unlockedRewards = (lastRewardsAmount_ * (block.timestamp - lastSync_)) / (rewardsCycleEnd_ - lastSync_);
 		return totalReleasedAssets_ + unlockedRewards;
 	}
 
@@ -244,21 +244,21 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	/// @notice Distributes rewards to xERC4626 holders.
 	/// All surplus `asset` balance of the contract over the internal balance becomes queued for the next cycle.
 	function syncRewards() public virtual {
-		uint192 lastRewardAmount_ = lastRewardAmount;
+		uint192 lastRewardsAmount_ = lastRewardsAmount;
 		uint32 timestamp = block.timestamp.safeCastTo32();
 
 		if (timestamp < rewardsCycleEnd) revert SyncError();
 
 		uint256 totalReleasedAssets_ = totalReleasedAssets;
 		uint256 stakingTotalAssets_ = stakingTotalAssets;
-		uint256 nextRewards = (asset.balanceOf(address(this)) + stakingTotalAssets_) - totalReleasedAssets_ - lastRewardAmount_;
+		uint256 nextRewards = (asset.balanceOf(address(this)) + stakingTotalAssets_) - totalReleasedAssets_ - lastRewardsAmount_;
 
-		totalReleasedAssets = totalReleasedAssets_ + lastRewardAmount_; // SSTORE
+		totalReleasedAssets = totalReleasedAssets_ + lastRewardsAmount_; // SSTORE
 
 		uint32 end = timestamp + rewardsCycleLength;
 
 		// Combined single SSTORE
-		lastRewardAmount = nextRewards.safeCastTo192();
+		lastRewardsAmount = nextRewards.safeCastTo192();
 		lastSync = timestamp;
 		rewardsCycleEnd = end;
 

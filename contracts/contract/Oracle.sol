@@ -9,14 +9,14 @@ import {TokenGGP} from "./tokens/TokenGGP.sol";
 
 /*
 	Data Storage Schema
-	oracle.ggp.oneinch = address of the One Inch price aggregator contract
-	oracle.ggp.timestamp = block.timestamp of last update to GGP price
-	oracle.ggp.price = price of GGP **IN AVAX UNITS**
+	Oracle.oneinch = address of the One Inch price aggregator contract
+	Oracle.ggp.timestamp = block.timestamp of last update to GGP price
+	Oracle.ggp.price = price of GGP **IN AVAX UNITS**
 */
 
 contract Oracle is Base {
 	/// @notice Multisig has not been registered or has been disabled
-	error InvalidMultisigDisabled();
+	error InvalidOrDisabledMultisig();
 
 	/// @notice Oracle-supplied price of GGP is not set or is zero
 	error InvalidGGPPrice();
@@ -32,9 +32,8 @@ contract Oracle is Base {
 	}
 
 	// Set the address of the One Inch price aggregator contract
-	// TODO security, only guardian/DAO should be able to do this
-	function setOneInch(address addr) public {
-		setAddress("oracle.ggp.oneinch", addr);
+	function setOneInch(address addr) public onlyGuardian {
+		setAddress("Oracle.OneInch", addr);
 	}
 
 	// Get an aggregated price from the 1Inch contract.
@@ -42,31 +41,30 @@ contract Oracle is Base {
 	// send a setGGPPrice tx
 	function getGGPPriceFromOneInch() public view returns (uint256 price, uint256 timestamp) {
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
-		address addr = getAddress("oracle.ggp.oneinch");
+		address addr = getAddress("Oracle.OneInch");
 		IOneInch oneinch = IOneInch(addr);
 		price = oneinch.getRateToEth(ggp, false);
 		timestamp = block.timestamp;
 	}
 
-	// TODO modifiers for who can call all these functions (registered/enabled multisigs)
 	function getGGPPrice() external view returns (uint256 price, uint256 timestamp) {
-		price = getUint(keccak256("oracle.ggp.price"));
+		price = getUint(keccak256("Oracle.GGPPrice"));
 		if (price == 0) {
 			revert InvalidGGPPrice();
 		}
-		timestamp = getUint(keccak256("oracle.ggp.timestamp"));
+		timestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 	}
 
-	function setGGPPrice(uint256 price, uint256 timestamp) external {
-		uint256 lastTimestamp = getUint(keccak256("oracle.ggp.timestamp"));
+	function setGGPPrice(uint256 price, uint256 timestamp) external onlyMultisig {
+		uint256 lastTimestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 		if (timestamp < lastTimestamp || timestamp > block.timestamp) {
 			revert InvalidTimestamp();
 		}
 		if (price == 0) {
 			revert InvalidGGPPrice();
 		}
-		setUint(keccak256("oracle.ggp.price"), price);
-		setUint(keccak256("oracle.ggp.timestamp"), timestamp);
+		setUint(keccak256("Oracle.GGPPrice"), price);
+		setUint(keccak256("Oracle.GGPTimestamp"), timestamp);
 		emit GGPPriceUpdated(price);
 	}
 }

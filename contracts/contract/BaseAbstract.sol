@@ -13,6 +13,11 @@ import {format} from "sol-utils/format.sol";
 // Based on RocketBase by RocketPool
 
 abstract contract BaseAbstract {
+	error InvalidOrOutdatedContract();
+	error MustBeGuardian();
+	error MustBeMultisig();
+	error ContractPaused();
+
 	// Version of the contract
 	uint8 public version;
 
@@ -25,7 +30,9 @@ abstract contract BaseAbstract {
 	 * @dev Throws if called by any sender that doesn't match a GoGo Pool network contract
 	 */
 	modifier onlyLatestNetworkContract() {
-		require(getBool(keccak256(abi.encodePacked("contract.exists", msg.sender))), "Invalid or outdated contract");
+		if (getBool(keccak256(abi.encodePacked("contract.exists", msg.sender))) == false) {
+			revert InvalidOrOutdatedContract();
+		}
 		_;
 	}
 
@@ -33,7 +40,9 @@ abstract contract BaseAbstract {
 	 * @dev Throws if called by any sender that doesn't match one of the supplied contract or is the latest version of that contract
 	 */
 	modifier onlyLatestContract(string memory _contractName, address _contractAddress) {
-		require(_contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", _contractName))), "Invalid or outdated contract");
+		if (_contractAddress != getAddress(keccak256(abi.encodePacked("contract.address", _contractName)))) {
+			revert InvalidOrOutdatedContract();
+		}
 		_;
 	}
 
@@ -41,7 +50,30 @@ abstract contract BaseAbstract {
 	 * @dev Throws if called by any account other than a guardian account (temporary account allowed access to settings before DAO is fully enabled)
 	 */
 	modifier onlyGuardian() {
-		require(msg.sender == gogoStorage.getGuardian(), "Account is not a guardian");
+		if (msg.sender != gogoStorage.getGuardian()) {
+			revert MustBeGuardian();
+		}
+		_;
+	}
+
+	modifier onlyMultisig() {
+		int256 multisigIndex = int256(getUint(keccak256(abi.encodePacked("MultisigManager.index", msg.sender)))) - 1;
+		address addr = getAddress(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".address")));
+		bool enabled = (addr != address(0)) && getBool(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".enabled")));
+		if (enabled == false) {
+			revert MustBeMultisig();
+		}
+		_;
+	}
+
+	modifier whenNotPaused() {
+		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", address(this))));
+		if (bytes(contractName).length == 0) {
+			revert InvalidOrOutdatedContract();
+		}
+		if (getBool(keccak256(abi.encodePacked("contract.paused", contractName)))) {
+			revert ContractPaused();
+		}
 		_;
 	}
 
@@ -96,6 +128,22 @@ abstract contract BaseAbstract {
 		return gogoStorage.getAddress(key);
 	}
 
+	function getBool(bytes32 _key) internal view returns (bool) {
+		return gogoStorage.getBool(_key);
+	}
+
+	function getBytes(bytes32 _key) internal view returns (bytes memory) {
+		return gogoStorage.getBytes(_key);
+	}
+
+	function getBytes32(bytes32 _key) internal view returns (bytes32) {
+		return gogoStorage.getBytes32(_key);
+	}
+
+	function getInt(bytes32 _key) internal view returns (int256) {
+		return gogoStorage.getInt(_key);
+	}
+
 	function getUint(bytes32 _key) internal view returns (uint256) {
 		return gogoStorage.getUint(_key);
 	}
@@ -104,50 +152,27 @@ abstract contract BaseAbstract {
 		return gogoStorage.getString(_key);
 	}
 
-	function getBytes(bytes32 _key) internal view returns (bytes memory) {
-		return gogoStorage.getBytes(_key);
-	}
-
-	function getBool(bytes32 _key) internal view returns (bool) {
-		return gogoStorage.getBool(_key);
-	}
-
-	function getInt(bytes32 _key) internal view returns (int256) {
-		return gogoStorage.getInt(_key);
-	}
-
-	function getBytes32(bytes32 _key) internal view returns (bytes32) {
-		return gogoStorage.getBytes32(_key);
-	}
-
 	/// @dev Storage set methods
 	function setAddress(bytes32 _key, address _value) internal {
 		gogoStorage.setAddress(_key, _value);
 	}
 
-	/// @dev Storage get Settings methods
-	/*** Uints  ****************/
-
-	// A general method to return any setting given the setting namespace and path is correct, only accepts uints
-	function getSettingUint(bytes32 settingNameSpace, string memory _settingPath) public view returns (uint256) {
-		return getUint(keccak256(abi.encodePacked(settingNameSpace, _settingPath)));
+	function setBool(bytes32 _key, bool _value) internal {
+		gogoStorage.setBool(_key, _value);
 	}
 
-	/*** Bools  ****************/
-
-	// A general method to return any setting given the setting namespace and path is correct, only accepts bools
-	function getSettingBool(bytes32 settingNameSpace, string memory _settingPath) public view returns (bool) {
-		return getBool(keccak256(abi.encodePacked(settingNameSpace, _settingPath)));
+	function setBytes(bytes32 _key, bytes memory _value) internal {
+		gogoStorage.setBytes(_key, _value);
 	}
 
-	/*** Addresses  ****************/
-
-	// A general method to return any setting given the setting namespace and path is correct, only accepts addresses
-	function getSettingAddress(bytes32 settingNameSpace, string memory _settingPath) external view returns (address) {
-		return getAddress(keccak256(abi.encodePacked(settingNameSpace, _settingPath)));
+	function setBytes32(bytes32 _key, bytes32 _value) internal {
+		gogoStorage.setBytes32(_key, _value);
 	}
 
-	/// @dev Storage set methods
+	function setInt(bytes32 _key, int256 _value) internal {
+		gogoStorage.setInt(_key, _value);
+	}
+
 	function setUint(bytes32 _key, uint256 _value) internal {
 		gogoStorage.setUint(_key, _value);
 	}
@@ -156,25 +181,25 @@ abstract contract BaseAbstract {
 		gogoStorage.setString(_key, _value);
 	}
 
-	function setBytes(bytes32 _key, bytes memory _value) internal {
-		gogoStorage.setBytes(_key, _value);
-	}
-
-	function setBool(bytes32 _key, bool _value) internal {
-		gogoStorage.setBool(_key, _value);
-	}
-
-	function setInt(bytes32 _key, int256 _value) internal {
-		gogoStorage.setInt(_key, _value);
-	}
-
-	function setBytes32(bytes32 _key, bytes32 _value) internal {
-		gogoStorage.setBytes32(_key, _value);
-	}
-
 	/// @dev Storage delete methods
 	function deleteAddress(bytes32 _key) internal {
 		gogoStorage.deleteAddress(_key);
+	}
+
+	function deleteBool(bytes32 _key) internal {
+		gogoStorage.deleteBool(_key);
+	}
+
+	function deleteBytes(bytes32 _key) internal {
+		gogoStorage.deleteBytes(_key);
+	}
+
+	function deleteBytes32(bytes32 _key) internal {
+		gogoStorage.deleteBytes32(_key);
+	}
+
+	function deleteInt(bytes32 _key) internal {
+		gogoStorage.deleteInt(_key);
 	}
 
 	function deleteUint(bytes32 _key) internal {
@@ -183,22 +208,6 @@ abstract contract BaseAbstract {
 
 	function deleteString(bytes32 _key) internal {
 		gogoStorage.deleteString(_key);
-	}
-
-	function deleteBytes(bytes32 _key) internal {
-		gogoStorage.deleteBytes(_key);
-	}
-
-	function deleteBool(bytes32 _key) internal {
-		gogoStorage.deleteBool(_key);
-	}
-
-	function deleteInt(bytes32 _key) internal {
-		gogoStorage.deleteInt(_key);
-	}
-
-	function deleteBytes32(bytes32 _key) internal {
-		gogoStorage.deleteBytes32(_key);
 	}
 
 	/// @dev Storage arithmetic methods

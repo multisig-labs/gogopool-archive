@@ -19,13 +19,6 @@ contract ProtocolDAOClaim is Base {
 		version = 1;
 	}
 
-	// Get whether the contract is enabled
-	//TODO: integrate this to be used
-	function getEnabled() external view returns (bool) {
-		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		return dao.getContractEnabled("ProtocolDAOClaim");
-	}
-
 	// Spend the network DAOs RPL rewards
 	// todo add onlyLatestContract("rocketDAOProtocolProposals", msg.sender)
 	function spend(

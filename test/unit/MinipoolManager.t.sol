@@ -15,31 +15,34 @@ contract MinipoolManagerTest is BaseTest {
 		nodeOp = getActorWithTokens("nodeOp", MAX_AMT, MAX_AMT);
 	}
 
-	function testExpectedReward() public {
-		uint256 amt = minipoolMgr.expectedRewardAmt(365 days, 1_000 ether);
+	function testExpectedRewards() public {
+		uint256 amt = minipoolMgr.expectedAVAXRewardsAmt(365 days, 1_000 ether);
 		assertEq(amt, 100 ether);
-		amt = minipoolMgr.expectedRewardAmt((365 days / 2), 1_000 ether);
+		amt = minipoolMgr.expectedAVAXRewardsAmt((365 days / 2), 1_000 ether);
 		assertEq(amt, 50 ether);
-		amt = minipoolMgr.expectedRewardAmt((365 days / 3), 1_000 ether);
+		amt = minipoolMgr.expectedAVAXRewardsAmt((365 days / 3), 1_000 ether);
 		assertEq(amt, 33333333333333333333);
 
-		// Set 5% annual expected reward rate
-		dao.setExpectedRewardRate(5e16);
-		amt = minipoolMgr.expectedRewardAmt(365 days, 1_000 ether);
+		// Set 5% annual expected rewards rate
+		dao.setExpectedAVAXRewardsRate(5e16);
+		amt = minipoolMgr.expectedAVAXRewardsAmt(365 days, 1_000 ether);
 		assertEq(amt, 50 ether);
-		amt = minipoolMgr.expectedRewardAmt((365 days / 3), 1_000 ether);
+		amt = minipoolMgr.expectedAVAXRewardsAmt((365 days / 3), 1_000 ether);
 		assertEq(amt, 16.666666666666666666 ether);
 	}
 
 	function testCalculateSlashAmt() public {
+		vm.prank(rialto);
 		oracle.setGGPPrice(1 ether, block.timestamp);
 		uint256 slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 100 ether);
 
+		vm.prank(rialto);
 		oracle.setGGPPrice(0.5 ether, block.timestamp);
 		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 200 ether);
 
+		vm.prank(rialto);
 		oracle.setGGPPrice(3 ether, block.timestamp);
 		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 33333333333333333333);
@@ -133,7 +136,7 @@ contract MinipoolManagerTest is BaseTest {
 
 		assertEq(vault.balanceOf("MinipoolManager"), 0);
 		assertEq(rialto.balance, validationAmt);
-		assertEq(minipoolMgr.getTotalAvaxLiquidStakerAmt(), avaxAssignmentRequest);
+		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), avaxAssignmentRequest);
 
 		// Assume something goes wrong and we are unable to launch a minipool
 
@@ -150,7 +153,7 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(vault.balanceOf("MinipoolManager"), depositAmt);
 		// Liq stakers funds should be returned
 		assertEq(ggAVAX.amountAvailableForStaking(), amountAvailForStaking);
-		assertEq(minipoolMgr.getTotalAvaxLiquidStakerAmt(), 0);
+		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), 0);
 
 		mp = minipoolMgr.getMinipool(mp.index);
 		assertEq(mp.status, uint256(MinipoolStatus.Error));
@@ -255,6 +258,7 @@ contract MinipoolManagerTest is BaseTest {
 	function updateMinipoolStatus(address nodeID, MinipoolStatus newStatus) public {
 		int256 i = minipoolMgr.getIndexOf(nodeID);
 		assertTrue((i != -1), "Minipool not found");
-		store.setUint(keccak256(abi.encodePacked("minipool.item", i, ".status")), uint256(newStatus));
+		vm.prank(guardian);
+		store.setUint(keccak256(abi.encodePacked("MinipoolManager.item", i, ".status")), uint256(newStatus));
 	}
 }
