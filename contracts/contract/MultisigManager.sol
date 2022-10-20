@@ -14,19 +14,11 @@ import {Storage} from "./Storage.sol";
 */
 
 contract MultisigManager is Base {
-	/// @notice A multisig with this address has already been registered
 	error MultisigAlreadyRegistered();
-
-	/// @notice A multisig with this address has not been registered
 	error MultisigNotFound();
-
-	/// @notice Multisig has been disabled
 	error MultisigDisabled();
-
-	/// @notice No active Multisig has been found
 	error NoEnabledMultisigFound();
 
-	// Events
 	event RegisteredMultisig(address indexed addr);
 	event EnabledMultisig(address indexed addr);
 	event DisabledMultisig(address indexed addr);

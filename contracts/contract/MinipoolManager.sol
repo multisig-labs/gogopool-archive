@@ -49,9 +49,25 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 */
 
 contract MinipoolManager is Base, IWithdrawer {
-	using SafeTransferLib for ERC20;
-	using SafeTransferLib for address;
 	using FixedPointMathLib for uint256;
+	using SafeTransferLib for address;
+	using SafeTransferLib for ERC20;
+
+	error ErrorSendingAVAX();
+	error InsufficientGGPCollateralization();
+	error InsufficientAVAXForMinipoolCreation();
+	error InvalidAmount();
+	error InvalidAVAXAssignmentRequest();
+	error InvalidEndTime();
+	error InvalidMultisigAddress();
+	error InvalidNodeID();
+	error InvalidStateTransition();
+	error MinipoolNotFound();
+	error OnlyOwnerCanCancel();
+	error OnlyOwnerCanWithdraw();
+
+	event GGPSlashed(address indexed nodeID, uint256 ggp);
+	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
 
 	ERC20 public immutable ggp;
 	TokenggAVAX public immutable ggAVAX;
@@ -76,43 +92,6 @@ contract MinipoolManager is Base, IWithdrawer {
 		address multisigAddr;
 		bytes32 txID;
 	}
-
-	/// @notice A minipool with this nodeid has not been registered
-	error MinipoolNotFound();
-
-	/// @notice Invalid state transition
-	error InvalidStateTransition();
-
-	/// @notice Validation end time must be after start time
-	error InvalidEndTime();
-
-	error InvalidAmount();
-
-	error InvalidNodeID();
-
-	/// @notice Only the multisig assigned to a minipool can interact with it
-	error InvalidMultisigAddress();
-
-	/// @notice Requested over set maximum liquid staker AVAX amount
-	error InvalidAVAXAssignmentRequest();
-
-	/// @notice Only minipool owners can cancel a minipool before validation starts
-	error OnlyOwnerCanCancel();
-
-	/// @notice Only minipool owners can withdraw minipool funds
-	error OnlyOwnerCanWithdraw();
-
-	error ErrorSendingAVAX();
-
-	/// @notice Insufficient GGP stake for requested liquid staker AVAX amount
-	error InsufficientGGPCollateralization();
-
-	/// @notice Must have at least 2000 AVAX to create a minipool
-	error InsufficientAVAXForMinipoolCreation();
-
-	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
-
-	event GGPSlashed(address indexed nodeID, uint256 ggp);
 
 	constructor(
 		Storage storageAddress,

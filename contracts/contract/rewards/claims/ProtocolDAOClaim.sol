@@ -10,10 +10,8 @@ import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
 
 // RPL Rewards claiming by the DAO
 contract ProtocolDAOClaim is Base {
-	// Events
 	event GGPTokensSentByDAOProtocol(string invoiceID, address indexed from, address indexed to, uint256 amount, uint256 time);
 
-	// Construct
 	constructor(Storage storageAddress) Base(storageAddress) {
 		// Version
 		version = 1;

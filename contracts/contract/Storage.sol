@@ -7,6 +7,8 @@ pragma solidity ^0.8.13;
 /// Based on RocketStorage by RocketPool
 
 contract Storage {
+	event GuardianChanged(address oldGuardian, address newGuardian);
+
 	// Storage maps
 	mapping(bytes32 => string) private stringStorage;
 	mapping(bytes32 => bytes) private bytesStorage;
@@ -26,9 +28,6 @@ contract Storage {
 
 	// Flag storage has been initialised
 	bool private storageInit = false;
-
-	// Events
-	event GuardianChanged(address oldGuardian, address newGuardian);
 
 	/// @dev Only allow access from the latest version of a contract in the GoGoPool network after deployment
 	modifier onlyLatestNetworkContract() {

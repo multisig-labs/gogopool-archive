@@ -27,7 +27,10 @@ contract StakingTest is BaseTest {
 		assertEq(staking.getCollateralizationRatio(nodeOp), type(uint256).max);
 
 		// Manually assign some AVAX
+		vm.stopPrank();
+		vm.prank(address(minipoolMgr));
 		staking.increaseAVAXAssigned(nodeOp, 1000 ether);
+		vm.startPrank(nodeOp, nodeOp);
 		assertEq(staking.getAVAXAssigned(nodeOp), 1000 ether);
 
 		assertEq(staking.getMinimumGGPStake(nodeOp), 100 ether);
@@ -40,7 +43,10 @@ contract StakingTest is BaseTest {
 		assertEq(staking.getMinimumGGPStake(nodeOp), 100 ether);
 		assertEq(staking.getCollateralizationRatio(nodeOp), 0.2 ether);
 
+		vm.stopPrank();
+		vm.prank(address(minipoolMgr));
 		staking.increaseAVAXAssigned(nodeOp, 1000 ether);
+		vm.startPrank(nodeOp, nodeOp);
 		assertEq(staking.getAVAXAssigned(nodeOp), 2000 ether);
 
 		assertEq(staking.getMinimumGGPStake(nodeOp), 200 ether);

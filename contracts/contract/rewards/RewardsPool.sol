@@ -15,15 +15,14 @@ import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathL
 contract RewardsPool is Base {
 	using FixedPointMathLib for uint256;
 
+	/// @notice Distribution cannot exceed total rewards
+	error IncorrectRewardsDistribution();
+	error UnableToStartRewardsCycle();
+
 	event GGPInflated(address sender, uint256 value, uint256 inflationCalcTime);
 	event ProtocolDAORewardsTransfered(uint256 value);
 	event NOPClaimRewardsTransfered(uint256 value);
 	event NewRewardsCycleStarted(uint256 totalRewardsAmt);
-
-	/// @notice Distribution cannot exceed total rewards
-	error IncorrectRewardsDistribution();
-
-	error UnableToStartRewardsCycle();
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;

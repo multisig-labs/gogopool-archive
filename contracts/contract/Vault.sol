@@ -15,33 +15,22 @@ import {IWithdrawer} from "../interface/IWithdrawer.sol";
 // based on RocketVault by RocketPool
 
 contract Vault is Base {
-	// Network contract balances
-	mapping(string => uint256) private avaxBalances;
-	mapping(bytes32 => uint256) private tokenBalances;
-
-	/// @notice amount was not valid
 	error InvalidAmount();
-
-	/// @notice Insufficient contract balance
 	error InsufficientContractBalance();
-
-	/// @notice not a valid network contract
 	error InvalidNetworkContract();
-
-	/// @notice token transfer failed
 	error TokenTransferFailed();
-
-	/// @notice Vault token withdrawal failed
 	error VaultTokenWithdrawalFailed();
 
-	// Events
 	event AVAXDeposited(string indexed by, uint256 amount);
-	event AVAXWithdrawn(string indexed by, uint256 amount);
 	event AVAXTransfer(string indexed from, string indexed to, uint256 amount);
-	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
-	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
+	event AVAXWithdrawn(string indexed by, uint256 amount);
 	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
+	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
 	event TokenTransfer(bytes32 indexed by, bytes32 indexed to, address indexed tokenAddress, uint256 amount);
+	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
+
+	mapping(string => uint256) private avaxBalances;
+	mapping(bytes32 => uint256) private tokenBalances;
 
 	// Construct
 	constructor(Storage storageAddress) Base(storageAddress) {

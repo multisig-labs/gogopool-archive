@@ -15,10 +15,11 @@ import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathL
 
 contract NOPClaim is Base {
 	using FixedPointMathLib for uint256;
-	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
 	error NoRewardsToClaim();
 	error InvalidAmount();
+
+	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
 	ERC20 public immutable ggp;
 	uint256 internal constant TENTH = 0.1 ether;

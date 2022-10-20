@@ -15,15 +15,10 @@ import {TokenGGP} from "./tokens/TokenGGP.sol";
 */
 
 contract Oracle is Base {
-	/// @notice Multisig has not been registered or has been disabled
-	error InvalidOrDisabledMultisig();
-
-	/// @notice Oracle-supplied price of GGP is not set or is zero
 	error InvalidGGPPrice();
-
+	error InvalidOrDisabledMultisig();
 	error InvalidTimestamp();
 
-	// Events
 	event GGPPriceUpdated(uint256 indexed price);
 
 	constructor(Storage storageAddress) Base(storageAddress) {

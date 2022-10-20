@@ -29,16 +29,13 @@ contract Staking is Base {
 	using SafeTransferLib for address;
 	using FixedPointMathLib for uint256;
 
-	ERC20 public immutable ggp;
-
-	/// @notice The staker address does not exist
-	error StakerNotFound();
-
-	/// @notice Cannot withdraw GGP if under 150% collateralization ratio
 	error CannotWithdrawUnder150CollateralizationRatio();
-
-	error TransferFailed();
 	error InsufficientBalance();
+	error StakerNotFound();
+	error TransferFailed();
+
+	event GGPStaked(address indexed from, uint256 amount);
+	event GGPWithdrawn(address indexed to, uint256 amount);
 
 	// Not used for storage, just for returning data from view functions
 	struct Staker {
@@ -51,8 +48,7 @@ contract Staking is Base {
 		uint256 ggpRewards;
 	}
 
-	event GGPStaked(address indexed from, uint256 amount);
-	event GGPWithdrawn(address indexed to, uint256 amount);
+	ERC20 public immutable ggp;
 
 	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
 		version = 1;
@@ -71,97 +67,98 @@ contract Staking is Base {
 
 	/* GGP STAKE */
 	function getGGPStake(address stakerAddr) public view returns (uint256) {
-		int256 index = requireValidStaker(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", index, ".ggpStaked")));
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")));
 	}
 
-	function increaseGGPStake(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", index, ".ggpStaked")), amount);
+	function increaseGGPStake(address stakerAddr, uint256 amount) internal {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")), amount);
 	}
 
-	function decreaseGGPStake(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", index, ".ggpStaked")), amount);
+	function decreaseGGPStake(address stakerAddr, uint256 amount) internal {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")), amount);
 	}
 
 	/* AVAX STAKE */
 	function getAVAXStake(address stakerAddr) public view returns (uint256) {
-		int256 index = requireValidStaker(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", index, ".avaxStaked")));
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")));
 	}
 
-	function increaseAVAXStake(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", index, ".avaxStaked")), amount);
+	function increaseAVAXStake(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")), amount);
 	}
 
-	function decreaseAVAXStake(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", index, ".avaxStaked")), amount);
+	function decreaseAVAXStake(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")), amount);
 	}
 
 	/* AVAX ASSIGNED */
 	function getAVAXAssigned(address stakerAddr) public view returns (uint256) {
-		int256 index = requireValidStaker(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", index, ".avaxAssigned")));
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
 	}
 
-	function increaseAVAXAssigned(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", index, ".avaxAssigned")), amount);
+	function increaseAVAXAssigned(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
 	}
 
-	function decreaseAVAXAssigned(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", index, ".avaxAssigned")), amount);
+	function decreaseAVAXAssigned(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
 	}
 
 	/* MINIPOOL COUNT */
 	function getMinipoolCount(address stakerAddr) public view returns (uint256) {
-		int256 index = requireValidStaker(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")));
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 	}
 
-	function increaseMinipoolCount(address stakerAddr) public {
+	function increaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
 		if (getMinipoolCount(stakerAddr) == 0) {
 			//minipool count will go from 0->1 so set rewards time now
 			setRewardsStartTime(stakerAddr, block.timestamp);
 		}
-		int256 index = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")), 1);
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
 	}
 
-	function decreaseMinipoolCount(address stakerAddr) public {
-		int256 index = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")), 1);
+	function decreaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
 	}
 
 	/* REWARDS START TIME */
 	function getRewardsStartTime(address stakerAddr) public view returns (uint256) {
-		int256 index = requireValidStaker(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", index, ".rewardsStartTime")));
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
 	}
 
-	function setRewardsStartTime(address stakerAddr, uint256 time) public {
-		int256 index = requireValidStaker(stakerAddr);
-		setUint(keccak256(abi.encodePacked("staker.item", index, ".rewardsStartTime")), time);
+	// TODO cant use onlyLatestContract("NOPClaim", msg.sender) since we also call from increaseMinipoolCount. Wat do?
+	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyLatestNetworkContract {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")), time);
 	}
 
 	/* GGP REWARDS */
 	function getGGPRewards(address stakerAddr) public view returns (uint256) {
-		int256 index = requireValidStaker(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")));
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
 	}
 
-	function increaseGGPRewards(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")), amount);
+	function increaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("NOPClaim", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
 
-	function decreaseGGPRewards(address stakerAddr, uint256 amount) public {
-		int256 index = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")), amount);
+	function decreaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("NOPClaim", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
 
 	// Get a stakers's minimum ggp stake to collateralize their minipools. Returned in GGP
@@ -210,14 +207,13 @@ contract Staking is Base {
 
 	// Accept a GGP stake
 	// user must approve the transfer request for amount first
-	function stakeGGP(uint256 amount) external {
+	function stakeGGP(uint256 amount) external whenNotPaused {
 		// Transfer GGP tokens from staker to this contract
 		ggp.transferFrom(msg.sender, address(this), amount);
 		_stakeGGP(msg.sender, amount);
 	}
 
-	//TODO: only allow our contracts to call this function so other people cannot stake on others behalf
-	function restakeGGP(address stakerAddress, uint256 amount) public {
+	function restakeGGP(address stakerAddress, uint256 amount) public onlyLatestContract("NOPClaim", msg.sender) {
 		// Transfer GGP tokens from the NOPClaims contract to this contract
 		ggp.transferFrom(msg.sender, address(this), amount);
 		_stakeGGP(stakerAddress, amount);
@@ -229,21 +225,20 @@ contract Staking is Base {
 		ggp.approve(address(vault), amount);
 		vault.depositToken("Staking", ggp, amount);
 
-		//need tx.origin rather than msg.sender so we can use this to restake ggp rewards on the stakers behalf
-		int256 index = getIndexOf(stakerAddress);
-		if (index == -1) {
+		int256 stakerIndex = getIndexOf(stakerAddress);
+		if (stakerIndex == -1) {
 			// create index for the new staker
-			index = int256(getUint(keccak256("staker.count")));
+			stakerIndex = int256(getUint(keccak256("staker.count")));
 			addUint(keccak256("staker.count"), 1);
-			setUint(keccak256(abi.encodePacked("staker.index", stakerAddress)), uint256(index + 1));
-			setAddress(keccak256(abi.encodePacked("staker.item", index, ".stakerAddr")), stakerAddress);
+			setUint(keccak256(abi.encodePacked("staker.index", stakerAddress)), uint256(stakerIndex + 1));
+			setAddress(keccak256(abi.encodePacked("staker.item", stakerIndex, ".stakerAddr")), stakerAddress);
 		}
 		increaseGGPStake(stakerAddress, amount);
 
 		emit GGPStaked(stakerAddress, amount);
 	}
 
-	function withdrawGGP(uint256 amount) external {
+	function withdrawGGP(uint256 amount) external whenNotPaused {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		if (amount > getGGPStake(msg.sender)) {
 			revert InsufficientBalance();
@@ -262,7 +257,7 @@ contract Staking is Base {
 	}
 
 	//Minipool Manager will call this if a minipool ended and was not in good standing
-	function slashGGP(address stakerAddr, uint256 ggpAmt) public {
+	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlyLatestContract("MinipoolManager", msg.sender) {
 		decreaseGGPStake(stakerAddr, ggpAmt);
 		// Lets handle the emit in minipool manager
 		// TODO So, if we reduce the staker's GGP count in storage, but the GGP is still in the vault, its kind of "unassigned"
@@ -284,14 +279,14 @@ contract Staking is Base {
 		return int256(getUint(keccak256(abi.encodePacked("staker.index", stakerAddr)))) - 1;
 	}
 
-	function getStaker(int256 index) public view returns (Staker memory staker) {
-		staker.ggpStaked = getUint(keccak256(abi.encodePacked("staker.item", index, ".ggpStaked")));
-		staker.avaxAssigned = getUint(keccak256(abi.encodePacked("staker.item", index, ".avaxAssigned")));
-		staker.avaxStaked = getUint(keccak256(abi.encodePacked("staker.item", index, ".avaxStaked")));
-		staker.stakerAddr = getAddress(keccak256(abi.encodePacked("staker.item", index, ".stakerAddr")));
-		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", index, ".minipoolCount")));
-		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", index, ".rewardsStartTime")));
-		staker.ggpRewards = getUint(keccak256(abi.encodePacked("staker.item", index, ".ggpRewards")));
+	function getStaker(int256 stakerIndex) public view returns (Staker memory staker) {
+		staker.ggpStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")));
+		staker.avaxAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
+		staker.avaxStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")));
+		staker.stakerAddr = getAddress(keccak256(abi.encodePacked("staker.item", stakerIndex, ".stakerAddr")));
+		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
+		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
+		staker.ggpRewards = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
 	}
 
 	// Get all stakers (limit=0 means no pagination)

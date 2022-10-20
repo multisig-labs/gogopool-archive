@@ -16,7 +16,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	function setUp() public override {
 		super.setUp();
 		vm.prank(guardian, guardian);
-		store.setUint(keccak256("ggAvax.reserveTarget"), 0);
+		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.0 ether);
 
 		alice = getActorWithTokens("alice", MAX_AMT, MAX_AMT);
 		bob = getActor("bob");
