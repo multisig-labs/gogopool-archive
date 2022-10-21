@@ -126,7 +126,7 @@ contract RewardsPool is Base {
 	}
 
 	//Rialto calls this to see if at least one cycle has passed
-	function canRewardsCycleStart() public view returns (bool) {
+	function canStartRewardsCycle() public view returns (bool) {
 		return getRewardsCyclesElapsed() > 0 && getInflationIntervalsElapsed() > 0;
 	}
 
@@ -134,7 +134,7 @@ contract RewardsPool is Base {
 
 	//Ralto calls this
 	function startRewardsCycle() external {
-		if (!canRewardsCycleStart()) {
+		if (!canStartRewardsCycle()) {
 			revert UnableToStartRewardsCycle();
 		}
 

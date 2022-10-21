@@ -193,20 +193,19 @@ contract StakingTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
 		assert(staking.getGGPRewards(address(nodeOp1)) == 0 ether);
-		MinipoolManager.Minipool memory mp1 = createMinipool(1000 ether, 1000 ether, 2 weeks);
-
+		createMinipool(1000 ether, 1000 ether, 2 weeks);
 		vm.stopPrank();
-		uint256 inflationStartTime = dao.getInflationIntervalStartTime();
-		skip(inflationStartTime);
-		uint256 rewardsIntervalLength = dao.getRewardsCycleSeconds();
-		skip(rewardsIntervalLength);
+
+		skip(dao.getRewardsCycleSeconds());
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+
 		vm.startPrank(address(rewardsPool));
 		ggp.approve(address(vault), TOTAL_INITIAL_GGP_SUPPLY);
 		ggp.approve(address(daoClaim), TOTAL_INITIAL_GGP_SUPPLY);
 		ggp.approve(address(nopClaim), TOTAL_INITIAL_GGP_SUPPLY);
+		assertTrue(rewardsPool.canStartRewardsCycle());
 		rewardsPool.startRewardsCycle();
-
-		assert(staking.getGGPRewards(address(nodeOp1)) != 0 ether);
+		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
 		vm.stopPrank();
 	}
 

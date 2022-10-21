@@ -8,7 +8,7 @@ task("inflation:canCycleStart", "Can a new rewards cycle start")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const rewardsPool = await get("RewardsPool", signer);
-		const canStart = await rewardsPool.canRewardsCycleStart();
+		const canStart = await rewardsPool.canStartRewardsCycle();
 		log(`Can a new rewards cycle start?: ${canStart}`);
 	});
 
@@ -43,9 +43,9 @@ task("inflation:startRewardsCycle", "start a new rewards cycle")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const rewardsPool = await get("RewardsPool", signer);
-		const canStart = await rewardsPool.canRewardsCycleStart();
+		const canStart = await rewardsPool.canStartRewardsCycle();
 		if (!canStart) {
-			log("canRewardsCycleStart() is false");
+			log("canStartRewardsCycle() is false");
 			return;
 		}
 		tx = await rewardsPool.startRewardsCycle();

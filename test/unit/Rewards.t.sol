@@ -45,15 +45,15 @@ contract RewardsTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	function testCanRewardsCycleStart() public {
-		assert(rewardsPool.canRewardsCycleStart() == false);
+	function testcanStartRewardsCycle() public {
+		assert(rewardsPool.canStartRewardsCycle() == false);
 		// Assuming inflation is a 1 day cycle which is less than rewards cycle
 		skip(dao.getInflationIntervalSeconds());
-		assert(rewardsPool.canRewardsCycleStart() == false);
+		assert(rewardsPool.canStartRewardsCycle() == false);
 		uint256 rewardsCycleSeconds = dao.getRewardsCycleSeconds();
 		skip(rewardsCycleSeconds);
 
-		assert(rewardsPool.canRewardsCycleStart() == true);
+		assert(rewardsPool.canStartRewardsCycle() == true);
 	}
 
 	//commenting this out since it is failing, because effective stake only applies to minipools that have borrowed liquid stakers funds. But we will come back to focusing on rewards later
