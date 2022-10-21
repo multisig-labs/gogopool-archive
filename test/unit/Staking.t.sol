@@ -192,21 +192,25 @@ contract StakingTest is BaseTest {
 	function testGetGGPRewards() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
-		assert(staking.getGGPRewards(address(nodeOp1)) == 0 ether);
+		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
 		createMinipool(1000 ether, 1000 ether, 2 weeks);
 		vm.stopPrank();
 
-		skip(dao.getRewardsCycleSeconds());
-		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
-
-		vm.startPrank(address(rewardsPool));
-		ggp.approve(address(vault), TOTAL_INITIAL_GGP_SUPPLY);
-		ggp.approve(address(daoClaim), TOTAL_INITIAL_GGP_SUPPLY);
-		ggp.approve(address(nopClaim), TOTAL_INITIAL_GGP_SUPPLY);
-		assertTrue(rewardsPool.canStartRewardsCycle());
+		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
 		rewardsPool.startRewardsCycle();
-		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
-		vm.stopPrank();
+		assertFalse(rewardsPool.canStartRewardsCycle());
+
+		skip(dao.getRewardsCycleSeconds());
+
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
+		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+
+		rewardsPool.startRewardsCycle();
+
+		assertGt(vault.balanceOfToken("NOPClaim", ggp), 0);
+		assertGt(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
 	}
 
 	function testIncreaseGGPRewards() public {
