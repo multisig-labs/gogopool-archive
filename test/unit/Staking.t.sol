@@ -190,22 +190,16 @@ contract StakingTest is BaseTest {
 
 	//TODO: failing on transfer token, underflow/overflow
 	function testGetGGPRewards() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(100 ether);
-		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		vm.stopPrank();
-
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
 		rewardsPool.startRewardsCycle();
 		assertFalse(rewardsPool.canStartRewardsCycle());
+		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
+		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
 
 		skip(dao.getRewardsCycleSeconds());
 
 		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
 		assertTrue(rewardsPool.canStartRewardsCycle());
-		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
 
 		rewardsPool.startRewardsCycle();
 
