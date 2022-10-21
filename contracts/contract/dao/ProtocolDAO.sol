@@ -57,6 +57,18 @@ contract ProtocolDAO is Base {
 		setUint(keccak256("ProtocolDAO.MinCollateralizationRatio"), 0.1 ether);
 	}
 
+	function getContractPaused(string memory contractName) public view returns (bool) {
+		return getBool(keccak256(abi.encodePacked("contract.paused", contractName)));
+	}
+
+	function pauseContract(string memory contractName) public {
+		setBool(keccak256(abi.encodePacked("contract.paused", contractName)), true);
+	}
+
+	function resumeContract(string memory contractName) public {
+		setBool(keccak256(abi.encodePacked("contract.paused", contractName)), false);
+	}
+
 	// *** Rewards Pool ***
 
 	function getRewardsEligibilityMinSeconds() public view returns (uint256) {
@@ -170,5 +182,14 @@ contract ProtocolDAO is Base {
 	 */
 	function getTargetGGAVAXReserveRate() external view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"));
+	}
+
+	// *** MultisigManager Settings *** //
+	function getMultisigPaused() external view returns (bool) {
+		return getBool(keccak256("multisig.paused"));
+	}
+
+	function setMultisigPaused(bool isPaused) external {
+		return setBool(keccak256("multisig.paused"), isPaused);
 	}
 }

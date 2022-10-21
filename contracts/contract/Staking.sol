@@ -239,13 +239,13 @@ contract Staking is Base {
 	}
 
 	function withdrawGGP(uint256 amount) external whenNotPaused {
-		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		if (amount > getGGPStake(msg.sender)) {
 			revert InsufficientBalance();
 		}
 
 		decreaseGGPStake(msg.sender, amount);
 
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		if (getCollateralizationRatio(msg.sender) < dao.getMaxCollateralizationRatio()) {
 			revert CannotWithdrawUnder150CollateralizationRatio();
 		}

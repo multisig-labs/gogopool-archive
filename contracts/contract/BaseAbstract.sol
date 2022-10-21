@@ -17,6 +17,8 @@ abstract contract BaseAbstract {
 	error MustBeGuardian();
 	error MustBeMultisig();
 	error ContractPaused();
+	error ContractNotFound();
+	error MustBeGuardianOrValidContract();
 
 	// Version of the contract
 	uint8 public version;
@@ -46,6 +48,19 @@ abstract contract BaseAbstract {
 		_;
 	}
 
+	// I want a modifier that allows the guardian or
+	// ocyticus to be able to call
+
+	modifier guardianOrLatestContract(string memory _contractName, address _contractAddress) {
+		bool isContract = _contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", _contractName)));
+		bool isGuardian = msg.sender == gogoStorage.getGuardian();
+
+		if (!(isGuardian || isContract)) {
+			revert MustBeGuardianOrValidContract();
+		}
+		_;
+	}
+
 	/**
 	 * @dev Throws if called by any account other than a guardian account (temporary account allowed access to settings before DAO is fully enabled)
 	 */
@@ -67,10 +82,7 @@ abstract contract BaseAbstract {
 	}
 
 	modifier whenNotPaused() {
-		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", address(this))));
-		if (bytes(contractName).length == 0) {
-			revert InvalidOrOutdatedContract();
-		}
+		string memory contractName = getContractName(address(this));
 		if (getBool(keccak256(abi.encodePacked("contract.paused", contractName)))) {
 			revert ContractPaused();
 		}
@@ -84,7 +96,9 @@ abstract contract BaseAbstract {
 		// Get the current contract address
 		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", _contractName)));
 		// Check it
-		require(contractAddress != address(0x0), "Contract not found");
+		if (contractAddress == address(0x0)) {
+			revert ContractNotFound();
+		}
 		// Return
 		return contractAddress;
 	}
@@ -102,7 +116,9 @@ abstract contract BaseAbstract {
 		// Get the contract name
 		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", _contractAddress)));
 		// Check it
-		require(bytes(contractName).length > 0, "Contract not found");
+		if (bytes(contractName).length == 0) {
+			revert ContractNotFound();
+		}
 		// Return
 		return contractName;
 	}

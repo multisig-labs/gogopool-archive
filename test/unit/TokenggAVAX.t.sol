@@ -234,17 +234,33 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	}
 
 	function testWithdrawForStaking() public {
+		// Deposit liquid staker funds
 		uint256 depositAmount = 1000 ether;
-		uint256 withdrawAmount = 200 ether;
 		vm.deal(bob, depositAmount);
 		vm.prank(bob);
 		ggAVAX.depositAVAX{value: depositAmount}();
 
 		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
 		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
-		ggAVAX.withdrawForStaking(withdrawAmount);
 
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets - withdrawAmount);
+		// Create and claim minipool
+		address nodeOp = getActorWithTokens("nodeOp", 1000 ether, 200 ether);
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = 1000 ether;
+		uint256 avaxAssignmentRequest = 1000 ether;
+		uint128 ggpStakeAmt = 200 ether;
+
+		vm.startPrank(nodeOp, nodeOp);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
+		vm.stopPrank();
+
+		vm.prank(rialto);
+		minipoolMgr.claimAndInitiateStaking(mp.nodeID);
+
+		// Verify amount available for staking
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets - depositAmt);
 	}
 
 	function printState(string memory message) internal view {

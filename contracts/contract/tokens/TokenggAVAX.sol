@@ -98,152 +98,11 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		assert(msg.sender == address(asset)); // only accept AVAX via fallback from the WAVAX contract
 	}
 
-	// TODO In addition to the ERC4626 which has deposit()/redeem() for WAVAX, we
-	// also add the ability to deposit/redeem raw AVAX. If we add any modifiers (pauseable?) make sure we also
-	// add them to the ERC4626 by overriding here and calling super()?
-
-	// Accept raw AVAX from a depositor and mint them ggAVAX
-	// TODO allow DAO to pause?
-	function depositAVAX() public payable returns (uint256 shares) {
-		uint256 assets = msg.value;
-		// Check for rounding error since we round down in previewDeposit.
-		if ((shares = previewDeposit(assets)) == 0) {
-			revert ZeroShares();
-		}
-		IWAVAX(address(asset)).deposit{value: assets}();
-		_mint(msg.sender, shares);
-		emit Deposit(msg.sender, msg.sender, assets, shares);
-		afterDeposit(assets, shares);
-	}
-
-	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
-	// TODO allow DAO to pause?
-	// TODO most people will want to redeem shares, not withdraw avax, right? So can we rm this method?
-	function withdrawAVAX(uint256 assets) public returns (uint256 shares) {
-		shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
-		beforeWithdraw(assets, shares);
-		_burn(msg.sender, shares);
-		emit Withdraw(msg.sender, msg.sender, msg.sender, assets, shares);
-		IWAVAX(address(asset)).withdraw(assets);
-		// TODO will this work for smart contract wallets? like a gnosis multisig?
-		msg.sender.safeTransferETH(assets);
-	}
-
-	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
-	// TODO allow DAO to pause?
-	function redeemAVAX(uint256 shares) public returns (uint256 assets) {
-		// Check for rounding error since we round down in previewRedeem.
-		require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
-		beforeWithdraw(assets, shares);
-		_burn(msg.sender, shares);
-		emit Withdraw(msg.sender, msg.sender, msg.sender, assets, shares);
-		IWAVAX(address(asset)).withdraw(assets);
-		// TODO will this work for smart contract wallets? like a gnosis multisig?
-		msg.sender.safeTransferETH(assets);
-	}
-
-	// TODO ONLY minipoolmanager and delegationManager? can call this, will xfer AVAX to msg.sender
-	function withdrawForStaking(uint256 assets) public {
-		if (assets > amountAvailableForStaking()) {
-			revert WithdrawAmountTooLarge();
-		}
-		stakingTotalAssets += assets;
-		emit WithdrawForStaking(msg.sender, assets);
-		IWAVAX(address(asset)).withdraw(assets);
-		IWithdrawer withdrawer = IWithdrawer(msg.sender);
-		withdrawer.receiveWithdrawalAVAX{value: assets}();
-	}
-
-	// TODO ONLY minipoolmanager can call this, recvs avax from staking + rewards
-	function depositFromStaking(uint256 baseAmt, uint256 rewardsAmt) public payable {
-		uint256 totalAmt = msg.value;
-		if (totalAmt != (baseAmt + rewardsAmt) || baseAmt > stakingTotalAssets) {
-			revert TodoBetterMsg();
-		}
-		stakingTotalAssets -= baseAmt;
-		IWAVAX(address(asset)).deposit{value: totalAmt}();
-		emit DepositFromStaking(msg.sender, baseAmt, rewardsAmt);
-	}
-
-	/*///////////////////////////////////////////////////////////////
-                       TARGET FLOAT CONFIGURATION
-    //////////////////////////////////////////////////////////////*/
-
-	/// @notice The desired percentage of holdings to keep as float.
-	/// @dev A fixed point number where 1e18 represents 100% and 0 represents 0%.
-	uint256 public targetFloatPercent;
-
-	/// @notice Emitted when the target float percentage is updated.
-	/// @param user The authorized user who triggered the update.
-	/// @param newTargetFloatPercent The new target float percentage.
-	event TargetFloatPercentUpdated(address indexed user, uint256 newTargetFloatPercent);
-
-	/// @notice Set a new target float percentage.
-	/// @param newTargetFloatPercent The new target float percentage.
-	// TODO who can call this fn? DAO?
-	function setTargetFloatPercent(uint256 newTargetFloatPercent) external {
-		// A target float percentage over 100% doesn't make sense.
-		require(newTargetFloatPercent <= 1e18, "TARGET_TOO_HIGH");
-
-		// Update the target float percentage.
-		targetFloatPercent = newTargetFloatPercent;
-
-		emit TargetFloatPercentUpdated(msg.sender, newTargetFloatPercent);
-	}
-
-	// TODO delete this everwhere and just use amountAvailableForStaking
-	function totalFloat() public view returns (uint256) {
-		return amountAvailableForStaking();
-	}
-
-	function amountAvailableForStaking() public view returns (uint256) {
-		ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		uint256 targetCollateralRate = protocolDAO.getTargetGGAVAXReserveRate();
-
-		uint256 totalAssets_ = totalAssets();
-
-		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
-		return totalAssets_ - reservedAssets - stakingTotalAssets;
-	}
-
 	// REWARDS SYNC LOGIC
-
-	/// @notice Compute the amount of tokens available to share holders.
-	///         Increases linearly during a rewards distribution period from the sync call, not the cycle start.
-	function totalAssets() public view override returns (uint256) {
-		// cache global vars
-		uint256 totalReleasedAssets_ = totalReleasedAssets;
-		uint192 lastRewardsAmount_ = lastRewardsAmount;
-		uint256 rewardsCycleEnd_ = rewardsCycleEnd;
-		uint32 lastSync_ = lastSync;
-
-		if (block.timestamp >= rewardsCycleEnd_) {
-			// no rewards or rewards fully unlocked
-			// entire rewards amount is available
-			return totalReleasedAssets_ + lastRewardsAmount_;
-		}
-
-		// rewards not fully unlocked
-		// add unlocked rewards to stored total
-		uint256 unlockedRewards = (lastRewardsAmount_ * (block.timestamp - lastSync_)) / (rewardsCycleEnd_ - lastSync_);
-		return totalReleasedAssets_ + unlockedRewards;
-	}
-
-	// Update totalReleasedAssets on withdraw/redeem
-	function beforeWithdraw(uint256 amount, uint256 shares) internal virtual override {
-		super.beforeWithdraw(amount, shares);
-		totalReleasedAssets -= amount;
-	}
-
-	// Update totalReleasedAssets on deposit/mint
-	function afterDeposit(uint256 amount, uint256 shares) internal virtual override {
-		totalReleasedAssets += amount;
-		super.afterDeposit(amount, shares);
-	}
 
 	/// @notice Distributes rewards to xERC4626 holders.
 	/// All surplus `asset` balance of the contract over the internal balance becomes queued for the next cycle.
-	function syncRewards() public virtual {
+	function syncRewards() public {
 		uint192 lastRewardsAmount_ = lastRewardsAmount;
 		uint32 timestamp = block.timestamp.safeCastTo32();
 
@@ -263,6 +122,138 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		rewardsCycleEnd = end;
 
 		emit NewRewardsCycle(end, nextRewards);
+	}
+
+	/// @notice Compute the amount of tokens available to share holders.
+	///         Increases linearly during a reward distribution period from the sync call, not the cycle start.
+	function totalAssets() public view override returns (uint256) {
+		// cache global vars
+		uint256 totalReleasedAssets_ = totalReleasedAssets;
+		uint192 lastRewardsAmount_ = lastRewardsAmount;
+		uint32 rewardsCycleEnd_ = rewardsCycleEnd;
+		uint32 lastSync_ = lastSync;
+
+		if (block.timestamp >= rewardsCycleEnd_) {
+			// no rewards or rewards fully unlocked
+			// entire reward amount is available
+			return totalReleasedAssets_ + lastRewardsAmount_;
+		}
+
+		// rewards not fully unlocked
+		// add unlocked rewards to stored total
+		uint256 unlockedRewards = (lastRewardsAmount_ * (block.timestamp - lastSync_)) / (rewardsCycleEnd_ - lastSync_);
+		return totalReleasedAssets_ + unlockedRewards;
+	}
+
+	// TODO delete this everwhere and just use amountAvailableForStaking
+	function totalFloat() public view returns (uint256) {
+		return amountAvailableForStaking();
+	}
+
+	function amountAvailableForStaking() public view returns (uint256) {
+		ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 targetCollateralRate = protocolDAO.getTargetGGAVAXReserveRate();
+
+		uint256 totalAssets_ = totalAssets();
+
+		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
+		return totalAssets_ - reservedAssets - stakingTotalAssets;
+	}
+
+	function depositFromStaking(uint256 baseAmt, uint256 rewardAmt) public payable onlyLatestContract("MinipoolManager", msg.sender) {
+		uint256 totalAmt = msg.value;
+		if (totalAmt != (baseAmt + rewardAmt) || baseAmt > stakingTotalAssets) {
+			revert TodoBetterMsg();
+		}
+		stakingTotalAssets -= baseAmt;
+		IWAVAX(address(asset)).deposit{value: totalAmt}();
+		emit DepositFromStaking(msg.sender, baseAmt, rewardAmt);
+	}
+
+	function withdrawForStaking(uint256 assets) public onlyLatestContract("MinipoolManager", msg.sender) {
+		if (assets > amountAvailableForStaking()) {
+			revert WithdrawAmountTooLarge();
+		}
+		stakingTotalAssets += assets;
+		emit WithdrawForStaking(msg.sender, assets);
+		IWAVAX(address(asset)).withdraw(assets);
+		IWithdrawer withdrawer = IWithdrawer(msg.sender);
+		withdrawer.receiveWithdrawalAVAX{value: assets}();
+	}
+
+	// Accept raw AVAX from a depositor and mint them ggAVAX
+	function depositAVAX() public payable whenNotPaused returns (uint256 shares) {
+		uint256 assets = msg.value;
+		// Check for rounding error since we round down in previewDeposit.
+		if ((shares = previewDeposit(assets)) == 0) {
+			revert ZeroShares();
+		}
+		IWAVAX(address(asset)).deposit{value: assets}();
+		_mint(msg.sender, shares);
+		emit Deposit(msg.sender, msg.sender, assets, shares);
+		afterDeposit(assets, shares);
+	}
+
+	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
+	// TODO most people will want to redeem shares, not withdraw avax, right? So can we rm this method?
+	function withdrawAVAX(uint256 assets) public whenNotPaused returns (uint256 shares) {
+		shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
+		beforeWithdraw(assets, shares);
+		_burn(msg.sender, shares);
+		emit Withdraw(msg.sender, msg.sender, msg.sender, assets, shares);
+		IWAVAX(address(asset)).withdraw(assets);
+		// TODO will this work for smart contract wallets? like a gnosis multisig?
+		msg.sender.safeTransferETH(assets);
+	}
+
+	// Allow depositor to burn ggAVAX and withdraw raw AVAX (subject to reserves)
+	function redeemAVAX(uint256 shares) public whenNotPaused returns (uint256 assets) {
+		// Check for rounding error since we round down in previewRedeem.
+		require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
+		beforeWithdraw(assets, shares);
+		_burn(msg.sender, shares);
+		emit Withdraw(msg.sender, msg.sender, msg.sender, assets, shares);
+		IWAVAX(address(asset)).withdraw(assets);
+		// TODO will this work for smart contract wallets? like a gnosis multisig?
+		msg.sender.safeTransferETH(assets);
+	}
+
+	// ERC4626 Overrides
+
+	function deposit(uint256 assets, address receiver) public override whenNotPaused returns (uint256 shares) {
+		return super.deposit(assets, receiver);
+	}
+
+	function mint(uint256 shares, address receiver) public override whenNotPaused returns (uint256 assets) {
+		return super.mint(shares, receiver);
+	}
+
+	function withdraw(
+		uint256 assets,
+		address receiver,
+		address owner
+	) public override whenNotPaused returns (uint256 shares) {
+		return super.withdraw(assets, receiver, owner);
+	}
+
+	function redeem(
+		uint256 shares,
+		address receiver,
+		address owner
+	) public override whenNotPaused returns (uint256 assets) {
+		return super.redeem(shares, receiver, owner);
+	}
+
+	// Update totalReleasedAssets on withdraw/redeem
+	function beforeWithdraw(uint256 amount, uint256 shares) internal override {
+		super.beforeWithdraw(amount, shares);
+		totalReleasedAssets -= amount;
+	}
+
+	// Update totalReleasedAssets on deposit/mint
+	function afterDeposit(uint256 amount, uint256 shares) internal override {
+		totalReleasedAssets += amount;
+		super.afterDeposit(amount, shares);
 	}
 
 	function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}

@@ -27,7 +27,9 @@ contract MultisigManager is Base {
 		version = 1;
 	}
 
-	// Register a Rialto cluster. Defaults to disabled when first registered.
+	// TODO modifiers for who can call all these functions
+
+	// Register a multisig. Defaults to disabled whenfirst registered.
 	function registerMultisig(address addr) external onlyGuardian {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex != -1) {
@@ -54,7 +56,7 @@ contract MultisigManager is Base {
 
 	// If they have existing validations then this will prevent the multisig from completing
 	// so the minipool will need to manually be reassigned to a new multisig
-	function disableMultisig(address addr) external onlyGuardian {
+	function disableMultisig(address addr) external guardianOrLatestContract("Ocyticus", msg.sender) {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex == -1) {
 			revert MultisigNotFound();

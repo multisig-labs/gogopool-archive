@@ -18,6 +18,7 @@ import {MinipoolStatus} from "../../../contracts/types/MinipoolStatus.sol";
 import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 import {RewardsPool} from "../../../contracts/contract/rewards/RewardsPool.sol";
 import {Staking} from "../../../contracts/contract/Staking.sol";
+import {Ocyticus} from "../../../contracts/contract/Ocyticus.sol";
 
 import {format} from "sol-utils/format.sol";
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
@@ -51,6 +52,7 @@ abstract contract BaseTest is Test {
 	RewardsPool public rewardsPool;
 	NOPClaim public nopClaim;
 	Staking public staking;
+	Ocyticus public ocyticus;
 
 	function setUp() public virtual {
 		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
@@ -110,6 +112,9 @@ abstract contract BaseTest is Test {
 
 		nopClaim = new NOPClaim(store, ggp);
 		registerContract(store, "NOPClaim", address(nopClaim));
+
+		ocyticus = new Ocyticus(store);
+		registerContract(store, "Ocyticus", address(ocyticus));
 
 		// TODO We need to do this in prod, do we need it here too?
 		// store.setDeployedStatus();
