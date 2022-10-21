@@ -3,7 +3,7 @@ import { ethers, upgrades, network } from "hardhat";
 import { writeFile } from "node:fs/promises";
 import * as fs from "fs";
 
-const { getNamedAccounts } = require("../tasks/lib/utils");
+const { getNamedAccounts, logtx } = require("../tasks/lib/utils");
 
 // DO NOT USE FOR PRODUCTION
 // This will deploy the contracts to the local network
@@ -77,6 +77,16 @@ const deploy = async () => {
 		instances[contract] = inst;
 		addresses[contract] = c.address;
 		console.log(`${contract} deployed to: ${c.address}`);
+		// If initialize() exists then call it, it if needs params like TokenggAVAX then dont call
+		if (inst.initialize) {
+			for (const f of inst.interface.fragments) {
+				if (f.name === "initialize" && f.inputs.length === 0) {
+					console.log(`Calling ${contract}.initialize()`);
+					const tx = await inst.initialize();
+					await logtx(tx);
+				}
+			}
+		}
 	}
 
 	let nonce = parseInt(

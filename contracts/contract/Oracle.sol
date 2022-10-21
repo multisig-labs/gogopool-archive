@@ -9,9 +9,9 @@ import {TokenGGP} from "./tokens/TokenGGP.sol";
 
 /*
 	Data Storage Schema
-	Oracle.oneinch = address of the One Inch price aggregator contract
-	Oracle.ggp.timestamp = block.timestamp of last update to GGP price
-	Oracle.ggp.price = price of GGP **IN AVAX UNITS**
+	Oracle.OneInch = address of the One Inch price aggregator contract
+	Oracle.GGPPrice = price of GGP **IN AVAX UNITS**
+	Oracle.GGPTimestamp = block.timestamp of last update to GGP price
 */
 
 contract Oracle is Base {
@@ -27,16 +27,16 @@ contract Oracle is Base {
 	}
 
 	// Set the address of the One Inch price aggregator contract
-	function setOneInch(address addr) public onlyGuardian {
-		setAddress("Oracle.OneInch", addr);
+	function setOneInch(address addr) external onlyGuardian {
+		setAddress(keccak256("Oracle.OneInch"), addr);
 	}
 
 	// Get an aggregated price from the 1Inch contract.
 	// NEVER call this on-chain, only rialto should call, then
 	// send a setGGPPrice tx
-	function getGGPPriceFromOneInch() public view returns (uint256 price, uint256 timestamp) {
+	function getGGPPriceFromOneInch() external view returns (uint256 price, uint256 timestamp) {
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
-		address addr = getAddress("Oracle.OneInch");
+		address addr = getAddress(keccak256("Oracle.OneInch"));
 		IOneInch oneinch = IOneInch(addr);
 		price = oneinch.getRateToEth(ggp, false);
 		timestamp = block.timestamp;

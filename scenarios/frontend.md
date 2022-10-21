@@ -20,7 +20,7 @@ npx hardhat debug:skip --duration 14d
 npx hardhat debug:skip --duration 14d
 
 npx hardhat inflation:canCycleStart --actor rialto1
-npx hardhat inflation:startCycle --actor rialto1
+npx hardhat inflation:startRewardsCycle --actor rialto1
 
 npx hardhat minipool:recordStakingEnd --actor rialto1 --reward 300 --node $NODE
 npx hardhat nopClaim:distributeRewards

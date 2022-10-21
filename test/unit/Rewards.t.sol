@@ -47,7 +47,8 @@ contract RewardsTest is BaseTest {
 
 	function testCanRewardsCycleStart() public {
 		assert(rewardsPool.canRewardsCycleStart() == false);
-		skip(dao.getInflationInterval());
+		// Assuming inflation is a 1 day cycle which is less than rewards cycle
+		skip(dao.getInflationIntervalSeconds());
 		assert(rewardsPool.canRewardsCycleStart() == false);
 		uint256 rewardsCycleSeconds = dao.getRewardsCycleSeconds();
 		skip(rewardsCycleSeconds);
@@ -160,12 +161,12 @@ contract RewardsTest is BaseTest {
 	// 	assertEq(ggp.balanceOf(nodeOp), claimingContractAllowance / 2);
 	// }
 
-	// function testGetInflationCycleStartTime() public {
+	// function testGetInflationIntervalStartTime() public {
 	// 	//note: current block.timestamp is 1, hence the subtraction of 1 second at the end
-	// 	assert(rewardsPool.getInflationCycleStartTime() == 0);
+	// 	assert(rewardsPool.getInflationIntervalStartTime() == 0);
 	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
 	// 	skip(inflationStartTime);
-	// 	assert(rewardsPool.getInflationCycleStartTime() == block.timestamp - 1 seconds);
+	// 	assert(rewardsPool.getInflationIntervalStartTime() == block.timestamp - 1 seconds);
 	// }
 
 	// function testGetInflationIntervalsElapsed() public {
@@ -235,7 +236,7 @@ contract RewardsTest is BaseTest {
 	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();
 	// 	skip(inflationStartTime);
 
-	// 	rewardsPool.startCycle();
+	// 	rewardsPool.startRewardsCycle();
 	// 	uint256 rewardsTotal = rewardsPool.getRewardCycleTotalAmount();
 
 	// 	uint256 protocolAllot = rewardsTotal.mulWadDown(0.10 ether);
@@ -245,9 +246,9 @@ contract RewardsTest is BaseTest {
 	// 	assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == nopAllot);
 	// }
 
-	// function testStartCycle() public {
+	// function teststartRewardsCycle() public {
 	// 	//start cycle will fail
-	// 	rewardsPool.startCycle();
+	// 	rewardsPool.startRewardsCycle();
 	// 	assert(rewardsPool.getRewardCycleTotalAmount() == 0);
 	// 	assert(dao.getTotalGGPCirculatingSupply() == 18000000 ether);
 	// 	assert(rewardsPool.getRewardCycleStartTime() == 0);
@@ -258,7 +259,7 @@ contract RewardsTest is BaseTest {
 	// 	skip(rewardsIntervalLength);
 
 	// 	//start cycle will fail because inflation has not started yet
-	// 	rewardsPool.startCycle();
+	// 	rewardsPool.startRewardsCycle();
 	// 	assert(rewardsPool.getRewardCycleTotalAmount() == 0);
 	// 	assert(dao.getTotalGGPCirculatingSupply() == 18000000 ether);
 	// 	assert(rewardsPool.getRewardCycleStartTime() == 0);
@@ -272,7 +273,7 @@ contract RewardsTest is BaseTest {
 	// 	skip(inflationIntervalLength);
 
 	// 	//start cycle will work
-	// 	rewardsPool.startCycle();
+	// 	rewardsPool.startRewardsCycle();
 	// 	assert(rewardsPool.getRewardCycleTotalAmount() > 0);
 	// 	assert(dao.getTotalGGPCirculatingSupply() > 18000000 ether);
 	// 	assert(rewardsPool.getRewardCycleStartTime() != 0);
@@ -287,7 +288,7 @@ contract RewardsTest is BaseTest {
 	// 	//no new tokens have been 'minted'
 	// 	assert(rewardsPool.getTotalGGPCirculatingSupply() == totalCirculatingSupply);
 	// 	//inflation calc time is still 0
-	// 	assert(rewardsPool.getInflationCycleStartTime() == 0);
+	// 	assert(rewardsPool.getInflationIntervalStartTime() == 0);
 	// 	assert(store.getUint(keccak256("rewardsPool.reward.cycle.total.amount")) == 0);
 
 	// 	uint256 inflationStartTime = dao.getInflationIntervalStartTime();

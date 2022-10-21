@@ -86,7 +86,7 @@ just task inflation:canCycleStart --actor rialto1
 ```
 just task debug:skip --duration 14d
 just task inflation:canCycleStart --actor rialto1
-just task inflation:startCycle --actor rialto1
+just task inflation:startRewardsCycle --actor rialto1
 just task nopClaim:distributeRewards
 just task staking:list
 ```
@@ -97,7 +97,7 @@ Round two of rewards:
 
 just task debug:skip --duration 28d
 just task inflation:canCycleStart --actor rialto1
-just task inflation:startCycle --actor rialto1
+just task inflation:startRewardsCycle --actor rialto1
 just task nopClaim:distributeRewards
 just task staking:list
 just task nopClaim:claimAndRestakeHalf --staker nodeOp1

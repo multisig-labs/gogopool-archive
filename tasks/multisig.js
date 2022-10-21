@@ -1,6 +1,13 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
-const { get, overrides, log, logf, getNamedAccounts } = require("./lib/utils");
+const {
+	get,
+	overrides,
+	log,
+	logf,
+	getNamedAccounts,
+	logtx,
+} = require("./lib/utils");
 
 const MAX_ENTRIES = 10;
 
@@ -41,12 +48,14 @@ task("multisig:register", "Register and enable a multisig address")
 		}
 		const multisigManager = await get("MultisigManager");
 		try {
-			await multisigManager.registerMultisig(addr, overrides);
+			const tx = await multisigManager.registerMultisig(addr, overrides);
+			await logtx(tx);
 		} catch (e) {
 			log(`Error: ${e}`);
 		}
 		try {
-			await multisigManager.enableMultisig(addr, overrides);
+			const tx = await multisigManager.enableMultisig(addr, overrides);
+			await logtx(tx);
 		} catch (e) {
 			log(`Error: ${e}`);
 		}
@@ -63,7 +72,8 @@ task("multisig:disable", "disable a multisig address")
 		}
 		const multisigManager = await get("MultisigManager");
 		try {
-			await multisigManager.disableMultisig(addr, overrides);
+			const tx = await multisigManager.disableMultisig(addr, overrides);
+			await logtx(tx);
 		} catch (e) {
 			log(`Error: ${e}`);
 		}

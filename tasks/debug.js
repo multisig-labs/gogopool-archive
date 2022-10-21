@@ -19,23 +19,19 @@ task(
 	"debug:setup",
 	"Run after a local deploy to init necessary configs"
 ).setAction(async () => {
-	const dao = await get("ProtocolDAO");
 	const oneinch = await get("OneInchMock");
-	await dao.initialize();
-	await hre.run("oracle:set_ggp", { price: "1" });
-	await hre.run("oracle:set_oneinch", {
-		addr: oneinch.address,
-	});
-	await hre.run("multisig:register", { name: "rialto1" });
+	await hre.run("oracle:set_oneinch", { addr: oneinch.address });
 	await hre.run("debug:topup_actor_balances", { amt: 50000 });
+	await hre.run("ggp:deal", { recip: "nodeOp1", amt: 10000 });
 	await hre.run("ggavax:liqstaker_deposit_avax", {
 		actor: "alice",
 		amt: 10000,
 	});
 	await hre.run("ggavax:liqstaker_deposit_avax", { actor: "bob", amt: 10000 });
-	await hre.run("ggp:deal", { recip: "nodeOp1", amt: 10000 });
+	await hre.run("multisig:register", { name: "rialto1" });
+	await hre.run("oracle:set_ggp", { actor: "rialto1", price: "1" });
 	await hre.run("inflation:transferGGP");
-	await hre.run("inflation:startCycle", { actor: "rialto1" });
+	await hre.run("inflation:startRewardsCycle", { actor: "rialto1" });
 });
 
 task(
@@ -174,7 +170,7 @@ task("debug:list_vars", "List important system variables").setAction(
 		log("");
 		log("ggAVAX Variables:");
 		const rewardsCycleEnd = await ggAVAX.rewardsCycleEnd();
-		const lastRewardAmount = await ggAVAX.lastRewardAmount();
+		const lastRewardsAmount = await ggAVAX.lastRewardsAmount();
 		const networkTotalAssets = await ggAVAX.totalReleasedAssets();
 		const stakingTotalAssets = await ggAVAX.stakingTotalAssets();
 		const amountAvailableForStaking = await ggAVAX.amountAvailableForStaking();
@@ -191,7 +187,7 @@ task("debug:list_vars", "List important system variables").setAction(
 		logf(
 			"%-15s %-15.5f %-15.5f %-15.5f %-15.5f %-15.5f",
 			rewardsCycleEnd,
-			hre.ethers.utils.formatUnits(lastRewardAmount),
+			hre.ethers.utils.formatUnits(lastRewardsAmount),
 			hre.ethers.utils.formatUnits(networkTotalAssets),
 			hre.ethers.utils.formatUnits(stakingTotalAssets),
 			hre.ethers.utils.formatUnits(amountAvailableForStaking),

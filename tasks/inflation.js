@@ -8,7 +8,7 @@ task("inflation:canCycleStart", "Can a new rewards cycle start")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const rewardsPool = await get("RewardsPool", signer);
-		const canStart = await rewardsPool.canCycleStart();
+		const canStart = await rewardsPool.canRewardsCycleStart();
 		log(`Can a new rewards cycle start?: ${canStart}`);
 	});
 
@@ -16,38 +16,43 @@ task("inflation:cycleStatus", "How many rewards cycles have passed").setAction(
 	async () => {
 		const rewardsPool = await get("RewardsPool");
 		const dao = await get("ProtocolDAO");
-		const cycles = utils.formatEther(
-			`${await rewardsPool.getRewardCyclesPassed()}`
-		);
-		const length = await rewardsPool.getRewardCycleLength();
-		const start = await rewardsPool.getRewardCycleStartTime();
-		log(`how many cycles have passed?: ${cycles}`);
-		log(`length?: ${length}`);
-		log(`start?: ${start}`);
 		log(`now?: ${await now()}`);
+		log(`dao.getRewardsCycleSeconds: ${await dao.getRewardsCycleSeconds()}`);
 		log(
-			`rewrds cycle total?: ${await rewardsPool.getRewardCycleTotalAmount()}`
+			`RewardsCycleStartTime: ${await rewardsPool.getRewardsCycleStartTime()}`
 		);
 		log(
-			`getLastInflationCalcTime?: ${await rewardsPool.getLastInflationCalcTime()}`
+			`RewardsCycleTotalAmount: ${await rewardsPool.getRewardsCycleTotalAmount()}`
 		);
 		log(
-			`getInflationIntervalStartTime?: ${await dao.getInflationIntervalStartTime()}`
+			`InflationIntervalStartTime: ${await dao.getInflationIntervalStartTime()}`
+		);
+		log(
+			`InflationAmt (currentSupply, nextSupply): ${await rewardsPool.getInflationAmt()}`
+		);
+		log(`RewardsCyclesElapsed: ${await rewardsPool.getRewardsCyclesElapsed()}`);
+		log(
+			`InflationIntervalsElapsed: ${await rewardsPool.getInflationIntervalsElapsed()}`
 		);
 	}
 );
 
 // be sure to skip ahead 2 days for this to work successfully
-task("inflation:startCycle", "start a new rewards cycle")
+task("inflation:startRewardsCycle", "start a new rewards cycle")
 	.addParam("actor", "Account used to send tx")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const rewardsPool = await get("RewardsPool", signer);
-		tx = await rewardsPool.startCycle();
+		const canStart = await rewardsPool.canRewardsCycleStart();
+		if (!canStart) {
+			log("canRewardsCycleStart() is false");
+			return;
+		}
+		tx = await rewardsPool.startRewardsCycle();
 		await logtx(tx);
 		// log how much was distributed to each contract and total
 		const totalRewardsThisCycle = utils.formatEther(
-			`${await rewardsPool.getRewardCycleTotalAmount()}`
+			`${await rewardsPool.getRewardsCycleTotalAmount()}`
 		);
 		const daoAllowance = utils.formatEther(
 			`${await rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim")}`
@@ -67,6 +72,8 @@ task(
 ).setAction(async () => {
 	const ggp = await get("TokenGGP");
 	const vault = await get("Vault");
+	const currentAmt = await vault.balanceOfToken("RewardsPool", ggp.address);
+	if (currentAmt >= utils.parseEther("18000000")) return;
 
 	tx = await ggp.approve(vault.address, utils.parseEther("18000000"));
 	await logtx(tx);

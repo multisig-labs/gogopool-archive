@@ -33,7 +33,7 @@ task(
 	}
 
 	for (staker of eligibleStakers) {
-		tx = await nopClaim.calculateAndDistributeRewards(
+		const tx = await nopClaim.calculateAndDistributeRewards(
 			staker,
 			totalEligibleGGPStaked
 		);

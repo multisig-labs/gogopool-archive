@@ -55,8 +55,8 @@ just task ggavax:liqstaker_deposit_avax --actor alice --amt 2000
 just task ggavax:liqstaker_redeem_ggavax --actor alice --amt 2000
 just task ggavax:sync_rewards --actor rialto1
 just task oracle:get_ggp
-just task oracle:set_ggp --price 2 --timestamp 0
-just task oracle:set_ggp --price 1 --interval 1d
+just task oracle:set_ggp --actor rialto1 --price 2 --timestamp 0
+just task oracle:set_ggp --actor rialto1 --price 1 --interval 1d
 just task oracle:get_ggp_price_oneinch
 just task oracle:set_ggp_price_oneinch --price 1.1
 just task vault:list

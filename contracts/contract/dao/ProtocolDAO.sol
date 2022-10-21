@@ -30,17 +30,15 @@ contract ProtocolDAO is Base {
 		setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 0 days);
 
 		//RewardsPool Settings
-		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 3 minutes); // The time in which a claim period will span in seconds - 28 days by default
+		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
 		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18000000 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
 
 		// GGP Inflation settings
-		// these may change when we finialize tokenomics
+		setUint(keccak256("ProtocolDAO.InflationIntervalSeconds"), 1 days);
 		setUint(keccak256("ProtocolDAO.InflationIntervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
-		setUint(keccak256("ProtocolDAO.InflationIntervalStartTime"), (block.timestamp + 1 days)); // Set the default start date for inflation to begin as 1 day after deployment
-		setUint(keccak256("ProtocolDAO.InflationInterval"), 1 minutes);
 
 		//TokenGGAvax settings
 		setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserve
@@ -122,8 +120,8 @@ contract ProtocolDAO is Base {
 	 * How many seconds to calculate inflation at
 	 * @return uint256 how many seconds to calculate inflation at
 	 */
-	function getInflationInterval() public view returns (uint256) {
-		return getUint(keccak256("ProtocolDAO.InflationInterval"));
+	function getInflationIntervalSeconds() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.InflationIntervalSeconds"));
 	}
 
 	// *** Minipool Settings ***
