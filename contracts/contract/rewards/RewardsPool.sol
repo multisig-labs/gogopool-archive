@@ -3,15 +3,14 @@ pragma solidity ^0.8.13;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import "../Base.sol";
-import {Storage} from "../Storage.sol";
-import {Vault} from "../Vault.sol";
-import {TokenGGP} from "../tokens/TokenGGP.sol";
 import {NOPClaim} from "./claims/NOPClaim.sol";
 import {ProtocolDAO} from "../dao/ProtocolDAO.sol";
+import {Storage} from "../Storage.sol";
+import {TokenGGP} from "../tokens/TokenGGP.sol";
+import {Vault} from "../Vault.sol";
 
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
-// GGP Rewards claiming by the DAO
 contract RewardsPool is Base {
 	using FixedPointMathLib for uint256;
 

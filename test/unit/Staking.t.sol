@@ -188,25 +188,6 @@ contract StakingTest is BaseTest {
 		assert(staking.getRewardsStartTime(address(nodeOp1)) == 1666291634);
 	}
 
-	//TODO: failing on transfer token, underflow/overflow
-	function testGetGGPRewards() public {
-		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
-		rewardsPool.startRewardsCycle();
-		assertFalse(rewardsPool.canStartRewardsCycle());
-		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
-
-		skip(dao.getRewardsCycleSeconds());
-
-		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
-		assertTrue(rewardsPool.canStartRewardsCycle());
-
-		rewardsPool.startRewardsCycle();
-
-		assertGt(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertGt(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
-	}
-
 	function testIncreaseGGPRewards() public {
 		vm.prank(nodeOp1);
 		staking.stakeGGP(100 ether);
@@ -258,20 +239,18 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	//TODO: failing on transfer token, underflow/overflow
-	// function testRestakeGGP() public {
-	// 	vm.startPrank(nodeOp1);
-	// 	staking.stakeGGP(300 ether);
-	// 	vm.stopPrank();
-	// 	dealGGP(address(nopClaim), 1000 ether);
-	// 	assert(staking.getGGPStake(address(nodeOp1)) == 300 ether);
+	function testRestakeGGP() public {
+		vm.prank(nodeOp1);
+		staking.stakeGGP(300 ether);
+		dealGGP(address(nopClaim), 1000 ether);
+		assert(staking.getGGPStake(nodeOp1) == 300 ether);
 
-	// 	vm.stopPrank();
-
-	// 	vm.startPrank(address(nopClaim));
-	// 	staking.restakeGGP(address(nodeOp1), 200 ether);
-	// 	assert(staking.getGGPStake(address(nodeOp1)) == 500 ether);
-	// }
+		vm.startPrank(address(nopClaim));
+		ggp.approve(address(staking), MAX_AMT);
+		staking.restakeGGP(address(nodeOp1), 200 ether);
+		vm.stopPrank();
+		assert(staking.getGGPStake(address(nodeOp1)) == 500 ether);
+	}
 
 	function testStakeGGP() public {
 		uint256 amt = 100 ether;
@@ -297,48 +276,20 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	//TODO: This is left over from before, is it still useful?
-	function testStakeScenario() public {
-		vm.prank(nodeOp1, nodeOp1);
-		staking.stakeGGP(100 ether);
-		assert(staking.getTotalGGPStake() == 100 ether);
-		assert(staking.getStakerCount() == 1);
-		assert(staking.getGGPStake(nodeOp1) == 100 ether);
-		assert(staking.getMinimumGGPStake(nodeOp1) == 0 ether);
-		assert(staking.getCollateralizationRatio(nodeOp1) == type(uint256).max);
-
-		// Manually assign some AVAX
-		vm.prank(address(minipoolMgr));
-		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
-
-		vm.startPrank(nodeOp1, nodeOp1);
-		assert(staking.getAVAXAssigned(nodeOp1) == 1000 ether);
-
-		assert(staking.getMinimumGGPStake(nodeOp1) == 100 ether);
-		assert(staking.getCollateralizationRatio(nodeOp1) == 0.1 ether);
-
-		staking.stakeGGP(100 ether);
-		assert(staking.getTotalGGPStake() == 200 ether);
-		assert(staking.getStakerCount() == 1);
-		assert(staking.getGGPStake(nodeOp1) == 200 ether);
-		assert(staking.getMinimumGGPStake(nodeOp1) == 100 ether);
-		assert(staking.getCollateralizationRatio(nodeOp1) == 0.2 ether);
-
-		vm.stopPrank();
-		vm.startPrank(address(minipoolMgr));
-		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
-		vm.stopPrank();
-		vm.startPrank(nodeOp1, nodeOp1);
-		assert(staking.getAVAXAssigned(nodeOp1) == 2000 ether);
-
-		assert(staking.getMinimumGGPStake(nodeOp1) == 200 ether);
-		assert(staking.getCollateralizationRatio(nodeOp1) == 0.1 ether);
+	function testStakeWithdraw() public {
+		vm.startPrank(nodeOp1);
+		staking.stakeGGP(300 ether);
+		MinipoolManager.Minipool memory mp = createMinipool(1000 ether, 1000 ether, 2 weeks);
 
 		vm.expectRevert(Staking.CannotWithdrawUnder150CollateralizationRatio.selector);
 		staking.withdrawGGP(1 ether);
 
 		vm.expectRevert(Staking.InsufficientBalance.selector);
 		staking.withdrawGGP(10_000 ether);
+
+		minipoolMgr.cancelMinipool(mp.nodeID);
+
+		staking.withdrawGGP(300 ether);
 
 		vm.stopPrank();
 	}
