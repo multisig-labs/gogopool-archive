@@ -1,6 +1,5 @@
-pragma solidity ^0.8.13;
-
 // SPDX-License-Identifier: GPL-3.0-only
+pragma solidity ^0.8.13;
 
 // Represents a minipool's status within the network
 // Don't change the order of these or remove any. Only add to the end.
