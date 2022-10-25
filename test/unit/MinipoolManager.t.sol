@@ -1,6 +1,5 @@
-pragma solidity ^0.8.13;
-
 // SPDX-License-Identifier: GPL-3.0-only
+pragma solidity ^0.8.13;
 
 import "./utils/BaseTest.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";

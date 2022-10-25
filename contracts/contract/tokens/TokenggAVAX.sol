@@ -1,7 +1,6 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-only
 // Copied from https://github.com/fei-protocol/ERC4626/blob/main/src/xERC4626.sol
 // Rewards logic inspired by xERC20 (https://github.com/ZeframLou/playpen/blob/main/src/xERC20.sol)
-
 pragma solidity ^0.8.13;
 
 import "../BaseUpgradeable.sol";
