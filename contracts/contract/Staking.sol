@@ -21,6 +21,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	staker.item<index>.ggpStaked = Total amt of GGP staked across all minipools
 	staker.item<index>.avaxStaked = Total amt of AVAX staked across all minipools
 	staker.item<index>.avaxAssigned = Total amt of liquid staker funds assigned across all minipools
+	staker.item<index>.avaxAssignedHighWater = Highest amt of liquid staker funds assigned during a GGP rewards cycle
 */
 
 contract Staking is Base {
@@ -42,10 +43,13 @@ contract Staking is Base {
 		uint256 ggpStaked;
 		uint256 avaxStaked;
 		uint256 avaxAssigned;
+		uint256 avaxAssignedHighWater;
 		uint256 minipoolCount;
 		uint256 rewardsStartTime;
 		uint256 ggpRewards;
 	}
+
+	uint256 internal constant TENTH = 0.1 ether;
 
 	ERC20 public immutable ggp;
 
@@ -102,14 +106,36 @@ contract Staking is Base {
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
 	}
 
+	// Also increases .avaxAssignedHighWater amount
 	function increaseAVAXAssigned(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
+
+		uint256 currHighWater = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
+		uint256 currAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
+		if (currAssigned > currHighWater) {
+			setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), currAssigned);
+		}
 	}
 
+	// Purposely does *not* decrease .avaxAssignedHighWater amount
 	function decreaseAVAXAssigned(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
+	}
+
+	/* AVAX ASSIGNED HIGH-WATER */
+	// Largest total amt assigned during a rewards period
+	function getAVAXAssignedHighWater(address stakerAddr) public view returns (uint256) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
+	}
+
+	// Reset the AVAXAssignedHighWater to what the current AVAXAssigned is
+	function resetAVAXAssignedHighWater(address stakerAddr) public onlyLatestNetworkContract {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		uint256 currAVAXAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
+		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), currAVAXAssigned);
 	}
 
 	/* MINIPOOL COUNT */
@@ -118,9 +144,9 @@ contract Staking is Base {
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 	}
 
+	// Also sets .rewardsStartTime if minipoolsCount goes from 0 -> 1
 	function increaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
 		if (getMinipoolCount(stakerAddr) == 0) {
-			//minipool count will go from 0->1 so set rewards time now
 			setRewardsStartTime(stakerAddr, block.timestamp);
 		}
 		int256 stakerIndex = requireValidStaker(stakerAddr);
@@ -173,35 +199,47 @@ contract Staking is Base {
 
 	// Returns 0 = 0%, 1 ether = 100%
 	function getCollateralizationRatio(address stakerAddr) public view returns (uint256) {
-		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
-
-		uint256 ggpStaked = getGGPStake(stakerAddr);
-		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
 		uint256 avaxAssigned = getAVAXAssigned(stakerAddr);
 		if (avaxAssigned == 0) {
 			// Infinite collat ratio
 			return type(uint256).max;
 		}
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		uint256 ggpStaked = getGGPStake(stakerAddr);
+		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
 		return ggpStakedInAvax.divWadDown(avaxAssigned);
 	}
 
-	function getEffectiveGGPStaked(address ownerAddress) external view returns (uint256) {
-		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		uint256 ggpStaked = getGGPStake(ownerAddress);
-
-		uint256 collateralizationRatio = getCollateralizationRatio(ownerAddress);
-		if (collateralizationRatio > dao.getMaxCollateralizationRatio()) {
-			//calculate effective stake
-			Oracle oracle = Oracle(getContractAddress("Oracle"));
-			(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
-			uint256 avaxAssigned = getAVAXAssigned(ownerAddress);
-			uint256 ggpStakedInAvax = avaxAssigned.mulWadDown(dao.getMaxCollateralizationRatio());
-			uint256 ggpEffectiveStake = ggpStakedInAvax.divWadDown(ggpPriceInAvax);
-
-			return ggpEffectiveStake;
+	// Effective ratio based on AVAX high water mark
+	// Ratio is between 0%-150% (0-1.5 ether)
+	function getEffectiveRewardsRatio(address stakerAddr) public view returns (uint256) {
+		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
+		if (avaxAssignedHighWater == 0) {
+			return 0;
 		}
-		return ggpStaked;
+		if (getCollateralizationRatio(stakerAddr) < TENTH) {
+			return 0;
+		}
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		uint256 ggpStaked = getGGPStake(stakerAddr);
+		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
+		uint256 ratio = ggpStakedInAvax.divWadDown(avaxAssignedHighWater);
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		uint256 maxRatio = dao.getMaxCollateralizationRatio();
+		// ratio = (ratio < 1 ether) ? 1 ether : ratio;
+		ratio = (ratio > maxRatio) ? maxRatio : ratio;
+		return ratio;
+	}
+
+	// GGP that will count towards rewards this cycle
+	function getEffectiveGGPStaked(address stakerAddr) external view returns (uint256) {
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
+		uint256 ratio = getEffectiveRewardsRatio(stakerAddr);
+		return avaxAssignedHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);
 	}
 
 	// Accept a GGP stake

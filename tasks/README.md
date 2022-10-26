@@ -60,6 +60,7 @@ just task oracle:set_ggp --actor rialto1 --price 1 --interval 1d
 just task oracle:get_ggp_price_oneinch
 just task oracle:set_ggp_price_oneinch --price 1.1
 just task vault:list
+just task inflation:cycleStatus
 ```
 
 

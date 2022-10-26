@@ -410,6 +410,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		// Return Liq stakers funds
 		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt}(avaxLiquidStakerAmt, 0);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
+		// The AVAX should not count for rewards as it was never used for a validation period
+		staking.resetAVAXAssignedHighWater(owner);
 		subUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"), avaxLiquidStakerAmt);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Error);
@@ -426,7 +428,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	// VIEW FUNCTIONS
 	//
 
-	// Get/set the total AVAX *actually* withdrawn from ggAVAX and sent to Rialto
+	/// @notice Get the total AVAX *actually* withdrawn from ggAVAX and sent to Rialto
 	function getTotalAVAXLiquidStakerAmt() public view returns (uint256) {
 		return getUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"));
 	}
@@ -517,6 +519,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
+		// The AVAX should not count for rewards as it was never used for a validation period
+		staking.resetAVAXAssignedHighWater(owner);
 		staking.decreaseMinipoolCount(owner);
 
 		Vault vault = Vault(getContractAddress("Vault"));

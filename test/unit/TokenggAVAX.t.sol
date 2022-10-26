@@ -244,7 +244,6 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		// Create and claim minipool
 		address nodeOp = getActorWithTokens("nodeOp", 1000 ether, 200 ether);
-		uint256 duration = 2 weeks;
 		uint256 depositAmt = 1000 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
 		uint128 ggpStakeAmt = 200 ether;

@@ -24,7 +24,7 @@ contract ProtocolDAO is Base {
 		setBool(keccak256("ProtocolDAO.initialized"), true);
 
 		//NOPClaim settings
-		setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 0 days);
+		setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 14 days);
 
 		//RewardsPool Settings
 		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default

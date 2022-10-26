@@ -8,7 +8,6 @@ import {TokenGGP} from "../../tokens/TokenGGP.sol";
 import {Vault} from "../../Vault.sol";
 
 contract ProtocolDAOClaim is Base {
-	error ErrorSendingAVAX();
 	error InvalidAmount();
 
 	event GGPTokensSentByDAOProtocol(string invoiceID, address indexed from, address indexed to, uint256 amount);

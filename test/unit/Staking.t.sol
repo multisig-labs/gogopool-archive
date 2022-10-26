@@ -230,12 +230,32 @@ contract StakingTest is BaseTest {
 	function testGetEffectiveGGPStaked() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(300 ether);
-		assert(staking.getEffectiveGGPStaked(address(nodeOp1)) == 0 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 0 ether);
 		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getEffectiveGGPStaked(address(nodeOp1)) == 300 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 300 ether);
 		staking.stakeGGP(1700 ether);
-		assert(staking.getEffectiveGGPStaked(address(nodeOp1)) == 1500 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 1500 ether);
 		vm.stopPrank();
+		vm.prank(address(minipoolMgr));
+		staking.decreaseAVAXAssigned(nodeOp1, 1000 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 1500 ether);
+	}
+
+	function testGetEffectiveGGPStakedWithLowGGPPrice() public {
+		vm.prank(rialto);
+		oracle.setGGPPrice(0.1 ether, block.timestamp);
+
+		vm.startPrank(nodeOp1);
+		staking.stakeGGP(3000 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 0 ether);
+		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 3000 ether);
+		staking.stakeGGP(17000 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 15000 ether);
+		vm.stopPrank();
+		vm.prank(address(minipoolMgr));
+		staking.decreaseAVAXAssigned(nodeOp1, 1000 ether);
+		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 15000 ether);
 	}
 
 	function testRestakeGGP() public {
@@ -289,6 +309,25 @@ contract StakingTest is BaseTest {
 		minipoolMgr.cancelMinipool(mp.nodeID);
 
 		staking.withdrawGGP(300 ether);
+
+		vm.stopPrank();
+	}
+
+	function testAVAXHighWaterMark() public {
+		vm.prank(nodeOp1);
+		staking.stakeGGP(100 ether);
+
+		vm.startPrank(address(minipoolMgr));
+		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
+		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
+		staking.decreaseAVAXAssigned(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
+		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
+		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 2000 ether);
 
 		vm.stopPrank();
 	}
