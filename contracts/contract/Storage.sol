@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 /// @title The primary persistent storage for GoGoPool
-/// @author Chandler
 /// Based on RocketStorage by RocketPool
 
 contract Storage {
@@ -16,10 +15,6 @@ contract Storage {
 	mapping(bytes32 => address) private addressStorage;
 	mapping(bytes32 => bool) private booleanStorage;
 	mapping(bytes32 => bytes32) private bytes32Storage;
-
-	// Protected storage (not accessible by network contracts)
-	mapping(address => address) private withdrawalAddresses;
-	mapping(address => address) private pendingWithdrawalAddresses;
 
 	// Guardian address
 	address private guardian;
@@ -45,13 +40,11 @@ contract Storage {
 		_;
 	}
 
-	/// @dev Construct GoGoStorage
 	constructor() {
-		// Set the guardian upon deployment
 		guardian = msg.sender;
 	}
 
-	// Transfers guardianship to a new address
+	// Initiate transfer of guardianship to a new address
 	function setGuardian(address _newAddress) external {
 		// Check tx comes from current guardian
 		require(msg.sender == guardian, "Is not guardian account");
@@ -64,16 +57,14 @@ contract Storage {
 		return guardian;
 	}
 
-	// Confirms change of guardian
+	// Completes transfer of guardianship
 	function confirmGuardian() external {
-		// Check tx came from new guardian address
 		require(msg.sender == newGuardian, "Confirmation must come from new guardian address");
 		// Store old guardian for event
 		address oldGuardian = guardian;
 		// Update guardian and clear storage
 		guardian = newGuardian;
 		delete newGuardian;
-		// Emit event
 		emit GuardianChanged(oldGuardian, guardian);
 	}
 
@@ -85,80 +76,109 @@ contract Storage {
 		storageInit = true;
 	}
 
-	// Set this as being deployed now
 	function getDeployedStatus() external view returns (bool) {
 		return storageInit;
 	}
 
-	/// @param _key The key for the record
+	//
+	// GET
+	//
+
+	function getAddress(bytes32 _key) external view returns (address r) {
+		return addressStorage[_key];
+	}
+
+	function getBool(bytes32 _key) external view returns (bool r) {
+		return booleanStorage[_key];
+	}
+
+	function getBytes(bytes32 _key) external view returns (bytes memory) {
+		return bytesStorage[_key];
+	}
+
+	function getBytes32(bytes32 _key) external view returns (bytes32 r) {
+		return bytes32Storage[_key];
+	}
+
+	function getInt(bytes32 _key) external view returns (int256 r) {
+		return intStorage[_key];
+	}
+
+	function getString(bytes32 _key) external view returns (string memory) {
+		return stringStorage[_key];
+	}
+
+	function getUint(bytes32 _key) external view returns (uint256 r) {
+		return uintStorage[_key];
+	}
+
+	//
+	// SET
+	//
+
 	function setAddress(bytes32 _key, address _value) external onlyLatestNetworkContract {
 		addressStorage[_key] = _value;
 	}
 
-	/// @param _key The key for the record
-	function setUint(bytes32 _key, uint256 _value) external onlyLatestNetworkContract {
-		uintStorage[_key] = _value;
-	}
-
-	/// @param _key The key for the record
-	function setString(bytes32 _key, string calldata _value) external onlyLatestNetworkContract {
-		stringStorage[_key] = _value;
-	}
-
-	/// @param _key The key for the record
-	function setBytes(bytes32 _key, bytes calldata _value) external onlyLatestNetworkContract {
-		bytesStorage[_key] = _value;
-	}
-
-	/// @param _key The key for the record
 	function setBool(bytes32 _key, bool _value) external onlyLatestNetworkContract {
 		booleanStorage[_key] = _value;
 	}
 
-	/// @param _key The key for the record
-	function setInt(bytes32 _key, int256 _value) external onlyLatestNetworkContract {
-		intStorage[_key] = _value;
+	function setBytes(bytes32 _key, bytes calldata _value) external onlyLatestNetworkContract {
+		bytesStorage[_key] = _value;
 	}
 
-	/// @param _key The key for the record
 	function setBytes32(bytes32 _key, bytes32 _value) external onlyLatestNetworkContract {
 		bytes32Storage[_key] = _value;
 	}
 
-	/// @param _key The key for the record
+	function setInt(bytes32 _key, int256 _value) external onlyLatestNetworkContract {
+		intStorage[_key] = _value;
+	}
+
+	function setString(bytes32 _key, string calldata _value) external onlyLatestNetworkContract {
+		stringStorage[_key] = _value;
+	}
+
+	function setUint(bytes32 _key, uint256 _value) external onlyLatestNetworkContract {
+		uintStorage[_key] = _value;
+	}
+
+	//
+	// DELETE
+	//
+
 	function deleteAddress(bytes32 _key) external onlyLatestNetworkContract {
 		delete addressStorage[_key];
 	}
 
-	/// @param _key The key for the record
-	function deleteUint(bytes32 _key) external onlyLatestNetworkContract {
-		delete uintStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function deleteString(bytes32 _key) external onlyLatestNetworkContract {
-		delete stringStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function deleteBytes(bytes32 _key) external onlyLatestNetworkContract {
-		delete bytesStorage[_key];
-	}
-
-	/// @param _key The key for the record
 	function deleteBool(bytes32 _key) external onlyLatestNetworkContract {
 		delete booleanStorage[_key];
 	}
 
-	/// @param _key The key for the record
+	function deleteBytes(bytes32 _key) external onlyLatestNetworkContract {
+		delete bytesStorage[_key];
+	}
+
+	function deleteBytes32(bytes32 _key) external onlyLatestNetworkContract {
+		delete bytes32Storage[_key];
+	}
+
 	function deleteInt(bytes32 _key) external onlyLatestNetworkContract {
 		delete intStorage[_key];
 	}
 
-	/// @param _key The key for the record
-	function deleteBytes32(bytes32 _key) external onlyLatestNetworkContract {
-		delete bytes32Storage[_key];
+	function deleteString(bytes32 _key) external onlyLatestNetworkContract {
+		delete stringStorage[_key];
 	}
+
+	function deleteUint(bytes32 _key) external onlyLatestNetworkContract {
+		delete uintStorage[_key];
+	}
+
+	//
+	// ADD / SUBTRACT HELPERS
+	//
 
 	/// @param _key The key for the record
 	/// @param _amount An amount to add to the record's value
@@ -170,40 +190,5 @@ contract Storage {
 	/// @param _amount An amount to subtract from the record's value
 	function subUint(bytes32 _key, uint256 _amount) external onlyLatestNetworkContract {
 		uintStorage[_key] = uintStorage[_key] - _amount;
-	}
-
-	/// @param _key The key for the record
-	function getAddress(bytes32 _key) external view returns (address r) {
-		return addressStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function getUint(bytes32 _key) external view returns (uint256 r) {
-		return uintStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function getString(bytes32 _key) external view returns (string memory) {
-		return stringStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function getBytes(bytes32 _key) external view returns (bytes memory) {
-		return bytesStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function getBool(bytes32 _key) external view returns (bool r) {
-		return booleanStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function getInt(bytes32 _key) external view returns (int256 r) {
-		return intStorage[_key];
-	}
-
-	/// @param _key The key for the record
-	function getBytes32(bytes32 _key) external view returns (bytes32 r) {
-		return bytes32Storage[_key];
 	}
 }
