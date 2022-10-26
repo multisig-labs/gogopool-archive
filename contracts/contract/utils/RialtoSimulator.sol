@@ -7,7 +7,7 @@ import {NOPClaim} from "../rewards/claims/NOPClaim.sol";
 import {RewardsPool} from "../rewards/RewardsPool.sol";
 import {Staking} from "../Staking.sol";
 
-import {console} from "forge-std/console.sol";
+// import {console} from "forge-std/console.sol";
 
 // This contract will simulate the contract calls that the Rialto multisig makes when
 // performing the GoGoPool protocol. Rialto will also do things like move funds between

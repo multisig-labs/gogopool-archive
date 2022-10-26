@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "./Base.sol";
-import {Storage} from "./Storage.sol";
 import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";
+import {Storage} from "./Storage.sol";
 
 // !!!WARNING!!! The Vault contract must not be upgraded
 // AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances

@@ -2,13 +2,14 @@
 pragma solidity ^0.8.13;
 
 import "../../Base.sol";
-import {Storage} from "../../Storage.sol";
-import {Vault} from "../../Vault.sol";
-import {TokenGGP} from "../../tokens/TokenGGP.sol";
-import {RewardsPool} from "../RewardsPool.sol";
-import {Staking} from "../../Staking.sol";
 import {MinipoolManager} from "../../MinipoolManager.sol";
 import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
+import {RewardsPool} from "../RewardsPool.sol";
+import {Staking} from "../../Staking.sol";
+import {Storage} from "../../Storage.sol";
+import {TokenGGP} from "../../tokens/TokenGGP.sol";
+import {Vault} from "../../Vault.sol";
+
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 

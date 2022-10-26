@@ -4,9 +4,10 @@ pragma solidity ^0.8.13;
 import "./Base.sol";
 import {MinipoolManager} from "./MinipoolManager.sol";
 import {Oracle} from "./Oracle.sol";
+import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
-import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
+
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
