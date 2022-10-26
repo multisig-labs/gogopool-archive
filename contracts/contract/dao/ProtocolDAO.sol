@@ -12,9 +12,7 @@ contract ProtocolDAO is Base {
 
 	// modifier that checks if the caller is a dao member
 	modifier isDaoMember() {
-		// create an instance of the token contract
 		TokenGGP token = TokenGGP(getContractAddress("tokenGGP"));
-		// check that the sender's balance is greater than 0
 		require(token.balanceOf(msg.sender) > 0, "You do not own any GGP tokens");
 		_;
 	}
@@ -181,14 +179,5 @@ contract ProtocolDAO is Base {
 	 */
 	function getTargetGGAVAXReserveRate() external view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"));
-	}
-
-	// *** MultisigManager Settings *** //
-	function getMultisigPaused() external view returns (bool) {
-		return getBool(keccak256("multisig.paused"));
-	}
-
-	function setMultisigPaused(bool isPaused) external {
-		return setBool(keccak256("multisig.paused"), isPaused);
 	}
 }

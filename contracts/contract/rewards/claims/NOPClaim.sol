@@ -15,8 +15,8 @@ import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathL
 contract NOPClaim is Base {
 	using FixedPointMathLib for uint256;
 
-	error NoRewardsToClaim();
 	error InvalidAmount();
+	error NoRewardsToClaim();
 
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
@@ -24,7 +24,6 @@ contract NOPClaim is Base {
 	uint256 internal constant TENTH = 0.1 ether;
 
 	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
-		// Version
 		version = 1;
 		ggp = ggp_;
 	}
@@ -33,12 +32,11 @@ contract NOPClaim is Base {
 		return getUint(keccak256("NOPClaim.RewardsCycleTotal"));
 	}
 
-	function setRewardsCycleTotal(uint256 amount) public {
+	function setRewardsCycleTotal(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
 		return setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 
-	// Get whether a node can make a claim
-	// Rialto will call this
+	/// @return True if an owner can make a claim
 	function isEligible(address ownerAddress) external view returns (bool) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		Staking staking = Staking(getContractAddress("Staking"));
