@@ -37,14 +37,18 @@ contract Ocyticus is Base {
 	function pauseEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		dao.pauseContract("TokenggAVAX");
+		dao.pauseContract("MinipoolManager");
+		disableAllMultisigs();
 	}
 
+	// NOTE Multisigs will need to be enabled seperately, we dont know which ones to enable
 	function resumeEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		dao.resumeContract("TokenggAVAX");
+		dao.resumeContract("MinipoolManager");
 	}
 
-	function disableAllMultisigs() external onlyDefender {
+	function disableAllMultisigs() public onlyDefender {
 		MultisigManager mm = MultisigManager(getContractAddress("MultisigManager"));
 		uint256 count = mm.getCount();
 

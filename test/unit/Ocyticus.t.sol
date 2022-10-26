@@ -11,22 +11,31 @@ contract OcyticusTest is BaseTest {
 	function testPauseEverything() public {
 		vm.prank(guardian);
 		ocyticus.pauseEverything();
-		assert(dao.getContractPaused("TokenggAVAX"));
+		assertTrue(dao.getContractPaused("TokenggAVAX"));
+		assertTrue(dao.getContractPaused("MinipoolManager"));
+
+		vm.expectRevert(MultisigManager.NoEnabledMultisigFound.selector);
+		multisigMgr.requireNextActiveMultisig();
 
 		vm.prank(guardian);
 		ocyticus.resumeEverything();
-		console.log("paused?", dao.getContractPaused("TokenggAVAX"));
+		assertFalse(dao.getContractPaused("TokenggAVAX"));
+		assertFalse(dao.getContractPaused("MinipoolManager"));
+
+		// Multisigs dont get auto-re-enabled. We need to do that manually.
+		vm.expectRevert(MultisigManager.NoEnabledMultisigFound.selector);
+		multisigMgr.requireNextActiveMultisig();
 	}
 
 	function testAddRemoveDefender() public {
 		address alice = getActor("alice");
 		vm.prank(guardian);
 		ocyticus.addDefender(alice);
-		assert(ocyticus.defenders(alice));
+		assertTrue(ocyticus.defenders(alice));
 
 		vm.prank(guardian);
 		ocyticus.removeDefender(alice);
-		assert(!ocyticus.defenders(alice));
+		assertFalse(ocyticus.defenders(alice));
 	}
 
 	function testDisableAllMultisigs() public {
