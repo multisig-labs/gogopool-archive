@@ -565,18 +565,18 @@ contract MinipoolManagerTest is BaseTest {
 	}
 
 	function testExpectedRewards() public {
-		uint256 amt = minipoolMgr.expectedAVAXRewardsAmt(365 days, 1_000 ether);
+		uint256 amt = minipoolMgr.getExpectedAVAXRewardsAmt(365 days, 1_000 ether);
 		assertEq(amt, 100 ether);
-		amt = minipoolMgr.expectedAVAXRewardsAmt((365 days / 2), 1_000 ether);
+		amt = minipoolMgr.getExpectedAVAXRewardsAmt((365 days / 2), 1_000 ether);
 		assertEq(amt, 50 ether);
-		amt = minipoolMgr.expectedAVAXRewardsAmt((365 days / 3), 1_000 ether);
+		amt = minipoolMgr.getExpectedAVAXRewardsAmt((365 days / 3), 1_000 ether);
 		assertEq(amt, 33333333333333333333);
 
 		// Set 5% annual expected rewards rate
 		dao.setExpectedAVAXRewardsRate(5e16);
-		amt = minipoolMgr.expectedAVAXRewardsAmt(365 days, 1_000 ether);
+		amt = minipoolMgr.getExpectedAVAXRewardsAmt(365 days, 1_000 ether);
 		assertEq(amt, 50 ether);
-		amt = minipoolMgr.expectedAVAXRewardsAmt((365 days / 3), 1_000 ether);
+		amt = minipoolMgr.getExpectedAVAXRewardsAmt((365 days / 3), 1_000 ether);
 		assertEq(amt, 16.666666666666666666 ether);
 	}
 
@@ -653,20 +653,20 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(minipoolMgr.getMinipoolCount(), 10);
 	}
 
-	function testCalculateSlashAmt() public {
+	function testCalculateGGPSlashAmt() public {
 		vm.prank(rialto);
 		oracle.setGGPPrice(1 ether, block.timestamp);
-		uint256 slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
+		uint256 slashAmt = minipoolMgr.calculateGGPSlashAmt(100 ether);
 		assertEq(slashAmt, 100 ether);
 
 		vm.prank(rialto);
 		oracle.setGGPPrice(0.5 ether, block.timestamp);
-		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
+		slashAmt = minipoolMgr.calculateGGPSlashAmt(100 ether);
 		assertEq(slashAmt, 200 ether);
 
 		vm.prank(rialto);
 		oracle.setGGPPrice(3 ether, block.timestamp);
-		slashAmt = minipoolMgr.calculateSlashAmt(100 ether);
+		slashAmt = minipoolMgr.calculateGGPSlashAmt(100 ether);
 		assertEq(slashAmt, 33333333333333333333);
 	}
 

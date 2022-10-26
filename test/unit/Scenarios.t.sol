@@ -132,8 +132,8 @@ contract ScenariosTest is BaseTest {
 		assertEq((nodeOp1.balance - priorBalance_nodeOp1), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
 
 		// nodeOp1 should have been slashed
-		uint256 expectedAvaxRewardsAmt = minipoolMgr.expectedAVAXRewardsAmt(mp.duration, depositAmt);
-		uint256 slashedGGPAmt = minipoolMgr.calculateSlashAmt(expectedAvaxRewardsAmt);
+		uint256 expectedAvaxRewardsAmt = minipoolMgr.getExpectedAVAXRewardsAmt(mp.duration, depositAmt);
+		uint256 slashedGGPAmt = minipoolMgr.calculateGGPSlashAmt(expectedAvaxRewardsAmt);
 		assertEq(staking.getGGPStake(nodeOp1), ggpStakeAmt - slashedGGPAmt);
 
 		// Skip forward 2 cycles so all rewards are available
@@ -179,7 +179,7 @@ contract ScenariosTest is BaseTest {
 		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
 		skip(mp.duration);
 		uint256 totalAvax = mp.avaxNodeOpAmt + mp.avaxLiquidStakerAmt;
-		uint256 rewards = minipoolMgr.expectedAVAXRewardsAmt(mp.duration, totalAvax);
+		uint256 rewards = minipoolMgr.getExpectedAVAXRewardsAmt(mp.duration, totalAvax);
 		deal(rialto, rialto.balance + rewards);
 		minipoolMgr.recordStakingEnd{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
 		vm.stopPrank();
