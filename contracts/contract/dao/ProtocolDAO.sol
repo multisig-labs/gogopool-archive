@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.13;
 
+import "../Base.sol";
 import {TokenGGP} from "../tokens/TokenGGP.sol";
-import {Base} from "../Base.sol";
 import {Storage} from "../Storage.sol";
 
 contract ProtocolDAO is Base {
+	error NotDAOMember();
+
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
@@ -13,7 +15,9 @@ contract ProtocolDAO is Base {
 	// modifier that checks if the caller is a dao member
 	modifier isDaoMember() {
 		TokenGGP token = TokenGGP(getContractAddress("tokenGGP"));
-		require(token.balanceOf(msg.sender) > 0, "You do not own any GGP tokens");
+		if (token.balanceOf(msg.sender) == 0) {
+			revert NotDAOMember();
+		}
 		_;
 	}
 

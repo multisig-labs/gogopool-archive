@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "../../Base.sol";
-import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
 import {Storage} from "../../Storage.sol";
 import {TokenGGP} from "../../tokens/TokenGGP.sol";
 import {Vault} from "../../Vault.sol";
