@@ -13,7 +13,7 @@ contract MultisigManagerTest is BaseTest {
 		uint256 initCount = multisigMgr.getCount();
 		address rialto1 = getActor("rialto1");
 
-		// TODO This isnt working?
+		// This isnt working?
 		// vm.expectRevert(MultisigManager.MustBeGuardian.selector);
 		bytes memory customError = abi.encodeWithSignature("MustBeGuardian()");
 		vm.expectRevert(customError);
