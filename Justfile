@@ -43,18 +43,17 @@ deploy contracts="": (_ping ETH_RPC_URL)
 node:
 	HARDHAT_NETWORK=hardhat npx hardhat node
 
-alias test := test-forge
 # Run forge unit tests
-test-forge contract="." test="." *flags="":
+test contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
 	forge test --allow-failure --block-timestamp `date '+%s'` --match-contract {{contract}} --match-test {{test}} {{flags}}
 
 # Run forge unit tests whenever file changes occur
-test-forge-watch contract="." test="." *flags="":
+test-watch contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
 	forge test --allow-failure --block-timestamp `date '+%s'` --match-contract {{contract}} --match-test {{test}} {{flags}} --watch contracts test --watch-delay 1
 
-# Deploy contracts and init actors to a fresh EVM
+# Compile and Deploy contracts and init actors to a fresh EVM
 setup-evm:
 	just clean
 	just deploy-base
@@ -77,10 +76,6 @@ cast cmd contractName sig *args:
 # Run solhint linter and output table of results
 solhint:
 	npx solhint -f table contracts/**/*.sol
-
-# Allow the Remix ide to connect to your local files
-remix:
-	remixd -s `pwd` --remix-ide https://remix.ethereum.org
 
 # Generate Go code interface for contracts
 gen: compile

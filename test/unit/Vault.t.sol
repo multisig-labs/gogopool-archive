@@ -8,5 +8,6 @@ contract VaultTest is BaseTest {
 		super.setUp();
 	}
 
+	// TODO 2022-10-26 We should have tests written for the Vault
 	function testTransferAvax() public {}
 }
