@@ -2,9 +2,10 @@
 pragma solidity 0.8.17;
 
 import "./Base.sol";
-import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";
 import {Storage} from "./Storage.sol";
+
+import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 // !!!WARNING!!! The Vault contract must not be upgraded
 // AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances
@@ -20,7 +21,6 @@ contract Vault is Base {
 	event AVAXDeposited(string indexed by, uint256 amount);
 	event AVAXTransfer(string indexed from, string indexed to, uint256 amount);
 	event AVAXWithdrawn(string indexed by, uint256 amount);
-	event TokenBurned(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
 	event TokenDeposited(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
 	event TokenTransfer(bytes32 indexed by, bytes32 indexed to, address indexed tokenAddress, uint256 amount);
 	event TokenWithdrawn(bytes32 indexed by, address indexed tokenAddress, uint256 amount);
@@ -146,17 +146,6 @@ contract Vault is Base {
 
 		tokenBalances[contractKeyFrom] = tokenBalances[contractKeyFrom] - amount;
 		tokenBalances[contractKeyTo] = tokenBalances[contractKeyTo] + amount;
-	}
-
-	/// @notice Burns an amount of a token that implements a burn(uint256) method
-	function burnToken(ERC20Burnable tokenAddress, uint256 amount) external onlyLatestNetworkContract {
-		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), tokenAddress));
-
-		emit TokenBurned(contractKey, address(tokenAddress), amount);
-
-		tokenBalances[contractKey] = tokenBalances[contractKey] - amount;
-		ERC20Burnable tokenContract = ERC20Burnable(tokenAddress);
-		tokenContract.burn(amount);
 	}
 
 	/// @notice Get the AVAX balance held by a network contract

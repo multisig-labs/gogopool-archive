@@ -75,7 +75,7 @@ abstract contract BaseTest is Test {
 		oracle = new Oracle(store);
 		registerContract(store, "Oracle", address(oracle));
 
-		ggp = new TokenGGP(store);
+		ggp = new TokenGGP();
 		registerContract(store, "TokenGGP", address(ggp));
 
 		wavax = new WAVAX();

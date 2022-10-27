@@ -24,7 +24,7 @@ const contracts: IFU = {
 	Oracle: ["Storage"],
 	ProtocolDAO: ["Storage"],
 	MultisigManager: ["Storage"],
-	TokenGGP: ["Storage"],
+	TokenGGP: [],
 	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
 	RewardsPool: ["Storage"],
