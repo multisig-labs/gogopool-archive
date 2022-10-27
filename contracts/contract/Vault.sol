@@ -28,14 +28,12 @@ contract Vault is Base {
 	mapping(string => uint256) private avaxBalances;
 	mapping(bytes32 => uint256) private tokenBalances;
 
-	// Construct
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
 	}
 
-	// Accept an AVAX deposit from a network contract
+	/// @notice Accept an AVAX deposit from a network contract
 	function depositAVAX() external payable onlyLatestNetworkContract {
-		// Valid amount?
 		if (msg.value == 0) {
 			revert InvalidAmount();
 		}
@@ -47,7 +45,7 @@ contract Vault is Base {
 		avaxBalances[contractName] = avaxBalances[contractName] + msg.value;
 	}
 
-	// Withdraw an amount of AVAX to a network contract
+	/// @notice Withdraw an amount of AVAX to a network contract
 	function withdrawAVAX(uint256 amount) external onlyLatestNetworkContract {
 		if (amount == 0) {
 			revert InvalidAmount();
@@ -65,8 +63,8 @@ contract Vault is Base {
 		withdrawer.receiveWithdrawalAVAX{value: amount}();
 	}
 
-	// Transfer AVAX from one contract to another
-	// No funds actually move, just bookeeping
+	/// @notice Transfer AVAX from one contract to another
+	/// @dev No funds actually move, just bookeeping
 	function transferAVAX(
 		string memory fromContractName,
 		string memory toContractName,
@@ -86,8 +84,8 @@ contract Vault is Base {
 		avaxBalances[toContractName] = avaxBalances[toContractName] + amount;
 	}
 
-	// Accept a token deposit and assign its balance to a network contract
-	// (saves a large amount of gas this way through not needing a double token transfer via a network contract first)
+	/// @notice Accept a token deposit and assign its balance to a network contract
+	/// @dev (saves a large amount of gas this way through not needing a double token transfer via a network contract first)
 	function depositToken(
 		string memory networkContractName,
 		ERC20 tokenContract,
@@ -108,7 +106,7 @@ contract Vault is Base {
 		tokenBalances[contractKey] = tokenBalances[contractKey] + amount;
 	}
 
-	// Withdraw an amount of a ERC20 token to an address
+	/// @notice Withdraw an amount of a ERC20 token to an address
 	function withdrawToken(
 		address withdrawalAddress,
 		ERC20 tokenAddress,
@@ -129,7 +127,7 @@ contract Vault is Base {
 		}
 	}
 
-	// Transfer token from one contract to another
+	/// @notice Transfer token from one contract to another
 	function transferToken(
 		string memory networkContractName,
 		ERC20 tokenAddress,
@@ -150,7 +148,7 @@ contract Vault is Base {
 		tokenBalances[contractKeyTo] = tokenBalances[contractKeyTo] + amount;
 	}
 
-	// Burns an amount of a token that implements a burn(uint256) method
+	/// @notice Burns an amount of a token that implements a burn(uint256) method
 	function burnToken(ERC20Burnable tokenAddress, uint256 amount) external onlyLatestNetworkContract {
 		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), tokenAddress));
 
@@ -161,12 +159,12 @@ contract Vault is Base {
 		tokenContract.burn(amount);
 	}
 
-	// Get a contract's AVAX balance by address
+	/// @notice Get the AVAX balance held by a network contract
 	function balanceOf(string memory networkContractName) external view returns (uint256) {
 		return avaxBalances[networkContractName];
 	}
 
-	// Get the balance of a token held by a network contract
+	/// @notice Get the balance of a token held by a network contract
 	function balanceOfToken(string memory networkContractName, ERC20 tokenAddress) external view returns (uint256) {
 		return tokenBalances[keccak256(abi.encodePacked(networkContractName, tokenAddress))];
 	}
