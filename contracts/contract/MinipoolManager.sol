@@ -202,13 +202,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 			revert InsufficientAVAXForMinipoolCreation();
 		}
 
-		// Get a Rialto multisig to assign for this minipool
-		MultisigManager multisigManager = MultisigManager(getContractAddress("MultisigManager"));
-		address multisig = multisigManager.requireNextActiveMultisig();
-
-		Vault vault = Vault(getContractAddress("Vault"));
-		vault.depositAVAX{value: msg.value}();
-
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.increaseAVAXStake(msg.sender, msg.value);
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
@@ -217,6 +210,10 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		if (ratio < dao.getMinCollateralizationRatio()) {
 			revert InsufficientGGPCollateralization();
 		}
+
+		// Get a Rialto multisig to assign for this minipool
+		MultisigManager multisigManager = MultisigManager(getContractAddress("MultisigManager"));
+		address multisig = multisigManager.requireNextActiveMultisig();
 
 		// Create or update a minipool record for nodeID
 		// If nodeID exists, only allow overwriting if node is finished or canceled
@@ -243,6 +240,9 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".delegationFee")), delegationFee);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
+
+		Vault vault = Vault(getContractAddress("Vault"));
+		vault.depositAVAX{value: msg.value}();
 	}
 
 	/// @notice Owner of a minipool can cancel the (prelaunch) minipool
@@ -259,17 +259,16 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		requireValidStateTransition(minipoolIndex, MinipoolStatus.Finished);
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Finished));
 
-		Vault vault = Vault(getContractAddress("Vault"));
-
 		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpAmt")));
 		uint256 avaxNodeOpRewardAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpRewardAmt")));
 		uint256 totalAvaxAmt = avaxNodeOpAmt + avaxNodeOpRewardAmt;
 
-		vault.withdrawAVAX(totalAvaxAmt);
-		owner.safeTransferETH(totalAvaxAmt);
-
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
+
+		Vault vault = Vault(getContractAddress("Vault"));
+		vault.withdrawAVAX(totalAvaxAmt);
+		owner.safeTransferETH(totalAvaxAmt);
 	}
 
 	//
@@ -523,11 +522,11 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		staking.resetAVAXAssignedHighWater(owner);
 		staking.decreaseMinipoolCount(owner);
 
+		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);
+
 		Vault vault = Vault(getContractAddress("Vault"));
 		vault.withdrawAVAX(avaxNodeOpAmt);
 		owner.safeTransferETH(avaxNodeOpAmt);
-
-		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);
 	}
 
 	// Extracted this because of "stack too deep" errors.
@@ -539,9 +538,11 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		uint256 expectedAVAXRewardsAmt = getExpectedAVAXRewardsAmt(duration, avaxLiquidStakerAmt);
 		uint256 slashGGPAmt = calculateGGPSlashAmt(expectedAVAXRewardsAmt);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".ggpSlashAmt")), slashGGPAmt);
+
+		emit GGPSlashed(nodeID, slashGGPAmt);
+
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.slashGGP(owner, slashGGPAmt);
-		emit GGPSlashed(nodeID, slashGGPAmt);
 	}
 
 	// Calculate how much GGP should be slashed given an expected avaxRewardAmt

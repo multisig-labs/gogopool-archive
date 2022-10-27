@@ -37,13 +37,13 @@ contract Storage {
 	}
 
 	// Initiate transfer of guardianship to a new address
-	function setGuardian(address _newAddress) external {
+	function setGuardian(address newAddress) external {
 		// Check tx comes from current guardian
 		if (msg.sender != guardian) {
 			revert MustBeGuardian();
 		}
 		// Store new address awaiting confirmation
-		newGuardian = _newAddress;
+		newGuardian = newAddress;
 	}
 
 	// Get guardian address
@@ -68,111 +68,111 @@ contract Storage {
 	// GET
 	//
 
-	function getAddress(bytes32 _key) external view returns (address r) {
-		return addressStorage[_key];
+	function getAddress(bytes32 key) external view returns (address r) {
+		return addressStorage[key];
 	}
 
-	function getBool(bytes32 _key) external view returns (bool r) {
-		return booleanStorage[_key];
+	function getBool(bytes32 key) external view returns (bool r) {
+		return booleanStorage[key];
 	}
 
-	function getBytes(bytes32 _key) external view returns (bytes memory) {
-		return bytesStorage[_key];
+	function getBytes(bytes32 key) external view returns (bytes memory) {
+		return bytesStorage[key];
 	}
 
-	function getBytes32(bytes32 _key) external view returns (bytes32 r) {
-		return bytes32Storage[_key];
+	function getBytes32(bytes32 key) external view returns (bytes32 r) {
+		return bytes32Storage[key];
 	}
 
-	function getInt(bytes32 _key) external view returns (int256 r) {
-		return intStorage[_key];
+	function getInt(bytes32 key) external view returns (int256 r) {
+		return intStorage[key];
 	}
 
-	function getString(bytes32 _key) external view returns (string memory) {
-		return stringStorage[_key];
+	function getString(bytes32 key) external view returns (string memory) {
+		return stringStorage[key];
 	}
 
-	function getUint(bytes32 _key) external view returns (uint256 r) {
-		return uintStorage[_key];
+	function getUint(bytes32 key) external view returns (uint256 r) {
+		return uintStorage[key];
 	}
 
 	//
 	// SET
 	//
 
-	function setAddress(bytes32 _key, address _value) external onlyLatestNetworkContract {
-		addressStorage[_key] = _value;
+	function setAddress(bytes32 key, address value) external onlyLatestNetworkContract {
+		addressStorage[key] = value;
 	}
 
-	function setBool(bytes32 _key, bool _value) external onlyLatestNetworkContract {
-		booleanStorage[_key] = _value;
+	function setBool(bytes32 key, bool value) external onlyLatestNetworkContract {
+		booleanStorage[key] = value;
 	}
 
-	function setBytes(bytes32 _key, bytes calldata _value) external onlyLatestNetworkContract {
-		bytesStorage[_key] = _value;
+	function setBytes(bytes32 key, bytes calldata value) external onlyLatestNetworkContract {
+		bytesStorage[key] = value;
 	}
 
-	function setBytes32(bytes32 _key, bytes32 _value) external onlyLatestNetworkContract {
-		bytes32Storage[_key] = _value;
+	function setBytes32(bytes32 key, bytes32 value) external onlyLatestNetworkContract {
+		bytes32Storage[key] = value;
 	}
 
-	function setInt(bytes32 _key, int256 _value) external onlyLatestNetworkContract {
-		intStorage[_key] = _value;
+	function setInt(bytes32 key, int256 value) external onlyLatestNetworkContract {
+		intStorage[key] = value;
 	}
 
-	function setString(bytes32 _key, string calldata _value) external onlyLatestNetworkContract {
-		stringStorage[_key] = _value;
+	function setString(bytes32 key, string calldata value) external onlyLatestNetworkContract {
+		stringStorage[key] = value;
 	}
 
-	function setUint(bytes32 _key, uint256 _value) external onlyLatestNetworkContract {
-		uintStorage[_key] = _value;
+	function setUint(bytes32 key, uint256 value) external onlyLatestNetworkContract {
+		uintStorage[key] = value;
 	}
 
 	//
 	// DELETE
 	//
 
-	function deleteAddress(bytes32 _key) external onlyLatestNetworkContract {
-		delete addressStorage[_key];
+	function deleteAddress(bytes32 key) external onlyLatestNetworkContract {
+		delete addressStorage[key];
 	}
 
-	function deleteBool(bytes32 _key) external onlyLatestNetworkContract {
-		delete booleanStorage[_key];
+	function deleteBool(bytes32 key) external onlyLatestNetworkContract {
+		delete booleanStorage[key];
 	}
 
-	function deleteBytes(bytes32 _key) external onlyLatestNetworkContract {
-		delete bytesStorage[_key];
+	function deleteBytes(bytes32 key) external onlyLatestNetworkContract {
+		delete bytesStorage[key];
 	}
 
-	function deleteBytes32(bytes32 _key) external onlyLatestNetworkContract {
-		delete bytes32Storage[_key];
+	function deleteBytes32(bytes32 key) external onlyLatestNetworkContract {
+		delete bytes32Storage[key];
 	}
 
-	function deleteInt(bytes32 _key) external onlyLatestNetworkContract {
-		delete intStorage[_key];
+	function deleteInt(bytes32 key) external onlyLatestNetworkContract {
+		delete intStorage[key];
 	}
 
-	function deleteString(bytes32 _key) external onlyLatestNetworkContract {
-		delete stringStorage[_key];
+	function deleteString(bytes32 key) external onlyLatestNetworkContract {
+		delete stringStorage[key];
 	}
 
-	function deleteUint(bytes32 _key) external onlyLatestNetworkContract {
-		delete uintStorage[_key];
+	function deleteUint(bytes32 key) external onlyLatestNetworkContract {
+		delete uintStorage[key];
 	}
 
 	//
 	// ADD / SUBTRACT HELPERS
 	//
 
-	/// @param _key The key for the record
-	/// @param _amount An amount to add to the record's value
-	function addUint(bytes32 _key, uint256 _amount) external onlyLatestNetworkContract {
-		uintStorage[_key] = uintStorage[_key] + _amount;
+	/// @param key The key for the record
+	/// @param amount An amount to add to the record's value
+	function addUint(bytes32 key, uint256 amount) external onlyLatestNetworkContract {
+		uintStorage[key] = uintStorage[key] + amount;
 	}
 
-	/// @param _key The key for the record
-	/// @param _amount An amount to subtract from the record's value
-	function subUint(bytes32 _key, uint256 _amount) external onlyLatestNetworkContract {
-		uintStorage[_key] = uintStorage[_key] - _amount;
+	/// @param key The key for the record
+	/// @param amount An amount to subtract from the record's value
+	function subUint(bytes32 key, uint256 amount) external onlyLatestNetworkContract {
+		uintStorage[key] = uintStorage[key] - amount;
 	}
 }

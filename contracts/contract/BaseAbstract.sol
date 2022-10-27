@@ -40,8 +40,8 @@ abstract contract BaseAbstract {
 	/**
 	 * @dev Throws if called by any sender that doesn't match one of the supplied contract or is the latest version of that contract
 	 */
-	modifier onlyLatestContract(string memory _contractName, address _contractAddress) {
-		if (_contractAddress != getAddress(keccak256(abi.encodePacked("contract.address", _contractName)))) {
+	modifier onlyLatestContract(string memory contractName, address contractAddress) {
+		if (contractAddress != getAddress(keccak256(abi.encodePacked("contract.address", contractName)))) {
 			revert InvalidOrOutdatedContract();
 		}
 		_;
@@ -50,8 +50,8 @@ abstract contract BaseAbstract {
 	// I want a modifier that allows the guardian or
 	// ocyticus to be able to call
 
-	modifier guardianOrLatestContract(string memory _contractName, address _contractAddress) {
-		bool isContract = _contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", _contractName)));
+	modifier guardianOrLatestContract(string memory contractName, address contractAddress) {
+		bool isContract = contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		bool isGuardian = msg.sender == gogoStorage.getGuardian();
 
 		if (!(isGuardian || isContract)) {
@@ -91,8 +91,8 @@ abstract contract BaseAbstract {
 	/*** Methods **********************************************************/
 
 	/// @dev Get the address of a network contract by name
-	function getContractAddress(string memory _contractName) public view returns (address) {
-		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", _contractName)));
+	function getContractAddress(string memory contractName) public view returns (address) {
+		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		if (contractAddress == address(0x0)) {
 			revert ContractNotFound();
 		}
@@ -100,14 +100,14 @@ abstract contract BaseAbstract {
 	}
 
 	/// @dev Get the address of a network contract by name (returns address(0x0) instead of reverting if contract does not exist)
-	function getContractAddressUnsafe(string memory _contractName) internal view returns (address) {
-		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", _contractName)));
+	function getContractAddressUnsafe(string memory contractName) internal view returns (address) {
+		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		return contractAddress;
 	}
 
 	/// @dev Get the name of a network contract by address
-	function getContractName(address _contractAddress) internal view returns (string memory) {
-		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", _contractAddress)));
+	function getContractName(address contractAddress) internal view returns (string memory) {
+		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", contractAddress)));
 		if (bytes(contractName).length == 0) {
 			revert ContractNotFound();
 		}
@@ -115,15 +115,15 @@ abstract contract BaseAbstract {
 	}
 
 	/// @dev Get revert error message from a .call method
-	function getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
+	function getRevertMsg(bytes memory returnData) internal pure returns (string memory) {
 		// If the _res length is less than 68, then the transaction failed silently (without a revert message)
-		if (_returnData.length < 68) return "Transaction reverted silently";
+		if (returnData.length < 68) return "Transaction reverted silently";
 		// solhint-disable-next-line no-inline-assembly
 		assembly {
 			// Slice the sighash.
-			_returnData := add(_returnData, 0x04)
+			returnData := add(returnData, 0x04)
 		}
-		return abi.decode(_returnData, (string)); // All that remains is the revert string
+		return abi.decode(returnData, (string)); // All that remains is the revert string
 	}
 
 	/*** GoGo Storage Methods ****************************************/
@@ -135,94 +135,94 @@ abstract contract BaseAbstract {
 		return gogoStorage.getAddress(key);
 	}
 
-	function getBool(bytes32 _key) internal view returns (bool) {
-		return gogoStorage.getBool(_key);
+	function getBool(bytes32 key) internal view returns (bool) {
+		return gogoStorage.getBool(key);
 	}
 
-	function getBytes(bytes32 _key) internal view returns (bytes memory) {
-		return gogoStorage.getBytes(_key);
+	function getBytes(bytes32 key) internal view returns (bytes memory) {
+		return gogoStorage.getBytes(key);
 	}
 
-	function getBytes32(bytes32 _key) internal view returns (bytes32) {
-		return gogoStorage.getBytes32(_key);
+	function getBytes32(bytes32 key) internal view returns (bytes32) {
+		return gogoStorage.getBytes32(key);
 	}
 
-	function getInt(bytes32 _key) internal view returns (int256) {
-		return gogoStorage.getInt(_key);
+	function getInt(bytes32 key) internal view returns (int256) {
+		return gogoStorage.getInt(key);
 	}
 
-	function getUint(bytes32 _key) internal view returns (uint256) {
-		return gogoStorage.getUint(_key);
+	function getUint(bytes32 key) internal view returns (uint256) {
+		return gogoStorage.getUint(key);
 	}
 
-	function getString(bytes32 _key) internal view returns (string memory) {
-		return gogoStorage.getString(_key);
+	function getString(bytes32 key) internal view returns (string memory) {
+		return gogoStorage.getString(key);
 	}
 
 	/// @dev Storage set methods
-	function setAddress(bytes32 _key, address _value) internal {
-		gogoStorage.setAddress(_key, _value);
+	function setAddress(bytes32 key, address value) internal {
+		gogoStorage.setAddress(key, value);
 	}
 
-	function setBool(bytes32 _key, bool _value) internal {
-		gogoStorage.setBool(_key, _value);
+	function setBool(bytes32 key, bool value) internal {
+		gogoStorage.setBool(key, value);
 	}
 
-	function setBytes(bytes32 _key, bytes memory _value) internal {
-		gogoStorage.setBytes(_key, _value);
+	function setBytes(bytes32 key, bytes memory value) internal {
+		gogoStorage.setBytes(key, value);
 	}
 
-	function setBytes32(bytes32 _key, bytes32 _value) internal {
-		gogoStorage.setBytes32(_key, _value);
+	function setBytes32(bytes32 key, bytes32 value) internal {
+		gogoStorage.setBytes32(key, value);
 	}
 
-	function setInt(bytes32 _key, int256 _value) internal {
-		gogoStorage.setInt(_key, _value);
+	function setInt(bytes32 key, int256 value) internal {
+		gogoStorage.setInt(key, value);
 	}
 
-	function setUint(bytes32 _key, uint256 _value) internal {
-		gogoStorage.setUint(_key, _value);
+	function setUint(bytes32 key, uint256 value) internal {
+		gogoStorage.setUint(key, value);
 	}
 
-	function setString(bytes32 _key, string memory _value) internal {
-		gogoStorage.setString(_key, _value);
+	function setString(bytes32 key, string memory value) internal {
+		gogoStorage.setString(key, value);
 	}
 
 	/// @dev Storage delete methods
-	function deleteAddress(bytes32 _key) internal {
-		gogoStorage.deleteAddress(_key);
+	function deleteAddress(bytes32 key) internal {
+		gogoStorage.deleteAddress(key);
 	}
 
-	function deleteBool(bytes32 _key) internal {
-		gogoStorage.deleteBool(_key);
+	function deleteBool(bytes32 key) internal {
+		gogoStorage.deleteBool(key);
 	}
 
-	function deleteBytes(bytes32 _key) internal {
-		gogoStorage.deleteBytes(_key);
+	function deleteBytes(bytes32 key) internal {
+		gogoStorage.deleteBytes(key);
 	}
 
-	function deleteBytes32(bytes32 _key) internal {
-		gogoStorage.deleteBytes32(_key);
+	function deleteBytes32(bytes32 key) internal {
+		gogoStorage.deleteBytes32(key);
 	}
 
-	function deleteInt(bytes32 _key) internal {
-		gogoStorage.deleteInt(_key);
+	function deleteInt(bytes32 key) internal {
+		gogoStorage.deleteInt(key);
 	}
 
-	function deleteUint(bytes32 _key) internal {
-		gogoStorage.deleteUint(_key);
+	function deleteUint(bytes32 key) internal {
+		gogoStorage.deleteUint(key);
 	}
 
-	function deleteString(bytes32 _key) internal {
-		gogoStorage.deleteString(_key);
+	function deleteString(bytes32 key) internal {
+		gogoStorage.deleteString(key);
 	}
 
 	/// @dev Storage arithmetic methods
-	function addUint(bytes32 _key, uint256 _amount) internal {
-		gogoStorage.addUint(_key, _amount);
+	function addUint(bytes32 key, uint256 amount) internal {
+		gogoStorage.addUint(key, amount);
 	}
 
-	function subUint(bytes32 _key, uint256 _amount) internal {
-		gogoStorage.subUint(_key, _amount);
+	function subUint(bytes32 key, uint256 amount) internal {
+		gogoStorage.subUint(key, amount);
 	}
 }

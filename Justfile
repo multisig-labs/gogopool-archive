@@ -38,6 +38,13 @@ deploy-base: (_ping ETH_RPC_URL)
 deploy contracts="": (_ping ETH_RPC_URL)
 	DEPLOY_CONTRACTS="{{contracts}}" npx hardhat run --network {{HARDHAT_NETWORK}} scripts/deploy.ts
 
+# Compile and Deploy contracts and init actors to a fresh EVM
+setup-evm:
+	just clean
+	just deploy-base
+	just deploy
+	just task debug:setup
+
 # HARDHAT_NETWORK should be "localhost" for tasks, but must be "hardhat" when starting the node
 # Start a local hardhat EVM node
 node:
@@ -53,14 +60,6 @@ test-watch contract="." test="." *flags="":
 	@# Using date here to give some randomness to tests that use block.timestamp
 	forge test --allow-failure --block-timestamp `date '+%s'` --match-contract {{contract}} --match-test {{test}} {{flags}} --watch contracts test --watch-delay 1
 
-# Compile and Deploy contracts and init actors to a fresh EVM
-setup-evm:
-	just clean
-	just deploy-base
-	just deploy
-	just task debug:setup
-
-# Having these recipies named the same as the ones in the anr repo makes copypasta of scenarios easier
 # Run a hardhat task (or list all available tasks)
 task *cmd:
 	npx hardhat {{cmd}}
@@ -77,7 +76,12 @@ cast cmd contractName sig *args:
 solhint:
 	npx solhint -f table contracts/**/*.sol
 
-# Generate Go code interface for contracts
+# Run slither static analysis
+slither:
+	slither . \
+		--filter-paths "(lib/|openzeppelin|ERC|Multicall|OneInchMock.sol|WAVAX.sol|RialtoSimulator.sol)"
+
+# Generate Go code interface for contracts to /gen
 gen: compile
 	#!/bin/bash
 	CORETH=0.8.16

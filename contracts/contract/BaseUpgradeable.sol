@@ -5,7 +5,7 @@ import "./BaseAbstract.sol";
 import {Storage} from "./Storage.sol";
 
 contract BaseUpgradeable is BaseAbstract {
-	function __BaseUpgradeable_init(Storage _gogoStorageAddress) internal {
-		gogoStorage = Storage(_gogoStorageAddress);
+	function __BaseUpgradeable_init(Storage gogoStorageAddress) internal {
+		gogoStorage = Storage(gogoStorageAddress);
 	}
 }

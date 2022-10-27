@@ -32,7 +32,7 @@ contract ProtocolDAO is Base {
 
 		//RewardsPool Settings
 		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
-		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18000000 ether);
+		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
@@ -47,7 +47,7 @@ contract ProtocolDAO is Base {
 		//TokenGGP settings
 
 		//Minipool settings
-		setUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"), 2000 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"), 2_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);
@@ -100,12 +100,12 @@ contract ProtocolDAO is Base {
 	 * Get the percentage a contract is owed this rewards cycle
 	 * @return uint256 Rewards percentage a contract will receive this cycle
 	 */
-	function getClaimingContractPct(string memory _claimingContract) public view returns (uint256) {
-		return getUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", _claimingContract)));
+	function getClaimingContractPct(string memory claimingContract) public view returns (uint256) {
+		return getUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", claimingContract)));
 	}
 
-	function setClaimingContractPct(string memory _claimingContract, uint256 decimal) public onlyGuardian {
-		setUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", _claimingContract)), decimal);
+	function setClaimingContractPct(string memory claimingContract, uint256 decimal) public onlyGuardian {
+		setUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", claimingContract)), decimal);
 	}
 
 	//*** GGP Inflation */

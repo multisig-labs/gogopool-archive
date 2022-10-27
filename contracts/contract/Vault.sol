@@ -39,9 +39,12 @@ contract Vault is Base {
 		if (msg.value == 0) {
 			revert InvalidAmount();
 		}
+
 		string memory contractName = getContractName(msg.sender);
-		avaxBalances[contractName] = avaxBalances[contractName] + msg.value;
+
 		emit AVAXDeposited(contractName, msg.value);
+
+		avaxBalances[contractName] = avaxBalances[contractName] + msg.value;
 	}
 
 	// Withdraw an amount of AVAX to a network contract
@@ -49,14 +52,17 @@ contract Vault is Base {
 		if (amount == 0) {
 			revert InvalidAmount();
 		}
+
 		string memory contractName = getContractName(msg.sender);
+
+		emit AVAXWithdrawn(contractName, amount);
+
 		if (avaxBalances[contractName] < amount) {
 			revert InsufficientContractBalance();
 		}
 		avaxBalances[contractName] = avaxBalances[contractName] - amount;
 		IWithdrawer withdrawer = IWithdrawer(msg.sender);
 		withdrawer.receiveWithdrawalAVAX{value: amount}();
-		emit AVAXWithdrawn(contractName, amount);
 	}
 
 	// Transfer AVAX from one contract to another
@@ -69,90 +75,99 @@ contract Vault is Base {
 		if (amount == 0) {
 			revert InvalidAmount();
 		}
+
+		emit AVAXTransfer(fromContractName, toContractName, amount);
+
 		// Make sure the contracts are valid, will revert if not
 		getContractAddress(fromContractName);
 		getContractAddress(toContractName);
 
 		avaxBalances[fromContractName] = avaxBalances[fromContractName] - amount;
 		avaxBalances[toContractName] = avaxBalances[toContractName] + amount;
-		emit AVAXTransfer(fromContractName, toContractName, amount);
 	}
 
 	// Accept a token deposit and assign its balance to a network contract
 	// (saves a large amount of gas this way through not needing a double token transfer via a network contract first)
 	function depositToken(
-		string memory _networkContractName,
-		ERC20 _tokenContract,
-		uint256 _amount
+		string memory networkContractName,
+		ERC20 tokenContract,
+		uint256 amount
 	) external {
-		if (_amount == 0) {
+		if (amount == 0) {
 			revert InvalidAmount();
 		}
 		// Make sure the network contract is valid (will revert if not)
-		getContractAddress(_networkContractName);
-		bytes32 contractKey = keccak256(abi.encodePacked(_networkContractName, address(_tokenContract)));
-		if (!_tokenContract.transferFrom(msg.sender, address(this), _amount)) {
+		getContractAddress(networkContractName);
+		bytes32 contractKey = keccak256(abi.encodePacked(networkContractName, address(tokenContract)));
+
+		emit TokenDeposited(contractKey, address(tokenContract), amount);
+
+		if (!tokenContract.transferFrom(msg.sender, address(this), amount)) {
 			revert TokenTransferFailed();
 		}
-		tokenBalances[contractKey] = tokenBalances[contractKey] + _amount;
-		emit TokenDeposited(contractKey, address(_tokenContract), _amount);
+		tokenBalances[contractKey] = tokenBalances[contractKey] + amount;
 	}
 
 	// Withdraw an amount of a ERC20 token to an address
 	function withdrawToken(
-		address _withdrawalAddress,
-		ERC20 _tokenAddress,
-		uint256 _amount
+		address withdrawalAddress,
+		ERC20 tokenAddress,
+		uint256 amount
 	) external onlyLatestNetworkContract {
-		if (_amount == 0) {
+		if (amount == 0) {
 			revert InvalidAmount();
 		}
-		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
-		tokenBalances[contractKey] = tokenBalances[contractKey] - _amount;
-		ERC20 tokenContract = ERC20(_tokenAddress);
-		if (!tokenContract.transfer(_withdrawalAddress, _amount)) {
+
+		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), tokenAddress));
+
+		emit TokenWithdrawn(contractKey, address(tokenAddress), amount);
+
+		tokenBalances[contractKey] = tokenBalances[contractKey] - amount;
+		ERC20 tokenContract = ERC20(tokenAddress);
+		if (!tokenContract.transfer(withdrawalAddress, amount)) {
 			revert VaultTokenWithdrawalFailed();
 		}
-		emit TokenWithdrawn(contractKey, address(_tokenAddress), _amount);
 	}
 
 	// Transfer token from one contract to another
 	function transferToken(
-		string memory _networkContractName,
-		ERC20 _tokenAddress,
-		uint256 _amount
+		string memory networkContractName,
+		ERC20 tokenAddress,
+		uint256 amount
 	) external onlyLatestNetworkContract {
-		if (_amount == 0) {
+		if (amount == 0) {
 			revert InvalidAmount();
 		}
 		// Make sure the network contract is valid (will revert if not)
-		getContractAddress(_networkContractName);
+		getContractAddress(networkContractName);
 
-		bytes32 contractKeyFrom = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
-		bytes32 contractKeyTo = keccak256(abi.encodePacked(_networkContractName, _tokenAddress));
+		bytes32 contractKeyFrom = keccak256(abi.encodePacked(getContractName(msg.sender), tokenAddress));
+		bytes32 contractKeyTo = keccak256(abi.encodePacked(networkContractName, tokenAddress));
 
-		tokenBalances[contractKeyFrom] = tokenBalances[contractKeyFrom] - _amount;
-		tokenBalances[contractKeyTo] = tokenBalances[contractKeyTo] + _amount;
+		emit TokenTransfer(contractKeyFrom, contractKeyTo, address(tokenAddress), amount);
 
-		emit TokenTransfer(contractKeyFrom, contractKeyTo, address(_tokenAddress), _amount);
+		tokenBalances[contractKeyFrom] = tokenBalances[contractKeyFrom] - amount;
+		tokenBalances[contractKeyTo] = tokenBalances[contractKeyTo] + amount;
 	}
 
 	// Burns an amount of a token that implements a burn(uint256) method
-	function burnToken(ERC20Burnable _tokenAddress, uint256 _amount) external onlyLatestNetworkContract {
-		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), _tokenAddress));
-		tokenBalances[contractKey] = tokenBalances[contractKey] - _amount;
-		ERC20Burnable tokenContract = ERC20Burnable(_tokenAddress);
-		tokenContract.burn(_amount);
-		emit TokenBurned(contractKey, address(_tokenAddress), _amount);
+	function burnToken(ERC20Burnable tokenAddress, uint256 amount) external onlyLatestNetworkContract {
+		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), tokenAddress));
+
+		emit TokenBurned(contractKey, address(tokenAddress), amount);
+
+		tokenBalances[contractKey] = tokenBalances[contractKey] - amount;
+		ERC20Burnable tokenContract = ERC20Burnable(tokenAddress);
+		tokenContract.burn(amount);
 	}
 
 	// Get a contract's AVAX balance by address
-	function balanceOf(string memory _networkContractName) external view returns (uint256) {
-		return avaxBalances[_networkContractName];
+	function balanceOf(string memory networkContractName) external view returns (uint256) {
+		return avaxBalances[networkContractName];
 	}
 
 	// Get the balance of a token held by a network contract
-	function balanceOfToken(string memory _networkContractName, ERC20 _tokenAddress) external view returns (uint256) {
-		return tokenBalances[keccak256(abi.encodePacked(_networkContractName, _tokenAddress))];
+	function balanceOfToken(string memory networkContractName, ERC20 tokenAddress) external view returns (uint256) {
+		return tokenBalances[keccak256(abi.encodePacked(networkContractName, tokenAddress))];
 	}
 }
