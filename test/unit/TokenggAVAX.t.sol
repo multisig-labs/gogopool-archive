@@ -31,11 +31,6 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.stopPrank();
 	}
 
-	// function testRevertOnUserMistake() public {
-	// 	vm.prank(alice);
-	// 	ggAVAX.deposit(1 ether, address(ggAVAX));
-	// }
-
 	function testSingleDepositWithdrawWAVAX(uint128 amount) public {
 		vm.assume(amount != 0 && amount < MAX_AMT);
 
@@ -200,7 +195,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		ggAVAX.syncRewards();
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
-		assertEq(ggAVAX.lastRewardsAmount(), liquidStakerRewards);
+		assertEq(ggAVAX.lastRewardsAmt(), liquidStakerRewards);
 
 		// 6. Skip 1/3 of rewards length and see 1/3 rewards in totalReleasedAssets
 		skip(ggAVAX.rewardsCycleLength() / 3);
@@ -208,7 +203,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 oneThirdRewards = liquidStakerRewards / 3;
 		assertEq(ggAVAX.totalAssets(), depositAmount + oneThirdRewards);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount + oneThirdRewards);
-		assertEq(ggAVAX.lastRewardsAmount(), liquidStakerRewards);
+		assertEq(ggAVAX.lastRewardsAmt(), liquidStakerRewards);
 
 		// 7. Skip 2/3 of rewards length
 		// Rewards should be fully distributed
@@ -271,11 +266,11 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		console.log("---assets---");
 		console.log("total assets", ggAVAX.totalAssets());
-		console.log("total float", ggAVAX.totalFloat());
+		console.log("total float", ggAVAX.amountAvailableForStaking());
 		console.log("staking assets", ggAVAX.stakingTotalAssets());
 
 		console.log("---rewards---");
-		console.log("last rewards amount", ggAVAX.lastRewardsAmount());
+		console.log("last rewards amount", ggAVAX.lastRewardsAmt());
 	}
 
 	function ggAVAXStateAsserts(
@@ -284,17 +279,6 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 rewardsAmount
 	) internal {
 		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.totalFloat(), depositAmount - stakingWithdrawAmount + rewardsAmount);
+		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 	}
-
-	// function testFloat() public {
-	// 	uint256 float = 1e17; // 1e18 * 10%;
-	// 	uint256 amountDeposited = 2200 * AVAX;
-
-	// 	vm.prank(alice);
-	// 	ggAVAX.deposit(amountDeposited, alice);
-	// 	assertEq(ggAVAX.stakingTotalAssets(), 0);
-	// 	assertEq(ggAVAX.totalFloat(), amountDeposited);
-	// 	assertEq(ggAVAX.amountAvailableForStaking(), 200 * AVAX);
-	// }
 }
