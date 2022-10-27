@@ -30,7 +30,7 @@ var (
 
 // OracleMetaData contains all meta data concerning the Oracle contract.
 var OracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidGGPPrice\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMultisigDisabled\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"GGPPriceUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceFromOneInch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"setGGPPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setOneInch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidGGPPrice\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrDisabledMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"GGPPriceUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceFromOneInch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"setGGPPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setOneInch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // OracleABI is the input ABI used to generate the binding from.
@@ -181,10 +181,10 @@ func (_Oracle *OracleTransactorRaw) Transact(opts *bind.TransactOpts, method str
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_Oracle *OracleCaller) GetContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_Oracle *OracleCaller) GetContractAddress(opts *bind.CallOpts, contractName string) (common.Address, error) {
 	var out []interface{}
-	err := _Oracle.contract.Call(opts, &out, "getContractAddress", _contractName)
+	err := _Oracle.contract.Call(opts, &out, "getContractAddress", contractName)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -198,16 +198,16 @@ func (_Oracle *OracleCaller) GetContractAddress(opts *bind.CallOpts, _contractNa
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_Oracle *OracleSession) GetContractAddress(_contractName string) (common.Address, error) {
-	return _Oracle.Contract.GetContractAddress(&_Oracle.CallOpts, _contractName)
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_Oracle *OracleSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _Oracle.Contract.GetContractAddress(&_Oracle.CallOpts, contractName)
 }
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_Oracle *OracleCallerSession) GetContractAddress(_contractName string) (common.Address, error) {
-	return _Oracle.Contract.GetContractAddress(&_Oracle.CallOpts, _contractName)
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_Oracle *OracleCallerSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _Oracle.Contract.GetContractAddress(&_Oracle.CallOpts, contractName)
 }
 
 // GetGGPPrice is a free data retrieval call binding the contract method 0xbece349b.
@@ -298,99 +298,6 @@ func (_Oracle *OracleCallerSession) GetGGPPriceFromOneInch() (struct {
 	Timestamp *big.Int
 }, error) {
 	return _Oracle.Contract.GetGGPPriceFromOneInch(&_Oracle.CallOpts)
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_Oracle *OracleCaller) GetSettingAddress(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	var out []interface{}
-	err := _Oracle.contract.Call(opts, &out, "getSettingAddress", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_Oracle *OracleSession) GetSettingAddress(settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	return _Oracle.Contract.GetSettingAddress(&_Oracle.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_Oracle *OracleCallerSession) GetSettingAddress(settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	return _Oracle.Contract.GetSettingAddress(&_Oracle.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_Oracle *OracleCaller) GetSettingBool(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	var out []interface{}
-	err := _Oracle.contract.Call(opts, &out, "getSettingBool", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_Oracle *OracleSession) GetSettingBool(settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	return _Oracle.Contract.GetSettingBool(&_Oracle.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_Oracle *OracleCallerSession) GetSettingBool(settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	return _Oracle.Contract.GetSettingBool(&_Oracle.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_Oracle *OracleCaller) GetSettingUint(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	var out []interface{}
-	err := _Oracle.contract.Call(opts, &out, "getSettingUint", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_Oracle *OracleSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	return _Oracle.Contract.GetSettingUint(&_Oracle.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_Oracle *OracleCallerSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	return _Oracle.Contract.GetSettingUint(&_Oracle.CallOpts, settingNameSpace, _settingPath)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.

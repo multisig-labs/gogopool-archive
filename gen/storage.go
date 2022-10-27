@@ -30,7 +30,7 @@ var (
 
 // StorageMetaData contains all meta data concerning the Storage contract.
 var StorageMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldGuardian\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newGuardian\",\"type\":\"address\"}],\"name\":\"GuardianChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"addUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"confirmGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"deleteUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"r\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"r\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDeployedStatus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGuardian\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getInt\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"r\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"getUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"r\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"_value\",\"type\":\"address\"}],\"name\":\"setAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"_value\",\"type\":\"bool\"}],\"name\":\"setBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"_value\",\"type\":\"bytes\"}],\"name\":\"setBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"_value\",\"type\":\"bytes32\"}],\"name\":\"setBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"setDeployedStatus\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newAddress\",\"type\":\"address\"}],\"name\":\"setGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"int256\",\"name\":\"_value\",\"type\":\"int256\"}],\"name\":\"setInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_value\",\"type\":\"string\"}],\"name\":\"setString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"setUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"subUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidGuardianConfirmation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldGuardian\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newGuardian\",\"type\":\"address\"}],\"name\":\"GuardianChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"addUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"confirmGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"r\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"r\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGuardian\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getInt\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"r\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"r\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"value\",\"type\":\"address\"}],\"name\":\"setAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"value\",\"type\":\"bool\"}],\"name\":\"setBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"value\",\"type\":\"bytes32\"}],\"name\":\"setBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"setGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"setInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"setString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"subUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // StorageABI is the input ABI used to generate the binding from.
@@ -181,10 +181,10 @@ func (_Storage *StorageTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
 //
-// Solidity: function getAddress(bytes32 _key) view returns(address r)
-func (_Storage *StorageCaller) GetAddress(opts *bind.CallOpts, _key [32]byte) (common.Address, error) {
+// Solidity: function getAddress(bytes32 key) view returns(address r)
+func (_Storage *StorageCaller) GetAddress(opts *bind.CallOpts, key [32]byte) (common.Address, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getAddress", _key)
+	err := _Storage.contract.Call(opts, &out, "getAddress", key)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -198,24 +198,24 @@ func (_Storage *StorageCaller) GetAddress(opts *bind.CallOpts, _key [32]byte) (c
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
 //
-// Solidity: function getAddress(bytes32 _key) view returns(address r)
-func (_Storage *StorageSession) GetAddress(_key [32]byte) (common.Address, error) {
-	return _Storage.Contract.GetAddress(&_Storage.CallOpts, _key)
+// Solidity: function getAddress(bytes32 key) view returns(address r)
+func (_Storage *StorageSession) GetAddress(key [32]byte) (common.Address, error) {
+	return _Storage.Contract.GetAddress(&_Storage.CallOpts, key)
 }
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
 //
-// Solidity: function getAddress(bytes32 _key) view returns(address r)
-func (_Storage *StorageCallerSession) GetAddress(_key [32]byte) (common.Address, error) {
-	return _Storage.Contract.GetAddress(&_Storage.CallOpts, _key)
+// Solidity: function getAddress(bytes32 key) view returns(address r)
+func (_Storage *StorageCallerSession) GetAddress(key [32]byte) (common.Address, error) {
+	return _Storage.Contract.GetAddress(&_Storage.CallOpts, key)
 }
 
 // GetBool is a free data retrieval call binding the contract method 0x7ae1cfca.
 //
-// Solidity: function getBool(bytes32 _key) view returns(bool r)
-func (_Storage *StorageCaller) GetBool(opts *bind.CallOpts, _key [32]byte) (bool, error) {
+// Solidity: function getBool(bytes32 key) view returns(bool r)
+func (_Storage *StorageCaller) GetBool(opts *bind.CallOpts, key [32]byte) (bool, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getBool", _key)
+	err := _Storage.contract.Call(opts, &out, "getBool", key)
 
 	if err != nil {
 		return *new(bool), err
@@ -229,24 +229,24 @@ func (_Storage *StorageCaller) GetBool(opts *bind.CallOpts, _key [32]byte) (bool
 
 // GetBool is a free data retrieval call binding the contract method 0x7ae1cfca.
 //
-// Solidity: function getBool(bytes32 _key) view returns(bool r)
-func (_Storage *StorageSession) GetBool(_key [32]byte) (bool, error) {
-	return _Storage.Contract.GetBool(&_Storage.CallOpts, _key)
+// Solidity: function getBool(bytes32 key) view returns(bool r)
+func (_Storage *StorageSession) GetBool(key [32]byte) (bool, error) {
+	return _Storage.Contract.GetBool(&_Storage.CallOpts, key)
 }
 
 // GetBool is a free data retrieval call binding the contract method 0x7ae1cfca.
 //
-// Solidity: function getBool(bytes32 _key) view returns(bool r)
-func (_Storage *StorageCallerSession) GetBool(_key [32]byte) (bool, error) {
-	return _Storage.Contract.GetBool(&_Storage.CallOpts, _key)
+// Solidity: function getBool(bytes32 key) view returns(bool r)
+func (_Storage *StorageCallerSession) GetBool(key [32]byte) (bool, error) {
+	return _Storage.Contract.GetBool(&_Storage.CallOpts, key)
 }
 
 // GetBytes is a free data retrieval call binding the contract method 0xc031a180.
 //
-// Solidity: function getBytes(bytes32 _key) view returns(bytes)
-func (_Storage *StorageCaller) GetBytes(opts *bind.CallOpts, _key [32]byte) ([]byte, error) {
+// Solidity: function getBytes(bytes32 key) view returns(bytes)
+func (_Storage *StorageCaller) GetBytes(opts *bind.CallOpts, key [32]byte) ([]byte, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getBytes", _key)
+	err := _Storage.contract.Call(opts, &out, "getBytes", key)
 
 	if err != nil {
 		return *new([]byte), err
@@ -260,24 +260,24 @@ func (_Storage *StorageCaller) GetBytes(opts *bind.CallOpts, _key [32]byte) ([]b
 
 // GetBytes is a free data retrieval call binding the contract method 0xc031a180.
 //
-// Solidity: function getBytes(bytes32 _key) view returns(bytes)
-func (_Storage *StorageSession) GetBytes(_key [32]byte) ([]byte, error) {
-	return _Storage.Contract.GetBytes(&_Storage.CallOpts, _key)
+// Solidity: function getBytes(bytes32 key) view returns(bytes)
+func (_Storage *StorageSession) GetBytes(key [32]byte) ([]byte, error) {
+	return _Storage.Contract.GetBytes(&_Storage.CallOpts, key)
 }
 
 // GetBytes is a free data retrieval call binding the contract method 0xc031a180.
 //
-// Solidity: function getBytes(bytes32 _key) view returns(bytes)
-func (_Storage *StorageCallerSession) GetBytes(_key [32]byte) ([]byte, error) {
-	return _Storage.Contract.GetBytes(&_Storage.CallOpts, _key)
+// Solidity: function getBytes(bytes32 key) view returns(bytes)
+func (_Storage *StorageCallerSession) GetBytes(key [32]byte) ([]byte, error) {
+	return _Storage.Contract.GetBytes(&_Storage.CallOpts, key)
 }
 
 // GetBytes32 is a free data retrieval call binding the contract method 0xa6ed563e.
 //
-// Solidity: function getBytes32(bytes32 _key) view returns(bytes32 r)
-func (_Storage *StorageCaller) GetBytes32(opts *bind.CallOpts, _key [32]byte) ([32]byte, error) {
+// Solidity: function getBytes32(bytes32 key) view returns(bytes32 r)
+func (_Storage *StorageCaller) GetBytes32(opts *bind.CallOpts, key [32]byte) ([32]byte, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getBytes32", _key)
+	err := _Storage.contract.Call(opts, &out, "getBytes32", key)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -291,47 +291,16 @@ func (_Storage *StorageCaller) GetBytes32(opts *bind.CallOpts, _key [32]byte) ([
 
 // GetBytes32 is a free data retrieval call binding the contract method 0xa6ed563e.
 //
-// Solidity: function getBytes32(bytes32 _key) view returns(bytes32 r)
-func (_Storage *StorageSession) GetBytes32(_key [32]byte) ([32]byte, error) {
-	return _Storage.Contract.GetBytes32(&_Storage.CallOpts, _key)
+// Solidity: function getBytes32(bytes32 key) view returns(bytes32 r)
+func (_Storage *StorageSession) GetBytes32(key [32]byte) ([32]byte, error) {
+	return _Storage.Contract.GetBytes32(&_Storage.CallOpts, key)
 }
 
 // GetBytes32 is a free data retrieval call binding the contract method 0xa6ed563e.
 //
-// Solidity: function getBytes32(bytes32 _key) view returns(bytes32 r)
-func (_Storage *StorageCallerSession) GetBytes32(_key [32]byte) ([32]byte, error) {
-	return _Storage.Contract.GetBytes32(&_Storage.CallOpts, _key)
-}
-
-// GetDeployedStatus is a free data retrieval call binding the contract method 0x1bed5241.
-//
-// Solidity: function getDeployedStatus() view returns(bool)
-func (_Storage *StorageCaller) GetDeployedStatus(opts *bind.CallOpts) (bool, error) {
-	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getDeployedStatus")
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// GetDeployedStatus is a free data retrieval call binding the contract method 0x1bed5241.
-//
-// Solidity: function getDeployedStatus() view returns(bool)
-func (_Storage *StorageSession) GetDeployedStatus() (bool, error) {
-	return _Storage.Contract.GetDeployedStatus(&_Storage.CallOpts)
-}
-
-// GetDeployedStatus is a free data retrieval call binding the contract method 0x1bed5241.
-//
-// Solidity: function getDeployedStatus() view returns(bool)
-func (_Storage *StorageCallerSession) GetDeployedStatus() (bool, error) {
-	return _Storage.Contract.GetDeployedStatus(&_Storage.CallOpts)
+// Solidity: function getBytes32(bytes32 key) view returns(bytes32 r)
+func (_Storage *StorageCallerSession) GetBytes32(key [32]byte) ([32]byte, error) {
+	return _Storage.Contract.GetBytes32(&_Storage.CallOpts, key)
 }
 
 // GetGuardian is a free data retrieval call binding the contract method 0xa75b87d2.
@@ -367,10 +336,10 @@ func (_Storage *StorageCallerSession) GetGuardian() (common.Address, error) {
 
 // GetInt is a free data retrieval call binding the contract method 0xdc97d962.
 //
-// Solidity: function getInt(bytes32 _key) view returns(int256 r)
-func (_Storage *StorageCaller) GetInt(opts *bind.CallOpts, _key [32]byte) (*big.Int, error) {
+// Solidity: function getInt(bytes32 key) view returns(int256 r)
+func (_Storage *StorageCaller) GetInt(opts *bind.CallOpts, key [32]byte) (*big.Int, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getInt", _key)
+	err := _Storage.contract.Call(opts, &out, "getInt", key)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -384,24 +353,24 @@ func (_Storage *StorageCaller) GetInt(opts *bind.CallOpts, _key [32]byte) (*big.
 
 // GetInt is a free data retrieval call binding the contract method 0xdc97d962.
 //
-// Solidity: function getInt(bytes32 _key) view returns(int256 r)
-func (_Storage *StorageSession) GetInt(_key [32]byte) (*big.Int, error) {
-	return _Storage.Contract.GetInt(&_Storage.CallOpts, _key)
+// Solidity: function getInt(bytes32 key) view returns(int256 r)
+func (_Storage *StorageSession) GetInt(key [32]byte) (*big.Int, error) {
+	return _Storage.Contract.GetInt(&_Storage.CallOpts, key)
 }
 
 // GetInt is a free data retrieval call binding the contract method 0xdc97d962.
 //
-// Solidity: function getInt(bytes32 _key) view returns(int256 r)
-func (_Storage *StorageCallerSession) GetInt(_key [32]byte) (*big.Int, error) {
-	return _Storage.Contract.GetInt(&_Storage.CallOpts, _key)
+// Solidity: function getInt(bytes32 key) view returns(int256 r)
+func (_Storage *StorageCallerSession) GetInt(key [32]byte) (*big.Int, error) {
+	return _Storage.Contract.GetInt(&_Storage.CallOpts, key)
 }
 
 // GetString is a free data retrieval call binding the contract method 0x986e791a.
 //
-// Solidity: function getString(bytes32 _key) view returns(string)
-func (_Storage *StorageCaller) GetString(opts *bind.CallOpts, _key [32]byte) (string, error) {
+// Solidity: function getString(bytes32 key) view returns(string)
+func (_Storage *StorageCaller) GetString(opts *bind.CallOpts, key [32]byte) (string, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getString", _key)
+	err := _Storage.contract.Call(opts, &out, "getString", key)
 
 	if err != nil {
 		return *new(string), err
@@ -415,24 +384,24 @@ func (_Storage *StorageCaller) GetString(opts *bind.CallOpts, _key [32]byte) (st
 
 // GetString is a free data retrieval call binding the contract method 0x986e791a.
 //
-// Solidity: function getString(bytes32 _key) view returns(string)
-func (_Storage *StorageSession) GetString(_key [32]byte) (string, error) {
-	return _Storage.Contract.GetString(&_Storage.CallOpts, _key)
+// Solidity: function getString(bytes32 key) view returns(string)
+func (_Storage *StorageSession) GetString(key [32]byte) (string, error) {
+	return _Storage.Contract.GetString(&_Storage.CallOpts, key)
 }
 
 // GetString is a free data retrieval call binding the contract method 0x986e791a.
 //
-// Solidity: function getString(bytes32 _key) view returns(string)
-func (_Storage *StorageCallerSession) GetString(_key [32]byte) (string, error) {
-	return _Storage.Contract.GetString(&_Storage.CallOpts, _key)
+// Solidity: function getString(bytes32 key) view returns(string)
+func (_Storage *StorageCallerSession) GetString(key [32]byte) (string, error) {
+	return _Storage.Contract.GetString(&_Storage.CallOpts, key)
 }
 
 // GetUint is a free data retrieval call binding the contract method 0xbd02d0f5.
 //
-// Solidity: function getUint(bytes32 _key) view returns(uint256 r)
-func (_Storage *StorageCaller) GetUint(opts *bind.CallOpts, _key [32]byte) (*big.Int, error) {
+// Solidity: function getUint(bytes32 key) view returns(uint256 r)
+func (_Storage *StorageCaller) GetUint(opts *bind.CallOpts, key [32]byte) (*big.Int, error) {
 	var out []interface{}
-	err := _Storage.contract.Call(opts, &out, "getUint", _key)
+	err := _Storage.contract.Call(opts, &out, "getUint", key)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -446,37 +415,37 @@ func (_Storage *StorageCaller) GetUint(opts *bind.CallOpts, _key [32]byte) (*big
 
 // GetUint is a free data retrieval call binding the contract method 0xbd02d0f5.
 //
-// Solidity: function getUint(bytes32 _key) view returns(uint256 r)
-func (_Storage *StorageSession) GetUint(_key [32]byte) (*big.Int, error) {
-	return _Storage.Contract.GetUint(&_Storage.CallOpts, _key)
+// Solidity: function getUint(bytes32 key) view returns(uint256 r)
+func (_Storage *StorageSession) GetUint(key [32]byte) (*big.Int, error) {
+	return _Storage.Contract.GetUint(&_Storage.CallOpts, key)
 }
 
 // GetUint is a free data retrieval call binding the contract method 0xbd02d0f5.
 //
-// Solidity: function getUint(bytes32 _key) view returns(uint256 r)
-func (_Storage *StorageCallerSession) GetUint(_key [32]byte) (*big.Int, error) {
-	return _Storage.Contract.GetUint(&_Storage.CallOpts, _key)
+// Solidity: function getUint(bytes32 key) view returns(uint256 r)
+func (_Storage *StorageCallerSession) GetUint(key [32]byte) (*big.Int, error) {
+	return _Storage.Contract.GetUint(&_Storage.CallOpts, key)
 }
 
 // AddUint is a paid mutator transaction binding the contract method 0xadb353dc.
 //
-// Solidity: function addUint(bytes32 _key, uint256 _amount) returns()
-func (_Storage *StorageTransactor) AddUint(opts *bind.TransactOpts, _key [32]byte, _amount *big.Int) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "addUint", _key, _amount)
+// Solidity: function addUint(bytes32 key, uint256 amount) returns()
+func (_Storage *StorageTransactor) AddUint(opts *bind.TransactOpts, key [32]byte, amount *big.Int) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "addUint", key, amount)
 }
 
 // AddUint is a paid mutator transaction binding the contract method 0xadb353dc.
 //
-// Solidity: function addUint(bytes32 _key, uint256 _amount) returns()
-func (_Storage *StorageSession) AddUint(_key [32]byte, _amount *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.AddUint(&_Storage.TransactOpts, _key, _amount)
+// Solidity: function addUint(bytes32 key, uint256 amount) returns()
+func (_Storage *StorageSession) AddUint(key [32]byte, amount *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.AddUint(&_Storage.TransactOpts, key, amount)
 }
 
 // AddUint is a paid mutator transaction binding the contract method 0xadb353dc.
 //
-// Solidity: function addUint(bytes32 _key, uint256 _amount) returns()
-func (_Storage *StorageTransactorSession) AddUint(_key [32]byte, _amount *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.AddUint(&_Storage.TransactOpts, _key, _amount)
+// Solidity: function addUint(bytes32 key, uint256 amount) returns()
+func (_Storage *StorageTransactorSession) AddUint(key [32]byte, amount *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.AddUint(&_Storage.TransactOpts, key, amount)
 }
 
 // ConfirmGuardian is a paid mutator transaction binding the contract method 0x1e0ea61e.
@@ -502,359 +471,338 @@ func (_Storage *StorageTransactorSession) ConfirmGuardian() (*types.Transaction,
 
 // DeleteAddress is a paid mutator transaction binding the contract method 0x0e14a376.
 //
-// Solidity: function deleteAddress(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteAddress(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteAddress", _key)
+// Solidity: function deleteAddress(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteAddress(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteAddress", key)
 }
 
 // DeleteAddress is a paid mutator transaction binding the contract method 0x0e14a376.
 //
-// Solidity: function deleteAddress(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteAddress(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteAddress(&_Storage.TransactOpts, _key)
+// Solidity: function deleteAddress(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteAddress(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteAddress(&_Storage.TransactOpts, key)
 }
 
 // DeleteAddress is a paid mutator transaction binding the contract method 0x0e14a376.
 //
-// Solidity: function deleteAddress(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteAddress(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteAddress(&_Storage.TransactOpts, _key)
+// Solidity: function deleteAddress(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteAddress(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteAddress(&_Storage.TransactOpts, key)
 }
 
 // DeleteBool is a paid mutator transaction binding the contract method 0x2c62ff2d.
 //
-// Solidity: function deleteBool(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteBool(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteBool", _key)
+// Solidity: function deleteBool(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteBool(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteBool", key)
 }
 
 // DeleteBool is a paid mutator transaction binding the contract method 0x2c62ff2d.
 //
-// Solidity: function deleteBool(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteBool(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteBool(&_Storage.TransactOpts, _key)
+// Solidity: function deleteBool(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteBool(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteBool(&_Storage.TransactOpts, key)
 }
 
 // DeleteBool is a paid mutator transaction binding the contract method 0x2c62ff2d.
 //
-// Solidity: function deleteBool(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteBool(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteBool(&_Storage.TransactOpts, _key)
+// Solidity: function deleteBool(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteBool(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteBool(&_Storage.TransactOpts, key)
 }
 
 // DeleteBytes is a paid mutator transaction binding the contract method 0x616b59f6.
 //
-// Solidity: function deleteBytes(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteBytes(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteBytes", _key)
+// Solidity: function deleteBytes(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteBytes(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteBytes", key)
 }
 
 // DeleteBytes is a paid mutator transaction binding the contract method 0x616b59f6.
 //
-// Solidity: function deleteBytes(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteBytes(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteBytes(&_Storage.TransactOpts, _key)
+// Solidity: function deleteBytes(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteBytes(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteBytes(&_Storage.TransactOpts, key)
 }
 
 // DeleteBytes is a paid mutator transaction binding the contract method 0x616b59f6.
 //
-// Solidity: function deleteBytes(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteBytes(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteBytes(&_Storage.TransactOpts, _key)
+// Solidity: function deleteBytes(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteBytes(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteBytes(&_Storage.TransactOpts, key)
 }
 
 // DeleteBytes32 is a paid mutator transaction binding the contract method 0x0b9adc57.
 //
-// Solidity: function deleteBytes32(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteBytes32(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteBytes32", _key)
+// Solidity: function deleteBytes32(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteBytes32(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteBytes32", key)
 }
 
 // DeleteBytes32 is a paid mutator transaction binding the contract method 0x0b9adc57.
 //
-// Solidity: function deleteBytes32(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteBytes32(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteBytes32(&_Storage.TransactOpts, _key)
+// Solidity: function deleteBytes32(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteBytes32(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteBytes32(&_Storage.TransactOpts, key)
 }
 
 // DeleteBytes32 is a paid mutator transaction binding the contract method 0x0b9adc57.
 //
-// Solidity: function deleteBytes32(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteBytes32(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteBytes32(&_Storage.TransactOpts, _key)
+// Solidity: function deleteBytes32(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteBytes32(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteBytes32(&_Storage.TransactOpts, key)
 }
 
 // DeleteInt is a paid mutator transaction binding the contract method 0x8c160095.
 //
-// Solidity: function deleteInt(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteInt(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteInt", _key)
+// Solidity: function deleteInt(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteInt(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteInt", key)
 }
 
 // DeleteInt is a paid mutator transaction binding the contract method 0x8c160095.
 //
-// Solidity: function deleteInt(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteInt(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteInt(&_Storage.TransactOpts, _key)
+// Solidity: function deleteInt(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteInt(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteInt(&_Storage.TransactOpts, key)
 }
 
 // DeleteInt is a paid mutator transaction binding the contract method 0x8c160095.
 //
-// Solidity: function deleteInt(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteInt(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteInt(&_Storage.TransactOpts, _key)
+// Solidity: function deleteInt(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteInt(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteInt(&_Storage.TransactOpts, key)
 }
 
 // DeleteString is a paid mutator transaction binding the contract method 0xf6bb3cc4.
 //
-// Solidity: function deleteString(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteString(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteString", _key)
+// Solidity: function deleteString(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteString(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteString", key)
 }
 
 // DeleteString is a paid mutator transaction binding the contract method 0xf6bb3cc4.
 //
-// Solidity: function deleteString(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteString(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteString(&_Storage.TransactOpts, _key)
+// Solidity: function deleteString(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteString(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteString(&_Storage.TransactOpts, key)
 }
 
 // DeleteString is a paid mutator transaction binding the contract method 0xf6bb3cc4.
 //
-// Solidity: function deleteString(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteString(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteString(&_Storage.TransactOpts, _key)
+// Solidity: function deleteString(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteString(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteString(&_Storage.TransactOpts, key)
 }
 
 // DeleteUint is a paid mutator transaction binding the contract method 0xe2b202bf.
 //
-// Solidity: function deleteUint(bytes32 _key) returns()
-func (_Storage *StorageTransactor) DeleteUint(opts *bind.TransactOpts, _key [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "deleteUint", _key)
+// Solidity: function deleteUint(bytes32 key) returns()
+func (_Storage *StorageTransactor) DeleteUint(opts *bind.TransactOpts, key [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "deleteUint", key)
 }
 
 // DeleteUint is a paid mutator transaction binding the contract method 0xe2b202bf.
 //
-// Solidity: function deleteUint(bytes32 _key) returns()
-func (_Storage *StorageSession) DeleteUint(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteUint(&_Storage.TransactOpts, _key)
+// Solidity: function deleteUint(bytes32 key) returns()
+func (_Storage *StorageSession) DeleteUint(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteUint(&_Storage.TransactOpts, key)
 }
 
 // DeleteUint is a paid mutator transaction binding the contract method 0xe2b202bf.
 //
-// Solidity: function deleteUint(bytes32 _key) returns()
-func (_Storage *StorageTransactorSession) DeleteUint(_key [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.DeleteUint(&_Storage.TransactOpts, _key)
+// Solidity: function deleteUint(bytes32 key) returns()
+func (_Storage *StorageTransactorSession) DeleteUint(key [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.DeleteUint(&_Storage.TransactOpts, key)
 }
 
 // SetAddress is a paid mutator transaction binding the contract method 0xca446dd9.
 //
-// Solidity: function setAddress(bytes32 _key, address _value) returns()
-func (_Storage *StorageTransactor) SetAddress(opts *bind.TransactOpts, _key [32]byte, _value common.Address) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setAddress", _key, _value)
+// Solidity: function setAddress(bytes32 key, address value) returns()
+func (_Storage *StorageTransactor) SetAddress(opts *bind.TransactOpts, key [32]byte, value common.Address) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setAddress", key, value)
 }
 
 // SetAddress is a paid mutator transaction binding the contract method 0xca446dd9.
 //
-// Solidity: function setAddress(bytes32 _key, address _value) returns()
-func (_Storage *StorageSession) SetAddress(_key [32]byte, _value common.Address) (*types.Transaction, error) {
-	return _Storage.Contract.SetAddress(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setAddress(bytes32 key, address value) returns()
+func (_Storage *StorageSession) SetAddress(key [32]byte, value common.Address) (*types.Transaction, error) {
+	return _Storage.Contract.SetAddress(&_Storage.TransactOpts, key, value)
 }
 
 // SetAddress is a paid mutator transaction binding the contract method 0xca446dd9.
 //
-// Solidity: function setAddress(bytes32 _key, address _value) returns()
-func (_Storage *StorageTransactorSession) SetAddress(_key [32]byte, _value common.Address) (*types.Transaction, error) {
-	return _Storage.Contract.SetAddress(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setAddress(bytes32 key, address value) returns()
+func (_Storage *StorageTransactorSession) SetAddress(key [32]byte, value common.Address) (*types.Transaction, error) {
+	return _Storage.Contract.SetAddress(&_Storage.TransactOpts, key, value)
 }
 
 // SetBool is a paid mutator transaction binding the contract method 0xabfdcced.
 //
-// Solidity: function setBool(bytes32 _key, bool _value) returns()
-func (_Storage *StorageTransactor) SetBool(opts *bind.TransactOpts, _key [32]byte, _value bool) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setBool", _key, _value)
+// Solidity: function setBool(bytes32 key, bool value) returns()
+func (_Storage *StorageTransactor) SetBool(opts *bind.TransactOpts, key [32]byte, value bool) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setBool", key, value)
 }
 
 // SetBool is a paid mutator transaction binding the contract method 0xabfdcced.
 //
-// Solidity: function setBool(bytes32 _key, bool _value) returns()
-func (_Storage *StorageSession) SetBool(_key [32]byte, _value bool) (*types.Transaction, error) {
-	return _Storage.Contract.SetBool(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setBool(bytes32 key, bool value) returns()
+func (_Storage *StorageSession) SetBool(key [32]byte, value bool) (*types.Transaction, error) {
+	return _Storage.Contract.SetBool(&_Storage.TransactOpts, key, value)
 }
 
 // SetBool is a paid mutator transaction binding the contract method 0xabfdcced.
 //
-// Solidity: function setBool(bytes32 _key, bool _value) returns()
-func (_Storage *StorageTransactorSession) SetBool(_key [32]byte, _value bool) (*types.Transaction, error) {
-	return _Storage.Contract.SetBool(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setBool(bytes32 key, bool value) returns()
+func (_Storage *StorageTransactorSession) SetBool(key [32]byte, value bool) (*types.Transaction, error) {
+	return _Storage.Contract.SetBool(&_Storage.TransactOpts, key, value)
 }
 
 // SetBytes is a paid mutator transaction binding the contract method 0x2e28d084.
 //
-// Solidity: function setBytes(bytes32 _key, bytes _value) returns()
-func (_Storage *StorageTransactor) SetBytes(opts *bind.TransactOpts, _key [32]byte, _value []byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setBytes", _key, _value)
+// Solidity: function setBytes(bytes32 key, bytes value) returns()
+func (_Storage *StorageTransactor) SetBytes(opts *bind.TransactOpts, key [32]byte, value []byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setBytes", key, value)
 }
 
 // SetBytes is a paid mutator transaction binding the contract method 0x2e28d084.
 //
-// Solidity: function setBytes(bytes32 _key, bytes _value) returns()
-func (_Storage *StorageSession) SetBytes(_key [32]byte, _value []byte) (*types.Transaction, error) {
-	return _Storage.Contract.SetBytes(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setBytes(bytes32 key, bytes value) returns()
+func (_Storage *StorageSession) SetBytes(key [32]byte, value []byte) (*types.Transaction, error) {
+	return _Storage.Contract.SetBytes(&_Storage.TransactOpts, key, value)
 }
 
 // SetBytes is a paid mutator transaction binding the contract method 0x2e28d084.
 //
-// Solidity: function setBytes(bytes32 _key, bytes _value) returns()
-func (_Storage *StorageTransactorSession) SetBytes(_key [32]byte, _value []byte) (*types.Transaction, error) {
-	return _Storage.Contract.SetBytes(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setBytes(bytes32 key, bytes value) returns()
+func (_Storage *StorageTransactorSession) SetBytes(key [32]byte, value []byte) (*types.Transaction, error) {
+	return _Storage.Contract.SetBytes(&_Storage.TransactOpts, key, value)
 }
 
 // SetBytes32 is a paid mutator transaction binding the contract method 0x4e91db08.
 //
-// Solidity: function setBytes32(bytes32 _key, bytes32 _value) returns()
-func (_Storage *StorageTransactor) SetBytes32(opts *bind.TransactOpts, _key [32]byte, _value [32]byte) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setBytes32", _key, _value)
+// Solidity: function setBytes32(bytes32 key, bytes32 value) returns()
+func (_Storage *StorageTransactor) SetBytes32(opts *bind.TransactOpts, key [32]byte, value [32]byte) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setBytes32", key, value)
 }
 
 // SetBytes32 is a paid mutator transaction binding the contract method 0x4e91db08.
 //
-// Solidity: function setBytes32(bytes32 _key, bytes32 _value) returns()
-func (_Storage *StorageSession) SetBytes32(_key [32]byte, _value [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.SetBytes32(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setBytes32(bytes32 key, bytes32 value) returns()
+func (_Storage *StorageSession) SetBytes32(key [32]byte, value [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.SetBytes32(&_Storage.TransactOpts, key, value)
 }
 
 // SetBytes32 is a paid mutator transaction binding the contract method 0x4e91db08.
 //
-// Solidity: function setBytes32(bytes32 _key, bytes32 _value) returns()
-func (_Storage *StorageTransactorSession) SetBytes32(_key [32]byte, _value [32]byte) (*types.Transaction, error) {
-	return _Storage.Contract.SetBytes32(&_Storage.TransactOpts, _key, _value)
-}
-
-// SetDeployedStatus is a paid mutator transaction binding the contract method 0xfebffd99.
-//
-// Solidity: function setDeployedStatus() returns()
-func (_Storage *StorageTransactor) SetDeployedStatus(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setDeployedStatus")
-}
-
-// SetDeployedStatus is a paid mutator transaction binding the contract method 0xfebffd99.
-//
-// Solidity: function setDeployedStatus() returns()
-func (_Storage *StorageSession) SetDeployedStatus() (*types.Transaction, error) {
-	return _Storage.Contract.SetDeployedStatus(&_Storage.TransactOpts)
-}
-
-// SetDeployedStatus is a paid mutator transaction binding the contract method 0xfebffd99.
-//
-// Solidity: function setDeployedStatus() returns()
-func (_Storage *StorageTransactorSession) SetDeployedStatus() (*types.Transaction, error) {
-	return _Storage.Contract.SetDeployedStatus(&_Storage.TransactOpts)
+// Solidity: function setBytes32(bytes32 key, bytes32 value) returns()
+func (_Storage *StorageTransactorSession) SetBytes32(key [32]byte, value [32]byte) (*types.Transaction, error) {
+	return _Storage.Contract.SetBytes32(&_Storage.TransactOpts, key, value)
 }
 
 // SetGuardian is a paid mutator transaction binding the contract method 0x8a0dac4a.
 //
-// Solidity: function setGuardian(address _newAddress) returns()
-func (_Storage *StorageTransactor) SetGuardian(opts *bind.TransactOpts, _newAddress common.Address) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setGuardian", _newAddress)
+// Solidity: function setGuardian(address newAddress) returns()
+func (_Storage *StorageTransactor) SetGuardian(opts *bind.TransactOpts, newAddress common.Address) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setGuardian", newAddress)
 }
 
 // SetGuardian is a paid mutator transaction binding the contract method 0x8a0dac4a.
 //
-// Solidity: function setGuardian(address _newAddress) returns()
-func (_Storage *StorageSession) SetGuardian(_newAddress common.Address) (*types.Transaction, error) {
-	return _Storage.Contract.SetGuardian(&_Storage.TransactOpts, _newAddress)
+// Solidity: function setGuardian(address newAddress) returns()
+func (_Storage *StorageSession) SetGuardian(newAddress common.Address) (*types.Transaction, error) {
+	return _Storage.Contract.SetGuardian(&_Storage.TransactOpts, newAddress)
 }
 
 // SetGuardian is a paid mutator transaction binding the contract method 0x8a0dac4a.
 //
-// Solidity: function setGuardian(address _newAddress) returns()
-func (_Storage *StorageTransactorSession) SetGuardian(_newAddress common.Address) (*types.Transaction, error) {
-	return _Storage.Contract.SetGuardian(&_Storage.TransactOpts, _newAddress)
+// Solidity: function setGuardian(address newAddress) returns()
+func (_Storage *StorageTransactorSession) SetGuardian(newAddress common.Address) (*types.Transaction, error) {
+	return _Storage.Contract.SetGuardian(&_Storage.TransactOpts, newAddress)
 }
 
 // SetInt is a paid mutator transaction binding the contract method 0x3e49bed0.
 //
-// Solidity: function setInt(bytes32 _key, int256 _value) returns()
-func (_Storage *StorageTransactor) SetInt(opts *bind.TransactOpts, _key [32]byte, _value *big.Int) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setInt", _key, _value)
+// Solidity: function setInt(bytes32 key, int256 value) returns()
+func (_Storage *StorageTransactor) SetInt(opts *bind.TransactOpts, key [32]byte, value *big.Int) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setInt", key, value)
 }
 
 // SetInt is a paid mutator transaction binding the contract method 0x3e49bed0.
 //
-// Solidity: function setInt(bytes32 _key, int256 _value) returns()
-func (_Storage *StorageSession) SetInt(_key [32]byte, _value *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.SetInt(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setInt(bytes32 key, int256 value) returns()
+func (_Storage *StorageSession) SetInt(key [32]byte, value *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.SetInt(&_Storage.TransactOpts, key, value)
 }
 
 // SetInt is a paid mutator transaction binding the contract method 0x3e49bed0.
 //
-// Solidity: function setInt(bytes32 _key, int256 _value) returns()
-func (_Storage *StorageTransactorSession) SetInt(_key [32]byte, _value *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.SetInt(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setInt(bytes32 key, int256 value) returns()
+func (_Storage *StorageTransactorSession) SetInt(key [32]byte, value *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.SetInt(&_Storage.TransactOpts, key, value)
 }
 
 // SetString is a paid mutator transaction binding the contract method 0x6e899550.
 //
-// Solidity: function setString(bytes32 _key, string _value) returns()
-func (_Storage *StorageTransactor) SetString(opts *bind.TransactOpts, _key [32]byte, _value string) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setString", _key, _value)
+// Solidity: function setString(bytes32 key, string value) returns()
+func (_Storage *StorageTransactor) SetString(opts *bind.TransactOpts, key [32]byte, value string) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setString", key, value)
 }
 
 // SetString is a paid mutator transaction binding the contract method 0x6e899550.
 //
-// Solidity: function setString(bytes32 _key, string _value) returns()
-func (_Storage *StorageSession) SetString(_key [32]byte, _value string) (*types.Transaction, error) {
-	return _Storage.Contract.SetString(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setString(bytes32 key, string value) returns()
+func (_Storage *StorageSession) SetString(key [32]byte, value string) (*types.Transaction, error) {
+	return _Storage.Contract.SetString(&_Storage.TransactOpts, key, value)
 }
 
 // SetString is a paid mutator transaction binding the contract method 0x6e899550.
 //
-// Solidity: function setString(bytes32 _key, string _value) returns()
-func (_Storage *StorageTransactorSession) SetString(_key [32]byte, _value string) (*types.Transaction, error) {
-	return _Storage.Contract.SetString(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setString(bytes32 key, string value) returns()
+func (_Storage *StorageTransactorSession) SetString(key [32]byte, value string) (*types.Transaction, error) {
+	return _Storage.Contract.SetString(&_Storage.TransactOpts, key, value)
 }
 
 // SetUint is a paid mutator transaction binding the contract method 0xe2a4853a.
 //
-// Solidity: function setUint(bytes32 _key, uint256 _value) returns()
-func (_Storage *StorageTransactor) SetUint(opts *bind.TransactOpts, _key [32]byte, _value *big.Int) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "setUint", _key, _value)
+// Solidity: function setUint(bytes32 key, uint256 value) returns()
+func (_Storage *StorageTransactor) SetUint(opts *bind.TransactOpts, key [32]byte, value *big.Int) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "setUint", key, value)
 }
 
 // SetUint is a paid mutator transaction binding the contract method 0xe2a4853a.
 //
-// Solidity: function setUint(bytes32 _key, uint256 _value) returns()
-func (_Storage *StorageSession) SetUint(_key [32]byte, _value *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.SetUint(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setUint(bytes32 key, uint256 value) returns()
+func (_Storage *StorageSession) SetUint(key [32]byte, value *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.SetUint(&_Storage.TransactOpts, key, value)
 }
 
 // SetUint is a paid mutator transaction binding the contract method 0xe2a4853a.
 //
-// Solidity: function setUint(bytes32 _key, uint256 _value) returns()
-func (_Storage *StorageTransactorSession) SetUint(_key [32]byte, _value *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.SetUint(&_Storage.TransactOpts, _key, _value)
+// Solidity: function setUint(bytes32 key, uint256 value) returns()
+func (_Storage *StorageTransactorSession) SetUint(key [32]byte, value *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.SetUint(&_Storage.TransactOpts, key, value)
 }
 
 // SubUint is a paid mutator transaction binding the contract method 0xebb9d8c9.
 //
-// Solidity: function subUint(bytes32 _key, uint256 _amount) returns()
-func (_Storage *StorageTransactor) SubUint(opts *bind.TransactOpts, _key [32]byte, _amount *big.Int) (*types.Transaction, error) {
-	return _Storage.contract.Transact(opts, "subUint", _key, _amount)
+// Solidity: function subUint(bytes32 key, uint256 amount) returns()
+func (_Storage *StorageTransactor) SubUint(opts *bind.TransactOpts, key [32]byte, amount *big.Int) (*types.Transaction, error) {
+	return _Storage.contract.Transact(opts, "subUint", key, amount)
 }
 
 // SubUint is a paid mutator transaction binding the contract method 0xebb9d8c9.
 //
-// Solidity: function subUint(bytes32 _key, uint256 _amount) returns()
-func (_Storage *StorageSession) SubUint(_key [32]byte, _amount *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.SubUint(&_Storage.TransactOpts, _key, _amount)
+// Solidity: function subUint(bytes32 key, uint256 amount) returns()
+func (_Storage *StorageSession) SubUint(key [32]byte, amount *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.SubUint(&_Storage.TransactOpts, key, amount)
 }
 
 // SubUint is a paid mutator transaction binding the contract method 0xebb9d8c9.
 //
-// Solidity: function subUint(bytes32 _key, uint256 _amount) returns()
-func (_Storage *StorageTransactorSession) SubUint(_key [32]byte, _amount *big.Int) (*types.Transaction, error) {
-	return _Storage.Contract.SubUint(&_Storage.TransactOpts, _key, _amount)
+// Solidity: function subUint(bytes32 key, uint256 amount) returns()
+func (_Storage *StorageTransactorSession) SubUint(key [32]byte, amount *big.Int) (*types.Transaction, error) {
+	return _Storage.Contract.SubUint(&_Storage.TransactOpts, key, amount)
 }
 
 // StorageGuardianChangedIterator is returned from FilterGuardianChanged and is used to iterate over the raw logs and unpacked data for GuardianChanged events raised by the Storage contract.

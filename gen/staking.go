@@ -30,18 +30,19 @@ var (
 
 // StakingStaker is an auto generated low-level Go binding around an user-defined struct.
 type StakingStaker struct {
-	StakerAddr       common.Address
-	GgpStaked        *big.Int
-	AvaxStaked       *big.Int
-	AvaxAssigned     *big.Int
-	MinipoolCount    *big.Int
-	RewardsStartTime *big.Int
-	GgpRewards       *big.Int
+	StakerAddr            common.Address
+	GgpStaked             *big.Int
+	AvaxStaked            *big.Int
+	AvaxAssigned          *big.Int
+	AvaxAssignedHighWater *big.Int
+	MinipoolCount         *big.Int
+	RewardsStartTime      *big.Int
+	GgpRewards            *big.Int
 }
 
 // StakingMetaData contains all meta data concerning the Staking contract.
 var StakingMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"CannotWithdrawUnder150CollateralizationRatio\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakerNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TransferFailed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPStaked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPWithdrawn\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MAX_COLLATERALIZATION_PERCENT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MIN_COLLATERALIZATION_PERCENT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseAVAXAssigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseAVAXStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseGGPRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseGGPStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"decreaseMinipoolCount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getAVAXAssigned\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getAVAXStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getCollateralizationRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ownerAddress\",\"type\":\"address\"}],\"name\":\"getEffectiveGGPStaked\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getGGPRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getGGPStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getIndexOf\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getMinimumGGPStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getMinipoolCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getRewardsStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"index\",\"type\":\"int256\"}],\"name\":\"getStaker\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ggpStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAssigned\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minipoolCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rewardsStartTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpRewards\",\"type\":\"uint256\"}],\"internalType\":\"structStaking.Staker\",\"name\":\"staker\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakerCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"getStakers\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ggpStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAssigned\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minipoolCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rewardsStartTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpRewards\",\"type\":\"uint256\"}],\"internalType\":\"structStaking.Staker[]\",\"name\":\"stakers\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalGGPStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseAVAXAssigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseAVAXStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseGGPRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseGGPStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"increaseMinipoolCount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"requireValidStaker\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"restakeGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"setRewardsStartTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ggpAmt\",\"type\":\"uint256\"}],\"name\":\"slashGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"stakeGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"CannotWithdrawUnder150CollateralizationRatio\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakerNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TransferFailed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPStaked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPWithdrawn\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseAVAXAssigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseAVAXStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decreaseGGPRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"decreaseMinipoolCount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getAVAXAssigned\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getAVAXAssignedHighWater\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getAVAXStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getCollateralizationRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getEffectiveGGPStaked\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getEffectiveRewardsRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getGGPRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getGGPStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getIndexOf\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getMinimumGGPStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getMinipoolCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"getRewardsStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"stakerIndex\",\"type\":\"int256\"}],\"name\":\"getStaker\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ggpStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAssigned\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAssignedHighWater\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minipoolCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rewardsStartTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpRewards\",\"type\":\"uint256\"}],\"internalType\":\"structStaking.Staker\",\"name\":\"staker\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakerCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"getStakers\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ggpStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAssigned\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"avaxAssignedHighWater\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minipoolCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rewardsStartTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ggpRewards\",\"type\":\"uint256\"}],\"internalType\":\"structStaking.Staker[]\",\"name\":\"stakers\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalGGPStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseAVAXAssigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseAVAXStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increaseGGPRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"increaseMinipoolCount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"requireValidStaker\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"resetAVAXAssignedHighWater\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"restakeGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"setRewardsStartTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ggpAmt\",\"type\":\"uint256\"}],\"name\":\"slashGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"stakeGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawGGP\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // StakingABI is the input ABI used to generate the binding from.
@@ -190,68 +191,6 @@ func (_Staking *StakingTransactorRaw) Transact(opts *bind.TransactOpts, method s
 	return _Staking.Contract.contract.Transact(opts, method, params...)
 }
 
-// MAXCOLLATERALIZATIONPERCENT is a free data retrieval call binding the contract method 0x9196b189.
-//
-// Solidity: function MAX_COLLATERALIZATION_PERCENT() view returns(uint256)
-func (_Staking *StakingCaller) MAXCOLLATERALIZATIONPERCENT(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "MAX_COLLATERALIZATION_PERCENT")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// MAXCOLLATERALIZATIONPERCENT is a free data retrieval call binding the contract method 0x9196b189.
-//
-// Solidity: function MAX_COLLATERALIZATION_PERCENT() view returns(uint256)
-func (_Staking *StakingSession) MAXCOLLATERALIZATIONPERCENT() (*big.Int, error) {
-	return _Staking.Contract.MAXCOLLATERALIZATIONPERCENT(&_Staking.CallOpts)
-}
-
-// MAXCOLLATERALIZATIONPERCENT is a free data retrieval call binding the contract method 0x9196b189.
-//
-// Solidity: function MAX_COLLATERALIZATION_PERCENT() view returns(uint256)
-func (_Staking *StakingCallerSession) MAXCOLLATERALIZATIONPERCENT() (*big.Int, error) {
-	return _Staking.Contract.MAXCOLLATERALIZATIONPERCENT(&_Staking.CallOpts)
-}
-
-// MINCOLLATERALIZATIONPERCENT is a free data retrieval call binding the contract method 0xe827a0a5.
-//
-// Solidity: function MIN_COLLATERALIZATION_PERCENT() view returns(uint256)
-func (_Staking *StakingCaller) MINCOLLATERALIZATIONPERCENT(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "MIN_COLLATERALIZATION_PERCENT")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// MINCOLLATERALIZATIONPERCENT is a free data retrieval call binding the contract method 0xe827a0a5.
-//
-// Solidity: function MIN_COLLATERALIZATION_PERCENT() view returns(uint256)
-func (_Staking *StakingSession) MINCOLLATERALIZATIONPERCENT() (*big.Int, error) {
-	return _Staking.Contract.MINCOLLATERALIZATIONPERCENT(&_Staking.CallOpts)
-}
-
-// MINCOLLATERALIZATIONPERCENT is a free data retrieval call binding the contract method 0xe827a0a5.
-//
-// Solidity: function MIN_COLLATERALIZATION_PERCENT() view returns(uint256)
-func (_Staking *StakingCallerSession) MINCOLLATERALIZATIONPERCENT() (*big.Int, error) {
-	return _Staking.Contract.MINCOLLATERALIZATIONPERCENT(&_Staking.CallOpts)
-}
-
 // GetAVAXAssigned is a free data retrieval call binding the contract method 0x799c515d.
 //
 // Solidity: function getAVAXAssigned(address stakerAddr) view returns(uint256)
@@ -281,6 +220,37 @@ func (_Staking *StakingSession) GetAVAXAssigned(stakerAddr common.Address) (*big
 // Solidity: function getAVAXAssigned(address stakerAddr) view returns(uint256)
 func (_Staking *StakingCallerSession) GetAVAXAssigned(stakerAddr common.Address) (*big.Int, error) {
 	return _Staking.Contract.GetAVAXAssigned(&_Staking.CallOpts, stakerAddr)
+}
+
+// GetAVAXAssignedHighWater is a free data retrieval call binding the contract method 0x4ce3d572.
+//
+// Solidity: function getAVAXAssignedHighWater(address stakerAddr) view returns(uint256)
+func (_Staking *StakingCaller) GetAVAXAssignedHighWater(opts *bind.CallOpts, stakerAddr common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Staking.contract.Call(opts, &out, "getAVAXAssignedHighWater", stakerAddr)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetAVAXAssignedHighWater is a free data retrieval call binding the contract method 0x4ce3d572.
+//
+// Solidity: function getAVAXAssignedHighWater(address stakerAddr) view returns(uint256)
+func (_Staking *StakingSession) GetAVAXAssignedHighWater(stakerAddr common.Address) (*big.Int, error) {
+	return _Staking.Contract.GetAVAXAssignedHighWater(&_Staking.CallOpts, stakerAddr)
+}
+
+// GetAVAXAssignedHighWater is a free data retrieval call binding the contract method 0x4ce3d572.
+//
+// Solidity: function getAVAXAssignedHighWater(address stakerAddr) view returns(uint256)
+func (_Staking *StakingCallerSession) GetAVAXAssignedHighWater(stakerAddr common.Address) (*big.Int, error) {
+	return _Staking.Contract.GetAVAXAssignedHighWater(&_Staking.CallOpts, stakerAddr)
 }
 
 // GetAVAXStake is a free data retrieval call binding the contract method 0x09e203a5.
@@ -347,10 +317,10 @@ func (_Staking *StakingCallerSession) GetCollateralizationRatio(stakerAddr commo
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_Staking *StakingCaller) GetContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_Staking *StakingCaller) GetContractAddress(opts *bind.CallOpts, contractName string) (common.Address, error) {
 	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "getContractAddress", _contractName)
+	err := _Staking.contract.Call(opts, &out, "getContractAddress", contractName)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -364,24 +334,24 @@ func (_Staking *StakingCaller) GetContractAddress(opts *bind.CallOpts, _contract
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_Staking *StakingSession) GetContractAddress(_contractName string) (common.Address, error) {
-	return _Staking.Contract.GetContractAddress(&_Staking.CallOpts, _contractName)
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_Staking *StakingSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _Staking.Contract.GetContractAddress(&_Staking.CallOpts, contractName)
 }
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_Staking *StakingCallerSession) GetContractAddress(_contractName string) (common.Address, error) {
-	return _Staking.Contract.GetContractAddress(&_Staking.CallOpts, _contractName)
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_Staking *StakingCallerSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _Staking.Contract.GetContractAddress(&_Staking.CallOpts, contractName)
 }
 
 // GetEffectiveGGPStaked is a free data retrieval call binding the contract method 0x7736b4d4.
 //
-// Solidity: function getEffectiveGGPStaked(address ownerAddress) view returns(uint256)
-func (_Staking *StakingCaller) GetEffectiveGGPStaked(opts *bind.CallOpts, ownerAddress common.Address) (*big.Int, error) {
+// Solidity: function getEffectiveGGPStaked(address stakerAddr) view returns(uint256)
+func (_Staking *StakingCaller) GetEffectiveGGPStaked(opts *bind.CallOpts, stakerAddr common.Address) (*big.Int, error) {
 	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "getEffectiveGGPStaked", ownerAddress)
+	err := _Staking.contract.Call(opts, &out, "getEffectiveGGPStaked", stakerAddr)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -395,16 +365,47 @@ func (_Staking *StakingCaller) GetEffectiveGGPStaked(opts *bind.CallOpts, ownerA
 
 // GetEffectiveGGPStaked is a free data retrieval call binding the contract method 0x7736b4d4.
 //
-// Solidity: function getEffectiveGGPStaked(address ownerAddress) view returns(uint256)
-func (_Staking *StakingSession) GetEffectiveGGPStaked(ownerAddress common.Address) (*big.Int, error) {
-	return _Staking.Contract.GetEffectiveGGPStaked(&_Staking.CallOpts, ownerAddress)
+// Solidity: function getEffectiveGGPStaked(address stakerAddr) view returns(uint256)
+func (_Staking *StakingSession) GetEffectiveGGPStaked(stakerAddr common.Address) (*big.Int, error) {
+	return _Staking.Contract.GetEffectiveGGPStaked(&_Staking.CallOpts, stakerAddr)
 }
 
 // GetEffectiveGGPStaked is a free data retrieval call binding the contract method 0x7736b4d4.
 //
-// Solidity: function getEffectiveGGPStaked(address ownerAddress) view returns(uint256)
-func (_Staking *StakingCallerSession) GetEffectiveGGPStaked(ownerAddress common.Address) (*big.Int, error) {
-	return _Staking.Contract.GetEffectiveGGPStaked(&_Staking.CallOpts, ownerAddress)
+// Solidity: function getEffectiveGGPStaked(address stakerAddr) view returns(uint256)
+func (_Staking *StakingCallerSession) GetEffectiveGGPStaked(stakerAddr common.Address) (*big.Int, error) {
+	return _Staking.Contract.GetEffectiveGGPStaked(&_Staking.CallOpts, stakerAddr)
+}
+
+// GetEffectiveRewardsRatio is a free data retrieval call binding the contract method 0xdb865f88.
+//
+// Solidity: function getEffectiveRewardsRatio(address stakerAddr) view returns(uint256)
+func (_Staking *StakingCaller) GetEffectiveRewardsRatio(opts *bind.CallOpts, stakerAddr common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Staking.contract.Call(opts, &out, "getEffectiveRewardsRatio", stakerAddr)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetEffectiveRewardsRatio is a free data retrieval call binding the contract method 0xdb865f88.
+//
+// Solidity: function getEffectiveRewardsRatio(address stakerAddr) view returns(uint256)
+func (_Staking *StakingSession) GetEffectiveRewardsRatio(stakerAddr common.Address) (*big.Int, error) {
+	return _Staking.Contract.GetEffectiveRewardsRatio(&_Staking.CallOpts, stakerAddr)
+}
+
+// GetEffectiveRewardsRatio is a free data retrieval call binding the contract method 0xdb865f88.
+//
+// Solidity: function getEffectiveRewardsRatio(address stakerAddr) view returns(uint256)
+func (_Staking *StakingCallerSession) GetEffectiveRewardsRatio(stakerAddr common.Address) (*big.Int, error) {
+	return _Staking.Contract.GetEffectiveRewardsRatio(&_Staking.CallOpts, stakerAddr)
 }
 
 // GetGGPRewards is a free data retrieval call binding the contract method 0xe60716d7.
@@ -593,105 +594,12 @@ func (_Staking *StakingCallerSession) GetRewardsStartTime(stakerAddr common.Addr
 	return _Staking.Contract.GetRewardsStartTime(&_Staking.CallOpts, stakerAddr)
 }
 
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_Staking *StakingCaller) GetSettingAddress(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "getSettingAddress", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_Staking *StakingSession) GetSettingAddress(settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	return _Staking.Contract.GetSettingAddress(&_Staking.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_Staking *StakingCallerSession) GetSettingAddress(settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	return _Staking.Contract.GetSettingAddress(&_Staking.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_Staking *StakingCaller) GetSettingBool(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "getSettingBool", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_Staking *StakingSession) GetSettingBool(settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	return _Staking.Contract.GetSettingBool(&_Staking.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_Staking *StakingCallerSession) GetSettingBool(settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	return _Staking.Contract.GetSettingBool(&_Staking.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_Staking *StakingCaller) GetSettingUint(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "getSettingUint", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_Staking *StakingSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	return _Staking.Contract.GetSettingUint(&_Staking.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_Staking *StakingCallerSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	return _Staking.Contract.GetSettingUint(&_Staking.CallOpts, settingNameSpace, _settingPath)
-}
-
 // GetStaker is a free data retrieval call binding the contract method 0x5a585185.
 //
-// Solidity: function getStaker(int256 index) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256) staker)
-func (_Staking *StakingCaller) GetStaker(opts *bind.CallOpts, index *big.Int) (StakingStaker, error) {
+// Solidity: function getStaker(int256 stakerIndex) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256) staker)
+func (_Staking *StakingCaller) GetStaker(opts *bind.CallOpts, stakerIndex *big.Int) (StakingStaker, error) {
 	var out []interface{}
-	err := _Staking.contract.Call(opts, &out, "getStaker", index)
+	err := _Staking.contract.Call(opts, &out, "getStaker", stakerIndex)
 
 	if err != nil {
 		return *new(StakingStaker), err
@@ -705,16 +613,16 @@ func (_Staking *StakingCaller) GetStaker(opts *bind.CallOpts, index *big.Int) (S
 
 // GetStaker is a free data retrieval call binding the contract method 0x5a585185.
 //
-// Solidity: function getStaker(int256 index) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256) staker)
-func (_Staking *StakingSession) GetStaker(index *big.Int) (StakingStaker, error) {
-	return _Staking.Contract.GetStaker(&_Staking.CallOpts, index)
+// Solidity: function getStaker(int256 stakerIndex) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256) staker)
+func (_Staking *StakingSession) GetStaker(stakerIndex *big.Int) (StakingStaker, error) {
+	return _Staking.Contract.GetStaker(&_Staking.CallOpts, stakerIndex)
 }
 
 // GetStaker is a free data retrieval call binding the contract method 0x5a585185.
 //
-// Solidity: function getStaker(int256 index) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256) staker)
-func (_Staking *StakingCallerSession) GetStaker(index *big.Int) (StakingStaker, error) {
-	return _Staking.Contract.GetStaker(&_Staking.CallOpts, index)
+// Solidity: function getStaker(int256 stakerIndex) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256) staker)
+func (_Staking *StakingCallerSession) GetStaker(stakerIndex *big.Int) (StakingStaker, error) {
+	return _Staking.Contract.GetStaker(&_Staking.CallOpts, stakerIndex)
 }
 
 // GetStakerCount is a free data retrieval call binding the contract method 0x1319649d.
@@ -750,7 +658,7 @@ func (_Staking *StakingCallerSession) GetStakerCount() (*big.Int, error) {
 
 // GetStakers is a free data retrieval call binding the contract method 0xad71bd36.
 //
-// Solidity: function getStakers(uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256)[] stakers)
+// Solidity: function getStakers(uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[] stakers)
 func (_Staking *StakingCaller) GetStakers(opts *bind.CallOpts, offset *big.Int, limit *big.Int) ([]StakingStaker, error) {
 	var out []interface{}
 	err := _Staking.contract.Call(opts, &out, "getStakers", offset, limit)
@@ -767,14 +675,14 @@ func (_Staking *StakingCaller) GetStakers(opts *bind.CallOpts, offset *big.Int, 
 
 // GetStakers is a free data retrieval call binding the contract method 0xad71bd36.
 //
-// Solidity: function getStakers(uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256)[] stakers)
+// Solidity: function getStakers(uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[] stakers)
 func (_Staking *StakingSession) GetStakers(offset *big.Int, limit *big.Int) ([]StakingStaker, error) {
 	return _Staking.Contract.GetStakers(&_Staking.CallOpts, offset, limit)
 }
 
 // GetStakers is a free data retrieval call binding the contract method 0xad71bd36.
 //
-// Solidity: function getStakers(uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256)[] stakers)
+// Solidity: function getStakers(uint256 offset, uint256 limit) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[] stakers)
 func (_Staking *StakingCallerSession) GetStakers(offset *big.Int, limit *big.Int) ([]StakingStaker, error) {
 	return _Staking.Contract.GetStakers(&_Staking.CallOpts, offset, limit)
 }
@@ -966,27 +874,6 @@ func (_Staking *StakingTransactorSession) DecreaseGGPRewards(stakerAddr common.A
 	return _Staking.Contract.DecreaseGGPRewards(&_Staking.TransactOpts, stakerAddr, amount)
 }
 
-// DecreaseGGPStake is a paid mutator transaction binding the contract method 0xd40a78c9.
-//
-// Solidity: function decreaseGGPStake(address stakerAddr, uint256 amount) returns()
-func (_Staking *StakingTransactor) DecreaseGGPStake(opts *bind.TransactOpts, stakerAddr common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Staking.contract.Transact(opts, "decreaseGGPStake", stakerAddr, amount)
-}
-
-// DecreaseGGPStake is a paid mutator transaction binding the contract method 0xd40a78c9.
-//
-// Solidity: function decreaseGGPStake(address stakerAddr, uint256 amount) returns()
-func (_Staking *StakingSession) DecreaseGGPStake(stakerAddr common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Staking.Contract.DecreaseGGPStake(&_Staking.TransactOpts, stakerAddr, amount)
-}
-
-// DecreaseGGPStake is a paid mutator transaction binding the contract method 0xd40a78c9.
-//
-// Solidity: function decreaseGGPStake(address stakerAddr, uint256 amount) returns()
-func (_Staking *StakingTransactorSession) DecreaseGGPStake(stakerAddr common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Staking.Contract.DecreaseGGPStake(&_Staking.TransactOpts, stakerAddr, amount)
-}
-
 // DecreaseMinipoolCount is a paid mutator transaction binding the contract method 0x23ca17bd.
 //
 // Solidity: function decreaseMinipoolCount(address stakerAddr) returns()
@@ -1071,27 +958,6 @@ func (_Staking *StakingTransactorSession) IncreaseGGPRewards(stakerAddr common.A
 	return _Staking.Contract.IncreaseGGPRewards(&_Staking.TransactOpts, stakerAddr, amount)
 }
 
-// IncreaseGGPStake is a paid mutator transaction binding the contract method 0xe09f845d.
-//
-// Solidity: function increaseGGPStake(address stakerAddr, uint256 amount) returns()
-func (_Staking *StakingTransactor) IncreaseGGPStake(opts *bind.TransactOpts, stakerAddr common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Staking.contract.Transact(opts, "increaseGGPStake", stakerAddr, amount)
-}
-
-// IncreaseGGPStake is a paid mutator transaction binding the contract method 0xe09f845d.
-//
-// Solidity: function increaseGGPStake(address stakerAddr, uint256 amount) returns()
-func (_Staking *StakingSession) IncreaseGGPStake(stakerAddr common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Staking.Contract.IncreaseGGPStake(&_Staking.TransactOpts, stakerAddr, amount)
-}
-
-// IncreaseGGPStake is a paid mutator transaction binding the contract method 0xe09f845d.
-//
-// Solidity: function increaseGGPStake(address stakerAddr, uint256 amount) returns()
-func (_Staking *StakingTransactorSession) IncreaseGGPStake(stakerAddr common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Staking.Contract.IncreaseGGPStake(&_Staking.TransactOpts, stakerAddr, amount)
-}
-
 // IncreaseMinipoolCount is a paid mutator transaction binding the contract method 0x465887b3.
 //
 // Solidity: function increaseMinipoolCount(address stakerAddr) returns()
@@ -1111,6 +977,27 @@ func (_Staking *StakingSession) IncreaseMinipoolCount(stakerAddr common.Address)
 // Solidity: function increaseMinipoolCount(address stakerAddr) returns()
 func (_Staking *StakingTransactorSession) IncreaseMinipoolCount(stakerAddr common.Address) (*types.Transaction, error) {
 	return _Staking.Contract.IncreaseMinipoolCount(&_Staking.TransactOpts, stakerAddr)
+}
+
+// ResetAVAXAssignedHighWater is a paid mutator transaction binding the contract method 0xdcd1f23e.
+//
+// Solidity: function resetAVAXAssignedHighWater(address stakerAddr) returns()
+func (_Staking *StakingTransactor) ResetAVAXAssignedHighWater(opts *bind.TransactOpts, stakerAddr common.Address) (*types.Transaction, error) {
+	return _Staking.contract.Transact(opts, "resetAVAXAssignedHighWater", stakerAddr)
+}
+
+// ResetAVAXAssignedHighWater is a paid mutator transaction binding the contract method 0xdcd1f23e.
+//
+// Solidity: function resetAVAXAssignedHighWater(address stakerAddr) returns()
+func (_Staking *StakingSession) ResetAVAXAssignedHighWater(stakerAddr common.Address) (*types.Transaction, error) {
+	return _Staking.Contract.ResetAVAXAssignedHighWater(&_Staking.TransactOpts, stakerAddr)
+}
+
+// ResetAVAXAssignedHighWater is a paid mutator transaction binding the contract method 0xdcd1f23e.
+//
+// Solidity: function resetAVAXAssignedHighWater(address stakerAddr) returns()
+func (_Staking *StakingTransactorSession) ResetAVAXAssignedHighWater(stakerAddr common.Address) (*types.Transaction, error) {
+	return _Staking.Contract.ResetAVAXAssignedHighWater(&_Staking.TransactOpts, stakerAddr)
 }
 
 // RestakeGGP is a paid mutator transaction binding the contract method 0x4ce08478.

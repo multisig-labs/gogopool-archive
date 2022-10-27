@@ -30,7 +30,7 @@ var (
 
 // RewardsPoolMetaData contains all meta data concerning the RewardsPool contract.
 var RewardsPoolMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"IncorrectRewardDistribution\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inflationCalcTime\",\"type\":\"uint256\"}],\"name\":\"GGPInflationLog\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"NOPClaimRewardsTransfered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalRewardAmt\",\"type\":\"uint256\"}],\"name\":\"NewRewardsCycleStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ProtocolDAORewardsTransfered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canCycleStart\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractDistribution\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractPerc\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalsPassed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLastInflationCalcTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCycleTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardCyclesPassed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"settingNameSpace\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_settingPath\",\"type\":\"string\"}],\"name\":\"getSettingUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalGGPCirculatingSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inflationCalculate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startCycle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectRewardsDistribution\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnableToStartRewardsCycle\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inflationCalcTime\",\"type\":\"uint256\"}],\"name\":\"GGPInflated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"NOPClaimRewardsTransfered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalRewardsAmt\",\"type\":\"uint256\"}],\"name\":\"NewRewardsCycleStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ProtocolDAORewardsTransfered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canStartRewardsCycle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractDistribution\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationAmt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalsElapsed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCyclesElapsed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startRewardsCycle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // RewardsPoolABI is the input ABI used to generate the binding from.
@@ -179,12 +179,12 @@ func (_RewardsPool *RewardsPoolTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _RewardsPool.Contract.contract.Transact(opts, method, params...)
 }
 
-// CanCycleStart is a free data retrieval call binding the contract method 0x1773dcee.
+// CanStartRewardsCycle is a free data retrieval call binding the contract method 0x6155e7ee.
 //
-// Solidity: function canCycleStart() view returns(bool)
-func (_RewardsPool *RewardsPoolCaller) CanCycleStart(opts *bind.CallOpts) (bool, error) {
+// Solidity: function canStartRewardsCycle() view returns(bool)
+func (_RewardsPool *RewardsPoolCaller) CanStartRewardsCycle(opts *bind.CallOpts) (bool, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "canCycleStart")
+	err := _RewardsPool.contract.Call(opts, &out, "canStartRewardsCycle")
 
 	if err != nil {
 		return *new(bool), err
@@ -196,26 +196,26 @@ func (_RewardsPool *RewardsPoolCaller) CanCycleStart(opts *bind.CallOpts) (bool,
 
 }
 
-// CanCycleStart is a free data retrieval call binding the contract method 0x1773dcee.
+// CanStartRewardsCycle is a free data retrieval call binding the contract method 0x6155e7ee.
 //
-// Solidity: function canCycleStart() view returns(bool)
-func (_RewardsPool *RewardsPoolSession) CanCycleStart() (bool, error) {
-	return _RewardsPool.Contract.CanCycleStart(&_RewardsPool.CallOpts)
+// Solidity: function canStartRewardsCycle() view returns(bool)
+func (_RewardsPool *RewardsPoolSession) CanStartRewardsCycle() (bool, error) {
+	return _RewardsPool.Contract.CanStartRewardsCycle(&_RewardsPool.CallOpts)
 }
 
-// CanCycleStart is a free data retrieval call binding the contract method 0x1773dcee.
+// CanStartRewardsCycle is a free data retrieval call binding the contract method 0x6155e7ee.
 //
-// Solidity: function canCycleStart() view returns(bool)
-func (_RewardsPool *RewardsPoolCallerSession) CanCycleStart() (bool, error) {
-	return _RewardsPool.Contract.CanCycleStart(&_RewardsPool.CallOpts)
+// Solidity: function canStartRewardsCycle() view returns(bool)
+func (_RewardsPool *RewardsPoolCallerSession) CanStartRewardsCycle() (bool, error) {
+	return _RewardsPool.Contract.CanStartRewardsCycle(&_RewardsPool.CallOpts)
 }
 
 // GetClaimingContractDistribution is a free data retrieval call binding the contract method 0xc32d0f72.
 //
-// Solidity: function getClaimingContractDistribution(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetClaimingContractDistribution(opts *bind.CallOpts, _claimingContract string) (*big.Int, error) {
+// Solidity: function getClaimingContractDistribution(string claimingContract) view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetClaimingContractDistribution(opts *bind.CallOpts, claimingContract string) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getClaimingContractDistribution", _claimingContract)
+	err := _RewardsPool.contract.Call(opts, &out, "getClaimingContractDistribution", claimingContract)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -229,55 +229,24 @@ func (_RewardsPool *RewardsPoolCaller) GetClaimingContractDistribution(opts *bin
 
 // GetClaimingContractDistribution is a free data retrieval call binding the contract method 0xc32d0f72.
 //
-// Solidity: function getClaimingContractDistribution(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetClaimingContractDistribution(_claimingContract string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetClaimingContractDistribution(&_RewardsPool.CallOpts, _claimingContract)
+// Solidity: function getClaimingContractDistribution(string claimingContract) view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetClaimingContractDistribution(claimingContract string) (*big.Int, error) {
+	return _RewardsPool.Contract.GetClaimingContractDistribution(&_RewardsPool.CallOpts, claimingContract)
 }
 
 // GetClaimingContractDistribution is a free data retrieval call binding the contract method 0xc32d0f72.
 //
-// Solidity: function getClaimingContractDistribution(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetClaimingContractDistribution(_claimingContract string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetClaimingContractDistribution(&_RewardsPool.CallOpts, _claimingContract)
-}
-
-// GetClaimingContractPerc is a free data retrieval call binding the contract method 0xf6a3f6ef.
-//
-// Solidity: function getClaimingContractPerc(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetClaimingContractPerc(opts *bind.CallOpts, _claimingContract string) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getClaimingContractPerc", _claimingContract)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetClaimingContractPerc is a free data retrieval call binding the contract method 0xf6a3f6ef.
-//
-// Solidity: function getClaimingContractPerc(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetClaimingContractPerc(_claimingContract string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetClaimingContractPerc(&_RewardsPool.CallOpts, _claimingContract)
-}
-
-// GetClaimingContractPerc is a free data retrieval call binding the contract method 0xf6a3f6ef.
-//
-// Solidity: function getClaimingContractPerc(string _claimingContract) view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetClaimingContractPerc(_claimingContract string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetClaimingContractPerc(&_RewardsPool.CallOpts, _claimingContract)
+// Solidity: function getClaimingContractDistribution(string claimingContract) view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetClaimingContractDistribution(claimingContract string) (*big.Int, error) {
+	return _RewardsPool.Contract.GetClaimingContractDistribution(&_RewardsPool.CallOpts, claimingContract)
 }
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_RewardsPool *RewardsPoolCaller) GetContractAddress(opts *bind.CallOpts, _contractName string) (common.Address, error) {
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_RewardsPool *RewardsPoolCaller) GetContractAddress(opts *bind.CallOpts, contractName string) (common.Address, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getContractAddress", _contractName)
+	err := _RewardsPool.contract.Call(opts, &out, "getContractAddress", contractName)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -291,24 +260,56 @@ func (_RewardsPool *RewardsPoolCaller) GetContractAddress(opts *bind.CallOpts, _
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_RewardsPool *RewardsPoolSession) GetContractAddress(_contractName string) (common.Address, error) {
-	return _RewardsPool.Contract.GetContractAddress(&_RewardsPool.CallOpts, _contractName)
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_RewardsPool *RewardsPoolSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _RewardsPool.Contract.GetContractAddress(&_RewardsPool.CallOpts, contractName)
 }
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getContractAddress(string _contractName) view returns(address)
-func (_RewardsPool *RewardsPoolCallerSession) GetContractAddress(_contractName string) (common.Address, error) {
-	return _RewardsPool.Contract.GetContractAddress(&_RewardsPool.CallOpts, _contractName)
+// Solidity: function getContractAddress(string contractName) view returns(address)
+func (_RewardsPool *RewardsPoolCallerSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _RewardsPool.Contract.GetContractAddress(&_RewardsPool.CallOpts, contractName)
 }
 
-// GetInflationIntervalsPassed is a free data retrieval call binding the contract method 0xb933c49e.
+// GetInflationAmt is a free data retrieval call binding the contract method 0x595c5e6d.
 //
-// Solidity: function getInflationIntervalsPassed() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalsPassed(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getInflationAmt() view returns(uint256, uint256)
+func (_RewardsPool *RewardsPoolCaller) GetInflationAmt(opts *bind.CallOpts) (*big.Int, *big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getInflationIntervalsPassed")
+	err := _RewardsPool.contract.Call(opts, &out, "getInflationAmt")
+
+	if err != nil {
+		return *new(*big.Int), *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+
+	return out0, out1, err
+
+}
+
+// GetInflationAmt is a free data retrieval call binding the contract method 0x595c5e6d.
+//
+// Solidity: function getInflationAmt() view returns(uint256, uint256)
+func (_RewardsPool *RewardsPoolSession) GetInflationAmt() (*big.Int, *big.Int, error) {
+	return _RewardsPool.Contract.GetInflationAmt(&_RewardsPool.CallOpts)
+}
+
+// GetInflationAmt is a free data retrieval call binding the contract method 0x595c5e6d.
+//
+// Solidity: function getInflationAmt() view returns(uint256, uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetInflationAmt() (*big.Int, *big.Int, error) {
+	return _RewardsPool.Contract.GetInflationAmt(&_RewardsPool.CallOpts)
+}
+
+// GetInflationIntervalStartTime is a free data retrieval call binding the contract method 0x0534f6db.
+//
+// Solidity: function getInflationIntervalStartTime() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalStartTime(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _RewardsPool.contract.Call(opts, &out, "getInflationIntervalStartTime")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -320,26 +321,26 @@ func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalsPassed(opts *bind.Ca
 
 }
 
-// GetInflationIntervalsPassed is a free data retrieval call binding the contract method 0xb933c49e.
+// GetInflationIntervalStartTime is a free data retrieval call binding the contract method 0x0534f6db.
 //
-// Solidity: function getInflationIntervalsPassed() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetInflationIntervalsPassed() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalsPassed(&_RewardsPool.CallOpts)
+// Solidity: function getInflationIntervalStartTime() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetInflationIntervalStartTime() (*big.Int, error) {
+	return _RewardsPool.Contract.GetInflationIntervalStartTime(&_RewardsPool.CallOpts)
 }
 
-// GetInflationIntervalsPassed is a free data retrieval call binding the contract method 0xb933c49e.
+// GetInflationIntervalStartTime is a free data retrieval call binding the contract method 0x0534f6db.
 //
-// Solidity: function getInflationIntervalsPassed() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalsPassed() (*big.Int, error) {
-	return _RewardsPool.Contract.GetInflationIntervalsPassed(&_RewardsPool.CallOpts)
+// Solidity: function getInflationIntervalStartTime() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalStartTime() (*big.Int, error) {
+	return _RewardsPool.Contract.GetInflationIntervalStartTime(&_RewardsPool.CallOpts)
 }
 
-// GetLastInflationCalcTime is a free data retrieval call binding the contract method 0x74fa9e85.
+// GetInflationIntervalsElapsed is a free data retrieval call binding the contract method 0xbdbe2544.
 //
-// Solidity: function getLastInflationCalcTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetLastInflationCalcTime(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getInflationIntervalsElapsed() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetInflationIntervalsElapsed(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getLastInflationCalcTime")
+	err := _RewardsPool.contract.Call(opts, &out, "getInflationIntervalsElapsed")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -351,26 +352,26 @@ func (_RewardsPool *RewardsPoolCaller) GetLastInflationCalcTime(opts *bind.CallO
 
 }
 
-// GetLastInflationCalcTime is a free data retrieval call binding the contract method 0x74fa9e85.
+// GetInflationIntervalsElapsed is a free data retrieval call binding the contract method 0xbdbe2544.
 //
-// Solidity: function getLastInflationCalcTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetLastInflationCalcTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetLastInflationCalcTime(&_RewardsPool.CallOpts)
+// Solidity: function getInflationIntervalsElapsed() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetInflationIntervalsElapsed() (*big.Int, error) {
+	return _RewardsPool.Contract.GetInflationIntervalsElapsed(&_RewardsPool.CallOpts)
 }
 
-// GetLastInflationCalcTime is a free data retrieval call binding the contract method 0x74fa9e85.
+// GetInflationIntervalsElapsed is a free data retrieval call binding the contract method 0xbdbe2544.
 //
-// Solidity: function getLastInflationCalcTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetLastInflationCalcTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetLastInflationCalcTime(&_RewardsPool.CallOpts)
+// Solidity: function getInflationIntervalsElapsed() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalsElapsed() (*big.Int, error) {
+	return _RewardsPool.Contract.GetInflationIntervalsElapsed(&_RewardsPool.CallOpts)
 }
 
-// GetRewardCycleLength is a free data retrieval call binding the contract method 0xf10fc5b9.
+// GetRewardsCycleStartTime is a free data retrieval call binding the contract method 0x726f564b.
 //
-// Solidity: function getRewardCycleLength() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetRewardCycleLength(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getRewardsCycleStartTime() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetRewardsCycleStartTime(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getRewardCycleLength")
+	err := _RewardsPool.contract.Call(opts, &out, "getRewardsCycleStartTime")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -382,26 +383,26 @@ func (_RewardsPool *RewardsPoolCaller) GetRewardCycleLength(opts *bind.CallOpts)
 
 }
 
-// GetRewardCycleLength is a free data retrieval call binding the contract method 0xf10fc5b9.
+// GetRewardsCycleStartTime is a free data retrieval call binding the contract method 0x726f564b.
 //
-// Solidity: function getRewardCycleLength() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetRewardCycleLength() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCycleLength(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCycleStartTime() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetRewardsCycleStartTime() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleStartTime(&_RewardsPool.CallOpts)
 }
 
-// GetRewardCycleLength is a free data retrieval call binding the contract method 0xf10fc5b9.
+// GetRewardsCycleStartTime is a free data retrieval call binding the contract method 0x726f564b.
 //
-// Solidity: function getRewardCycleLength() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetRewardCycleLength() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCycleLength(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCycleStartTime() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCycleStartTime() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleStartTime(&_RewardsPool.CallOpts)
 }
 
-// GetRewardCycleStartTime is a free data retrieval call binding the contract method 0xe8895608.
+// GetRewardsCycleTotalAmount is a free data retrieval call binding the contract method 0x8d88948a.
 //
-// Solidity: function getRewardCycleStartTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetRewardCycleStartTime(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getRewardsCycleTotalAmount() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetRewardsCycleTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getRewardCycleStartTime")
+	err := _RewardsPool.contract.Call(opts, &out, "getRewardsCycleTotalAmount")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -413,26 +414,26 @@ func (_RewardsPool *RewardsPoolCaller) GetRewardCycleStartTime(opts *bind.CallOp
 
 }
 
-// GetRewardCycleStartTime is a free data retrieval call binding the contract method 0xe8895608.
+// GetRewardsCycleTotalAmount is a free data retrieval call binding the contract method 0x8d88948a.
 //
-// Solidity: function getRewardCycleStartTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetRewardCycleStartTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCycleStartTime(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCycleTotalAmount() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetRewardsCycleTotalAmount() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleTotalAmount(&_RewardsPool.CallOpts)
 }
 
-// GetRewardCycleStartTime is a free data retrieval call binding the contract method 0xe8895608.
+// GetRewardsCycleTotalAmount is a free data retrieval call binding the contract method 0x8d88948a.
 //
-// Solidity: function getRewardCycleStartTime() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetRewardCycleStartTime() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCycleStartTime(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCycleTotalAmount() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCycleTotalAmount() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleTotalAmount(&_RewardsPool.CallOpts)
 }
 
-// GetRewardCycleTotalAmount is a free data retrieval call binding the contract method 0x6147251c.
+// GetRewardsCyclesElapsed is a free data retrieval call binding the contract method 0x55cc1aaa.
 //
-// Solidity: function getRewardCycleTotalAmount() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetRewardCycleTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getRewardsCyclesElapsed() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetRewardsCyclesElapsed(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getRewardCycleTotalAmount")
+	err := _RewardsPool.contract.Call(opts, &out, "getRewardsCyclesElapsed")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -444,204 +445,18 @@ func (_RewardsPool *RewardsPoolCaller) GetRewardCycleTotalAmount(opts *bind.Call
 
 }
 
-// GetRewardCycleTotalAmount is a free data retrieval call binding the contract method 0x6147251c.
+// GetRewardsCyclesElapsed is a free data retrieval call binding the contract method 0x55cc1aaa.
 //
-// Solidity: function getRewardCycleTotalAmount() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetRewardCycleTotalAmount() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCycleTotalAmount(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCyclesElapsed() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetRewardsCyclesElapsed() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCyclesElapsed(&_RewardsPool.CallOpts)
 }
 
-// GetRewardCycleTotalAmount is a free data retrieval call binding the contract method 0x6147251c.
+// GetRewardsCyclesElapsed is a free data retrieval call binding the contract method 0x55cc1aaa.
 //
-// Solidity: function getRewardCycleTotalAmount() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetRewardCycleTotalAmount() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCycleTotalAmount(&_RewardsPool.CallOpts)
-}
-
-// GetRewardCyclesPassed is a free data retrieval call binding the contract method 0x624e0014.
-//
-// Solidity: function getRewardCyclesPassed() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetRewardCyclesPassed(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getRewardCyclesPassed")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetRewardCyclesPassed is a free data retrieval call binding the contract method 0x624e0014.
-//
-// Solidity: function getRewardCyclesPassed() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetRewardCyclesPassed() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCyclesPassed(&_RewardsPool.CallOpts)
-}
-
-// GetRewardCyclesPassed is a free data retrieval call binding the contract method 0x624e0014.
-//
-// Solidity: function getRewardCyclesPassed() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetRewardCyclesPassed() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardCyclesPassed(&_RewardsPool.CallOpts)
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_RewardsPool *RewardsPoolCaller) GetSettingAddress(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getSettingAddress", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_RewardsPool *RewardsPoolSession) GetSettingAddress(settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	return _RewardsPool.Contract.GetSettingAddress(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingAddress is a free data retrieval call binding the contract method 0x06eaa68b.
-//
-// Solidity: function getSettingAddress(bytes32 settingNameSpace, string _settingPath) view returns(address)
-func (_RewardsPool *RewardsPoolCallerSession) GetSettingAddress(settingNameSpace [32]byte, _settingPath string) (common.Address, error) {
-	return _RewardsPool.Contract.GetSettingAddress(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_RewardsPool *RewardsPoolCaller) GetSettingBool(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getSettingBool", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_RewardsPool *RewardsPoolSession) GetSettingBool(settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	return _RewardsPool.Contract.GetSettingBool(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingBool is a free data retrieval call binding the contract method 0x232de716.
-//
-// Solidity: function getSettingBool(bytes32 settingNameSpace, string _settingPath) view returns(bool)
-func (_RewardsPool *RewardsPoolCallerSession) GetSettingBool(settingNameSpace [32]byte, _settingPath string) (bool, error) {
-	return _RewardsPool.Contract.GetSettingBool(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetSettingUint(opts *bind.CallOpts, settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getSettingUint", settingNameSpace, _settingPath)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetSettingUint(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetSettingUint is a free data retrieval call binding the contract method 0xf4d70e78.
-//
-// Solidity: function getSettingUint(bytes32 settingNameSpace, string _settingPath) view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetSettingUint(settingNameSpace [32]byte, _settingPath string) (*big.Int, error) {
-	return _RewardsPool.Contract.GetSettingUint(&_RewardsPool.CallOpts, settingNameSpace, _settingPath)
-}
-
-// GetTotalGGPCirculatingSupply is a free data retrieval call binding the contract method 0x2ffc52ee.
-//
-// Solidity: function getTotalGGPCirculatingSupply() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetTotalGGPCirculatingSupply(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getTotalGGPCirculatingSupply")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetTotalGGPCirculatingSupply is a free data retrieval call binding the contract method 0x2ffc52ee.
-//
-// Solidity: function getTotalGGPCirculatingSupply() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetTotalGGPCirculatingSupply() (*big.Int, error) {
-	return _RewardsPool.Contract.GetTotalGGPCirculatingSupply(&_RewardsPool.CallOpts)
-}
-
-// GetTotalGGPCirculatingSupply is a free data retrieval call binding the contract method 0x2ffc52ee.
-//
-// Solidity: function getTotalGGPCirculatingSupply() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetTotalGGPCirculatingSupply() (*big.Int, error) {
-	return _RewardsPool.Contract.GetTotalGGPCirculatingSupply(&_RewardsPool.CallOpts)
-}
-
-// InflationCalculate is a free data retrieval call binding the contract method 0xc1a26006.
-//
-// Solidity: function inflationCalculate() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) InflationCalculate(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "inflationCalculate")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// InflationCalculate is a free data retrieval call binding the contract method 0xc1a26006.
-//
-// Solidity: function inflationCalculate() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) InflationCalculate() (*big.Int, error) {
-	return _RewardsPool.Contract.InflationCalculate(&_RewardsPool.CallOpts)
-}
-
-// InflationCalculate is a free data retrieval call binding the contract method 0xc1a26006.
-//
-// Solidity: function inflationCalculate() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) InflationCalculate() (*big.Int, error) {
-	return _RewardsPool.Contract.InflationCalculate(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCyclesElapsed() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCyclesElapsed() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCyclesElapsed(&_RewardsPool.CallOpts)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
@@ -675,30 +490,51 @@ func (_RewardsPool *RewardsPoolCallerSession) Version() (uint8, error) {
 	return _RewardsPool.Contract.Version(&_RewardsPool.CallOpts)
 }
 
-// StartCycle is a paid mutator transaction binding the contract method 0x562cad23.
+// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 //
-// Solidity: function startCycle() returns()
-func (_RewardsPool *RewardsPoolTransactor) StartCycle(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _RewardsPool.contract.Transact(opts, "startCycle")
+// Solidity: function initialize() returns()
+func (_RewardsPool *RewardsPoolTransactor) Initialize(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _RewardsPool.contract.Transact(opts, "initialize")
 }
 
-// StartCycle is a paid mutator transaction binding the contract method 0x562cad23.
+// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 //
-// Solidity: function startCycle() returns()
-func (_RewardsPool *RewardsPoolSession) StartCycle() (*types.Transaction, error) {
-	return _RewardsPool.Contract.StartCycle(&_RewardsPool.TransactOpts)
+// Solidity: function initialize() returns()
+func (_RewardsPool *RewardsPoolSession) Initialize() (*types.Transaction, error) {
+	return _RewardsPool.Contract.Initialize(&_RewardsPool.TransactOpts)
 }
 
-// StartCycle is a paid mutator transaction binding the contract method 0x562cad23.
+// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 //
-// Solidity: function startCycle() returns()
-func (_RewardsPool *RewardsPoolTransactorSession) StartCycle() (*types.Transaction, error) {
-	return _RewardsPool.Contract.StartCycle(&_RewardsPool.TransactOpts)
+// Solidity: function initialize() returns()
+func (_RewardsPool *RewardsPoolTransactorSession) Initialize() (*types.Transaction, error) {
+	return _RewardsPool.Contract.Initialize(&_RewardsPool.TransactOpts)
 }
 
-// RewardsPoolGGPInflationLogIterator is returned from FilterGGPInflationLog and is used to iterate over the raw logs and unpacked data for GGPInflationLog events raised by the RewardsPool contract.
-type RewardsPoolGGPInflationLogIterator struct {
-	Event *RewardsPoolGGPInflationLog // Event containing the contract specifics and raw log
+// StartRewardsCycle is a paid mutator transaction binding the contract method 0x32c1ee69.
+//
+// Solidity: function startRewardsCycle() returns()
+func (_RewardsPool *RewardsPoolTransactor) StartRewardsCycle(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _RewardsPool.contract.Transact(opts, "startRewardsCycle")
+}
+
+// StartRewardsCycle is a paid mutator transaction binding the contract method 0x32c1ee69.
+//
+// Solidity: function startRewardsCycle() returns()
+func (_RewardsPool *RewardsPoolSession) StartRewardsCycle() (*types.Transaction, error) {
+	return _RewardsPool.Contract.StartRewardsCycle(&_RewardsPool.TransactOpts)
+}
+
+// StartRewardsCycle is a paid mutator transaction binding the contract method 0x32c1ee69.
+//
+// Solidity: function startRewardsCycle() returns()
+func (_RewardsPool *RewardsPoolTransactorSession) StartRewardsCycle() (*types.Transaction, error) {
+	return _RewardsPool.Contract.StartRewardsCycle(&_RewardsPool.TransactOpts)
+}
+
+// RewardsPoolGGPInflatedIterator is returned from FilterGGPInflated and is used to iterate over the raw logs and unpacked data for GGPInflated events raised by the RewardsPool contract.
+type RewardsPoolGGPInflatedIterator struct {
+	Event *RewardsPoolGGPInflated // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -712,7 +548,7 @@ type RewardsPoolGGPInflationLogIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *RewardsPoolGGPInflationLogIterator) Next() bool {
+func (it *RewardsPoolGGPInflatedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -721,7 +557,7 @@ func (it *RewardsPoolGGPInflationLogIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(RewardsPoolGGPInflationLog)
+			it.Event = new(RewardsPoolGGPInflated)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -736,7 +572,7 @@ func (it *RewardsPoolGGPInflationLogIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(RewardsPoolGGPInflationLog)
+		it.Event = new(RewardsPoolGGPInflated)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -752,43 +588,43 @@ func (it *RewardsPoolGGPInflationLogIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *RewardsPoolGGPInflationLogIterator) Error() error {
+func (it *RewardsPoolGGPInflatedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *RewardsPoolGGPInflationLogIterator) Close() error {
+func (it *RewardsPoolGGPInflatedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// RewardsPoolGGPInflationLog represents a GGPInflationLog event raised by the RewardsPool contract.
-type RewardsPoolGGPInflationLog struct {
+// RewardsPoolGGPInflated represents a GGPInflated event raised by the RewardsPool contract.
+type RewardsPoolGGPInflated struct {
 	Sender            common.Address
 	Value             *big.Int
 	InflationCalcTime *big.Int
 	Raw               types.Log // Blockchain specific contextual infos
 }
 
-// FilterGGPInflationLog is a free log retrieval operation binding the contract event 0x5fdac2d68dba8699193bd645ebe5fa18d2ae4f94c71b9cc5cc66d49b69731eec.
+// FilterGGPInflated is a free log retrieval operation binding the contract event 0xcfb0e6270bb07bc42d1428419f5d2c9cfb8ad691d822a30616ef9e0299e0b36a.
 //
-// Solidity: event GGPInflationLog(address sender, uint256 value, uint256 inflationCalcTime)
-func (_RewardsPool *RewardsPoolFilterer) FilterGGPInflationLog(opts *bind.FilterOpts) (*RewardsPoolGGPInflationLogIterator, error) {
+// Solidity: event GGPInflated(address sender, uint256 value, uint256 inflationCalcTime)
+func (_RewardsPool *RewardsPoolFilterer) FilterGGPInflated(opts *bind.FilterOpts) (*RewardsPoolGGPInflatedIterator, error) {
 
-	logs, sub, err := _RewardsPool.contract.FilterLogs(opts, "GGPInflationLog")
+	logs, sub, err := _RewardsPool.contract.FilterLogs(opts, "GGPInflated")
 	if err != nil {
 		return nil, err
 	}
-	return &RewardsPoolGGPInflationLogIterator{contract: _RewardsPool.contract, event: "GGPInflationLog", logs: logs, sub: sub}, nil
+	return &RewardsPoolGGPInflatedIterator{contract: _RewardsPool.contract, event: "GGPInflated", logs: logs, sub: sub}, nil
 }
 
-// WatchGGPInflationLog is a free log subscription operation binding the contract event 0x5fdac2d68dba8699193bd645ebe5fa18d2ae4f94c71b9cc5cc66d49b69731eec.
+// WatchGGPInflated is a free log subscription operation binding the contract event 0xcfb0e6270bb07bc42d1428419f5d2c9cfb8ad691d822a30616ef9e0299e0b36a.
 //
-// Solidity: event GGPInflationLog(address sender, uint256 value, uint256 inflationCalcTime)
-func (_RewardsPool *RewardsPoolFilterer) WatchGGPInflationLog(opts *bind.WatchOpts, sink chan<- *RewardsPoolGGPInflationLog) (event.Subscription, error) {
+// Solidity: event GGPInflated(address sender, uint256 value, uint256 inflationCalcTime)
+func (_RewardsPool *RewardsPoolFilterer) WatchGGPInflated(opts *bind.WatchOpts, sink chan<- *RewardsPoolGGPInflated) (event.Subscription, error) {
 
-	logs, sub, err := _RewardsPool.contract.WatchLogs(opts, "GGPInflationLog")
+	logs, sub, err := _RewardsPool.contract.WatchLogs(opts, "GGPInflated")
 	if err != nil {
 		return nil, err
 	}
@@ -798,8 +634,8 @@ func (_RewardsPool *RewardsPoolFilterer) WatchGGPInflationLog(opts *bind.WatchOp
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(RewardsPoolGGPInflationLog)
-				if err := _RewardsPool.contract.UnpackLog(event, "GGPInflationLog", log); err != nil {
+				event := new(RewardsPoolGGPInflated)
+				if err := _RewardsPool.contract.UnpackLog(event, "GGPInflated", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -820,12 +656,12 @@ func (_RewardsPool *RewardsPoolFilterer) WatchGGPInflationLog(opts *bind.WatchOp
 	}), nil
 }
 
-// ParseGGPInflationLog is a log parse operation binding the contract event 0x5fdac2d68dba8699193bd645ebe5fa18d2ae4f94c71b9cc5cc66d49b69731eec.
+// ParseGGPInflated is a log parse operation binding the contract event 0xcfb0e6270bb07bc42d1428419f5d2c9cfb8ad691d822a30616ef9e0299e0b36a.
 //
-// Solidity: event GGPInflationLog(address sender, uint256 value, uint256 inflationCalcTime)
-func (_RewardsPool *RewardsPoolFilterer) ParseGGPInflationLog(log types.Log) (*RewardsPoolGGPInflationLog, error) {
-	event := new(RewardsPoolGGPInflationLog)
-	if err := _RewardsPool.contract.UnpackLog(event, "GGPInflationLog", log); err != nil {
+// Solidity: event GGPInflated(address sender, uint256 value, uint256 inflationCalcTime)
+func (_RewardsPool *RewardsPoolFilterer) ParseGGPInflated(log types.Log) (*RewardsPoolGGPInflated, error) {
+	event := new(RewardsPoolGGPInflated)
+	if err := _RewardsPool.contract.UnpackLog(event, "GGPInflated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1035,13 +871,13 @@ func (it *RewardsPoolNewRewardsCycleStartedIterator) Close() error {
 
 // RewardsPoolNewRewardsCycleStarted represents a NewRewardsCycleStarted event raised by the RewardsPool contract.
 type RewardsPoolNewRewardsCycleStarted struct {
-	TotalRewardAmt *big.Int
-	Raw            types.Log // Blockchain specific contextual infos
+	TotalRewardsAmt *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
 }
 
 // FilterNewRewardsCycleStarted is a free log retrieval operation binding the contract event 0x6b1d3dc5fce42913ead941789ebaa30a3b9d2f7d03eb1b72664ef963af99a4c8.
 //
-// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt)
+// Solidity: event NewRewardsCycleStarted(uint256 totalRewardsAmt)
 func (_RewardsPool *RewardsPoolFilterer) FilterNewRewardsCycleStarted(opts *bind.FilterOpts) (*RewardsPoolNewRewardsCycleStartedIterator, error) {
 
 	logs, sub, err := _RewardsPool.contract.FilterLogs(opts, "NewRewardsCycleStarted")
@@ -1053,7 +889,7 @@ func (_RewardsPool *RewardsPoolFilterer) FilterNewRewardsCycleStarted(opts *bind
 
 // WatchNewRewardsCycleStarted is a free log subscription operation binding the contract event 0x6b1d3dc5fce42913ead941789ebaa30a3b9d2f7d03eb1b72664ef963af99a4c8.
 //
-// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt)
+// Solidity: event NewRewardsCycleStarted(uint256 totalRewardsAmt)
 func (_RewardsPool *RewardsPoolFilterer) WatchNewRewardsCycleStarted(opts *bind.WatchOpts, sink chan<- *RewardsPoolNewRewardsCycleStarted) (event.Subscription, error) {
 
 	logs, sub, err := _RewardsPool.contract.WatchLogs(opts, "NewRewardsCycleStarted")
@@ -1090,7 +926,7 @@ func (_RewardsPool *RewardsPoolFilterer) WatchNewRewardsCycleStarted(opts *bind.
 
 // ParseNewRewardsCycleStarted is a log parse operation binding the contract event 0x6b1d3dc5fce42913ead941789ebaa30a3b9d2f7d03eb1b72664ef963af99a4c8.
 //
-// Solidity: event NewRewardsCycleStarted(uint256 totalRewardAmt)
+// Solidity: event NewRewardsCycleStarted(uint256 totalRewardsAmt)
 func (_RewardsPool *RewardsPoolFilterer) ParseNewRewardsCycleStarted(log types.Log) (*RewardsPoolNewRewardsCycleStarted, error) {
 	event := new(RewardsPoolNewRewardsCycleStarted)
 	if err := _RewardsPool.contract.UnpackLog(event, "NewRewardsCycleStarted", log); err != nil {
