@@ -123,7 +123,7 @@ abstract contract BaseTest is Test {
 		ggAVAX.syncRewards();
 
 		vm.prank(rialto);
-		oracle.setGGPPrice(1 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(1 ether, block.timestamp);
 
 		deal(guardian, type(uint128).max);
 	}

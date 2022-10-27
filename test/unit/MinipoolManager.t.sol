@@ -659,17 +659,17 @@ contract MinipoolManagerTest is BaseTest {
 
 	function testCalculateGGPSlashAmt() public {
 		vm.prank(rialto);
-		oracle.setGGPPrice(1 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(1 ether, block.timestamp);
 		uint256 slashAmt = minipoolMgr.calculateGGPSlashAmt(100 ether);
 		assertEq(slashAmt, 100 ether);
 
 		vm.prank(rialto);
-		oracle.setGGPPrice(0.5 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(0.5 ether, block.timestamp);
 		slashAmt = minipoolMgr.calculateGGPSlashAmt(100 ether);
 		assertEq(slashAmt, 200 ether);
 
 		vm.prank(rialto);
-		oracle.setGGPPrice(3 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(3 ether, block.timestamp);
 		slashAmt = minipoolMgr.calculateGGPSlashAmt(100 ether);
 		assertEq(slashAmt, 33333333333333333333);
 	}

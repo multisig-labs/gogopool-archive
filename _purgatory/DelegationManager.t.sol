@@ -228,15 +228,15 @@ contract DelegationManagerTest is BaseTest {
 
 	//taken from MinipoolManager
 	function testCalculateSlashAmt() public {
-		oracle.setGGPPrice(1 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(1 ether, block.timestamp);
 		uint256 slashAmt = delegationMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 100 ether);
 
-		oracle.setGGPPrice(0.5 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(0.5 ether, block.timestamp);
 		slashAmt = delegationMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 200 ether);
 
-		oracle.setGGPPrice(3 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(3 ether, block.timestamp);
 		slashAmt = delegationMgr.calculateSlashAmt(100 ether);
 		assertEq(slashAmt, 33333333333333333333);
 	}
@@ -283,7 +283,7 @@ contract DelegationManagerTest is BaseTest {
 		//ggavax has some funds in it from bob
 		uint256 priorBalance_ggAVAX = wavax.balanceOf(address(ggAVAX));
 		//ggp price needs to be set inorder to calculate the slash amt
-		oracle.setGGPPrice(1 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(1 ether, block.timestamp);
 
 		//testing that if we give zero rewards that the ggp will be slashed
 		delegationMgr.recordDelegationEnd{value: requestedDelegationAmt}(nodeID, block.timestamp, 0 ether, 0 ether);

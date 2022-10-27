@@ -243,7 +243,7 @@ contract StakingTest is BaseTest {
 
 	function testGetEffectiveGGPStakedWithLowGGPPrice() public {
 		vm.prank(rialto);
-		oracle.setGGPPrice(0.1 ether, block.timestamp);
+		oracle.setGGPPriceInAVAX(0.1 ether, block.timestamp);
 
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(3000 ether);

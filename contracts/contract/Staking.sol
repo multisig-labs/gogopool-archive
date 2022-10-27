@@ -191,7 +191,7 @@ contract Staking is Base {
 	function getMinimumGGPStake(address stakerAddr) public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 
 		uint256 avaxAssigned = getAVAXAssigned(stakerAddr);
 		uint256 ggp100pct = avaxAssigned.divWadDown(ggpPriceInAvax);
@@ -206,7 +206,7 @@ contract Staking is Base {
 			return type(uint256).max;
 		}
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 		uint256 ggpStaked = getGGPStake(stakerAddr);
 		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
 		return ggpStakedInAvax.divWadDown(avaxAssigned);
@@ -223,7 +223,7 @@ contract Staking is Base {
 			return 0;
 		}
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 		uint256 ggpStaked = getGGPStake(stakerAddr);
 		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
 		uint256 ratio = ggpStakedInAvax.divWadDown(avaxAssignedHighWater);
@@ -237,7 +237,7 @@ contract Staking is Base {
 	// GGP that will count towards rewards this cycle
 	function getEffectiveGGPStaked(address stakerAddr) external view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
 		uint256 ratio = getEffectiveRewardsRatio(stakerAddr);
 		return avaxAssignedHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);

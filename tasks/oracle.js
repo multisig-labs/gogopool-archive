@@ -41,7 +41,7 @@ task("oracle:set_ggp", "")
 		const oracle = await get("Oracle", signer);
 		if (timestamp === 0 && interval === "") {
 			// init price
-			await oracle.setGGPPrice(priceParsed, 0);
+			await oracle.setGGPPriceInAVAX(priceParsed, 0);
 			return;
 		}
 
@@ -50,7 +50,7 @@ task("oracle:set_ggp", "")
 			const lastTimestamp = results.timestamp;
 			timestamp = lastTimestamp + parseDelta(interval);
 		}
-		await oracle.setGGPPrice(priceParsed, timestamp);
+		await oracle.setGGPPriceInAVAX(priceParsed, timestamp);
 	});
 
 task("oracle:get_ggp", "").setAction(async () => {

@@ -9,20 +9,18 @@ import {TokenGGP} from "./tokens/TokenGGP.sol";
 /*
 	Data Storage Schema
 	Oracle.OneInch = address of the One Inch price aggregator contract
-	Oracle.GGPPrice = price of GGP **IN AVAX UNITS**
+	Oracle.GGPPriceInAVAX = price of GGP **IN AVAX UNITS**
 	Oracle.GGPTimestamp = block.timestamp of last update to GGP price
 */
 
 contract Oracle is Base {
 	error InvalidGGPPrice();
-	error InvalidOrDisabledMultisig();
 	error InvalidTimestamp();
 
 	event GGPPriceUpdated(uint256 indexed price);
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		// TODO initialize the price here?
 	}
 
 	// Set the address of the One Inch price aggregator contract
@@ -41,15 +39,16 @@ contract Oracle is Base {
 		timestamp = block.timestamp;
 	}
 
-	function getGGPPrice() external view returns (uint256 price, uint256 timestamp) {
-		price = getUint(keccak256("Oracle.GGPPrice"));
+	/// @notice Get the price of GGP denominated in AVAX, and the time it was updated
+	function getGGPPriceInAVAX() external view returns (uint256 price, uint256 timestamp) {
+		price = getUint(keccak256("Oracle.GGPPriceInAVAX"));
 		if (price == 0) {
 			revert InvalidGGPPrice();
 		}
 		timestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 	}
 
-	function setGGPPrice(uint256 price, uint256 timestamp) external onlyMultisig {
+	function setGGPPriceInAVAX(uint256 price, uint256 timestamp) external onlyMultisig {
 		uint256 lastTimestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 		if (timestamp < lastTimestamp || timestamp > block.timestamp) {
 			revert InvalidTimestamp();
@@ -57,7 +56,7 @@ contract Oracle is Base {
 		if (price == 0) {
 			revert InvalidGGPPrice();
 		}
-		setUint(keccak256("Oracle.GGPPrice"), price);
+		setUint(keccak256("Oracle.GGPPriceInAVAX"), price);
 		setUint(keccak256("Oracle.GGPTimestamp"), timestamp);
 		emit GGPPriceUpdated(price);
 	}
