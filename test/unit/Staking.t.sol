@@ -273,7 +273,7 @@ contract StakingTest is BaseTest {
 
 	function testStakeGGP() public {
 		uint256 amt = 100 ether;
-		vm.startPrank(nodeOp1, nodeOp1);
+		vm.startPrank(nodeOp1);
 		uint256 startingGGPAmt = ggp.balanceOf(nodeOp1);
 		staking.stakeGGP(amt);
 		assert(ggp.balanceOf(nodeOp1) == startingGGPAmt - amt);
@@ -283,7 +283,7 @@ contract StakingTest is BaseTest {
 
 	function testWithdrawGGP() public {
 		uint256 amt = 100 ether;
-		vm.startPrank(nodeOp1, nodeOp1);
+		vm.startPrank(nodeOp1);
 		uint256 startingGGPAmt = ggp.balanceOf(nodeOp1);
 		staking.stakeGGP(amt);
 		assert(ggp.balanceOf(nodeOp1) == startingGGPAmt - amt);

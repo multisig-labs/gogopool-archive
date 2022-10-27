@@ -59,9 +59,11 @@ abstract contract BaseTest is Test {
 		vm.label(guardian, "guardian");
 
 		// Construct all contracts as Guardian
-		vm.startPrank(guardian, guardian);
+		vm.startPrank(guardian);
 
 		store = new Storage();
+		// Hack the storage directly to recognize this test contract as a LatestNetworkContract
+		store.setBool(keccak256(abi.encodePacked("contract.exists", address(this))), true);
 
 		dao = new ProtocolDAO(store);
 		registerContract(store, "ProtocolDAO", address(dao));
@@ -84,7 +86,7 @@ abstract contract BaseTest is Test {
 
 		vm.stopPrank();
 		ggAVAX.initialize(store, wavax);
-		vm.startPrank(guardian, guardian);
+		vm.startPrank(guardian);
 
 		minipoolMgr = new MinipoolManager(store, ggp, ggAVAX);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
@@ -116,9 +118,6 @@ abstract contract BaseTest is Test {
 		ocyticus = new Ocyticus(store);
 		registerContract(store, "Ocyticus", address(ocyticus));
 
-		// TODO We need to do this in prod, do we need it here too?
-		// store.setDeployedStatus();
-
 		// Initialize the rewards cycle
 		vm.stopPrank();
 		ggAVAX.syncRewards();
@@ -132,18 +131,17 @@ abstract contract BaseTest is Test {
 	// Override DAO values for tests
 	function initDao() internal {
 		store.setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), 0.1 ether);
-		// GGP Inflation settings
-		// these may change when we finialize tokenomics
+		// GGP Inflation settings may change when we finialize tokenomics
 		store.setUint(keccak256("ProtocolDAO.InflationInterval"), 1 days);
 		store.setUint(keccak256("ProtocolDAO.InflationIntervalStartTime"), block.timestamp);
 		store.setUint(keccak256("ProtocolDAO.InflationIntervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
-		store.setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 0 days);
+		store.setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 14 days);
 		store.setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
 		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
 		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
 		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
 		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
-		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserver
+		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserve
 		store.setUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"), 2_000 ether);
 		store.setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
 		store.setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
@@ -183,9 +181,8 @@ abstract contract BaseTest is Test {
 		if (avaxAmt > 0) {
 			vm.deal(actor, avaxAmt);
 
-			vm.startPrank(actor);
+			vm.prank(actor);
 			wavax.deposit{value: avaxAmt}();
-			vm.stopPrank();
 
 			vm.deal(actor, avaxAmt);
 		}
@@ -194,9 +191,8 @@ abstract contract BaseTest is Test {
 	}
 
 	function dealGGP(address actor, uint128 amount) public {
-		vm.startPrank(guardian);
+		vm.prank(guardian);
 		ggp.transfer(actor, amount);
-		vm.stopPrank();
 	}
 
 	function createMinipool(
@@ -205,7 +201,7 @@ abstract contract BaseTest is Test {
 		uint256 duration
 	) internal returns (MinipoolManager.Minipool memory) {
 		address nodeID = randAddress();
-		uint256 delegationFee = uint256(20_000);
+		uint256 delegationFee = 0.02 ether;
 		minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee, avaxAssignmentRequest);
 		int256 index = minipoolMgr.getIndexOf(nodeID);
 		return minipoolMgr.getMinipool(index);
@@ -218,17 +214,17 @@ abstract contract BaseTest is Test {
 
 	function randAddress() internal returns (address) {
 		randNonce++;
-		return address(uint160(uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp))))));
+		return address(uint160(uint256(randHash())));
 	}
 
 	function randUint(uint256 _modulus) internal returns (uint256) {
 		randNonce++;
-		return uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)))) % _modulus;
+		return uint256(randHash()) % _modulus;
 	}
 
 	function randUintBetween(uint256 lowerBound, uint256 upperBound) internal returns (uint256) {
 		randNonce++;
-		uint256 bound = uint256(keccak256(abi.encodePacked(randNonce, blockhash(block.timestamp)))) % (upperBound - lowerBound);
+		uint256 bound = uint256(randHash()) % (upperBound - lowerBound);
 		uint256 randomNum = bound + lowerBound;
 		return randomNum;
 	}

@@ -16,7 +16,7 @@ contract RewardsPoolTest is BaseTest {
 
 	function distributeInitialSupply() public {
 		// note: guardian is minted 100% of the supply
-		vm.startPrank(guardian, guardian);
+		vm.startPrank(guardian);
 
 		uint256 companyAllocation = TOTAL_INITIAL_SUPPLY.mulWadDown(.32 ether);
 		uint256 pDaoAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.3233 ether);

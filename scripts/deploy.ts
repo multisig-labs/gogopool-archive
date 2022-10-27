@@ -80,16 +80,6 @@ const deploy = async () => {
 		instances[contract] = inst;
 		addresses[contract] = c.address;
 		console.log(`${contract} deployed to: ${c.address}`);
-		// If initialize() exists then call it, it if needs params like TokenggAVAX then dont call
-		if (inst.initialize) {
-			for (const f of inst.interface.fragments) {
-				if (f.name === "initialize" && f.inputs.length === 0) {
-					console.log(`Calling ${contract}.initialize()`);
-					const tx = await inst.initialize();
-					await logtx(tx);
-				}
-			}
-		}
 	}
 
 	let nonce = parseInt(
@@ -125,6 +115,19 @@ const deploy = async () => {
 					nonce: nonce++,
 				}
 			);
+		}
+	}
+
+	// Call initialize() on any contract that has that fn signature
+	for (const contract of toDeploy) {
+		if (instances[contract].initialize) {
+			for (const f of instances[contract].interface.fragments) {
+				if (f.name === "initialize" && f.inputs.length === 0) {
+					console.log(`Calling ${contract}.initialize()`);
+					const tx = await instances[contract].initialize({ nonce: nonce++ });
+					await logtx(tx);
+				}
+			}
 		}
 	}
 

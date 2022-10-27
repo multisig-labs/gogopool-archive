@@ -14,7 +14,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 	function setUp() public override {
 		super.setUp();
-		vm.prank(guardian, guardian);
+		vm.prank(guardian);
 		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.0 ether);
 
 		alice = getActorWithTokens("alice", MAX_AMT, MAX_AMT);
@@ -248,7 +248,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 avaxAssignmentRequest = 1000 ether;
 		uint128 ggpStakeAmt = 200 ether;
 
-		vm.startPrank(nodeOp, nodeOp);
+		vm.startPrank(nodeOp);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
 		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);

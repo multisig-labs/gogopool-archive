@@ -15,17 +15,14 @@ contract StorageTest is BaseTest {
 	function testGuardian() public {
 		// Storage() was created by guardian in setup, so it is the guardian to start
 		assertEq(store.getGuardian(), guardian);
-		// We start out in an undeployed state while everything gets set up
-		assertBoolEq(store.getDeployedStatus(), false);
 
 		// Change the guardian
-		vm.prank(guardian, guardian);
+		vm.prank(guardian);
 		store.setGuardian(NEWGUARDIAN);
 		// Should not change yet, must be confirmed
 		assertEq(store.getGuardian(), guardian);
 
-		// Impersonate an address
-		vm.startPrank(NEWGUARDIAN, NEWGUARDIAN);
+		vm.startPrank(NEWGUARDIAN);
 		store.confirmGuardian();
 		assertEq(store.getGuardian(), NEWGUARDIAN);
 		store.setString(KEY, "test");
@@ -35,15 +32,20 @@ contract StorageTest is BaseTest {
 
 	// Accepting params will fuzz the test
 	function testStorageFuzz(int256 i) public {
-		vm.prank(guardian, guardian);
+		vm.prank(guardian);
 		store.setInt(KEY, i);
 		assertEq(store.getInt(KEY), i);
 	}
 
 	function testNotGuardian() public {
-		vm.prank(NEWGUARDIAN, NEWGUARDIAN);
-		vm.expectRevert("Invalid or outdated network contract attempting access during deployment");
+		// Hack storage directly to unregister us as LatestNetworkContract
+		store.setBool(keccak256(abi.encodePacked("contract.exists", address(this))), false);
+
+		bytes memory customError = abi.encodeWithSignature("InvalidOrOutdatedContract()");
+		vm.expectRevert(customError);
 		store.setInt(KEY, 2);
-		assertEq(store.getInt(KEY), 0);
+
+		vm.prank(guardian);
+		store.setInt(KEY, 2);
 	}
 }

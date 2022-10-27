@@ -8,7 +8,7 @@ contract ProtocolDAOClaimTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 
-		vm.startPrank(guardian, guardian);
+		vm.startPrank(guardian);
 		ggp.approve(address(vault), 1000 ether);
 		vault.depositToken("ProtocolDAOClaim", ggp, 1000 ether);
 		vm.stopPrank();

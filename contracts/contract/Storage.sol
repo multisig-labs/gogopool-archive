@@ -5,37 +5,29 @@ pragma solidity ^0.8.13;
 /// Based on RocketStorage by RocketPool
 
 contract Storage {
+	error InvalidGuardianConfirmation();
+	error InvalidOrOutdatedContract();
+	error MustBeGuardian();
+
 	event GuardianChanged(address oldGuardian, address newGuardian);
 
 	// Storage maps
-	mapping(bytes32 => string) private stringStorage;
-	mapping(bytes32 => bytes) private bytesStorage;
-	mapping(bytes32 => uint256) private uintStorage;
-	mapping(bytes32 => int256) private intStorage;
 	mapping(bytes32 => address) private addressStorage;
 	mapping(bytes32 => bool) private booleanStorage;
+	mapping(bytes32 => bytes) private bytesStorage;
 	mapping(bytes32 => bytes32) private bytes32Storage;
+	mapping(bytes32 => int256) private intStorage;
+	mapping(bytes32 => string) private stringStorage;
+	mapping(bytes32 => uint256) private uintStorage;
 
 	// Guardian address
 	address private guardian;
 	address private newGuardian;
 
-	// Flag storage has been initialised
-	bool private storageInit = false;
-
-	/// @dev Only allow access from the latest version of a contract in the GoGoPool network after deployment
+	/// @dev Only allow access from guardian or the latest version of a contract in the GoGoPool network
 	modifier onlyLatestNetworkContract() {
-		// solhint-disable
-		if (storageInit == true) {
-			// Make sure the access is permitted to only contracts in our Dapp
-			require(booleanStorage[keccak256(abi.encodePacked("contract.exists", msg.sender))], "Invalid or outdated contract");
-		} else {
-			// Only Dapp and the guardian account are allowed access during initialisation.
-			// tx.origin is only safe to use in this case for deployment since no external contracts are interacted with
-			require(
-				(booleanStorage[keccak256(abi.encodePacked("contract.exists", msg.sender))] || tx.origin == guardian),
-				"Invalid or outdated network contract attempting access during deployment"
-			);
+		if (booleanStorage[keccak256(abi.encodePacked("contract.exists", msg.sender))] == false && msg.sender != guardian) {
+			revert InvalidOrOutdatedContract();
 		}
 		_;
 	}
@@ -47,7 +39,9 @@ contract Storage {
 	// Initiate transfer of guardianship to a new address
 	function setGuardian(address _newAddress) external {
 		// Check tx comes from current guardian
-		require(msg.sender == guardian, "Is not guardian account");
+		if (msg.sender != guardian) {
+			revert MustBeGuardian();
+		}
 		// Store new address awaiting confirmation
 		newGuardian = _newAddress;
 	}
@@ -59,25 +53,15 @@ contract Storage {
 
 	// Completes transfer of guardianship
 	function confirmGuardian() external {
-		require(msg.sender == newGuardian, "Confirmation must come from new guardian address");
+		if (msg.sender != newGuardian) {
+			revert InvalidGuardianConfirmation();
+		}
 		// Store old guardian for event
 		address oldGuardian = guardian;
 		// Update guardian and clear storage
 		guardian = newGuardian;
 		delete newGuardian;
 		emit GuardianChanged(oldGuardian, guardian);
-	}
-
-	// Set this as being deployed now
-	function setDeployedStatus() external {
-		// Only guardian can lock this down
-		require(msg.sender == guardian, "Is not guardian account");
-		// Set it now
-		storageInit = true;
-	}
-
-	function getDeployedStatus() external view returns (bool) {
-		return storageInit;
 	}
 
 	//
