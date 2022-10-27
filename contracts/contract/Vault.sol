@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.13;
+pragma solidity 0.8.17;
 
 import "./Base.sol";
 import {ERC20, ERC20Burnable} from "./tokens/ERC20Burnable.sol";

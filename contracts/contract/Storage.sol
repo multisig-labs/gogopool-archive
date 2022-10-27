@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.13;
+pragma solidity 0.8.17;
 
 /// @title The primary persistent storage for GoGoPool
 /// Based on RocketStorage by RocketPool

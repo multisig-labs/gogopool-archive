@@ -4,7 +4,7 @@
 // [GGP] Switching this to use Rari ERC20
 // [GGP] Vault.sol doesnt use burnFrom so skip implementing it for now
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.17;
 
 import "@rari-capital/solmate/src/tokens/ERC20.sol";
 
