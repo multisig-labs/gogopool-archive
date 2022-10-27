@@ -13,7 +13,7 @@ import {ProtocolDAO} from "../../../contracts/contract/dao/ProtocolDAO.sol";
 import {NOPClaim} from "../../../contracts/contract/rewards/claims/NOPClaim.sol";
 import {TokenGGP} from "../../../contracts/contract/tokens/TokenGGP.sol";
 import {TokenggAVAX} from "../../../contracts/contract/tokens/TokenggAVAX.sol";
-import {WAVAX} from "../../../contracts/contract/tokens/WAVAX.sol";
+import {WAVAX} from "../../../contracts/contract/utils/WAVAX.sol";
 import {MinipoolStatus} from "../../../contracts/types/MinipoolStatus.sol";
 import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 import {RewardsPool} from "../../../contracts/contract/rewards/RewardsPool.sol";

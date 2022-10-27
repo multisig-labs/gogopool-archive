@@ -79,7 +79,7 @@ solhint:
 # Run slither static analysis
 slither:
 	slither . \
-		--filter-paths "(lib/|openzeppelin|ERC|Multicall|OneInchMock.sol|WAVAX.sol|RialtoSimulator.sol)"
+		--filter-paths "(lib/|utils/|openzeppelin|ERC)"
 
 # Generate Go code interface for contracts to /gen
 gen: compile
