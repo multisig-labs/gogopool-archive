@@ -39,57 +39,6 @@ contract RewardsPoolTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	//commenting this out since it is failing, because effective stake only applies to minipools that have borrowed liquid stakers funds. But we will come back to focusing on rewards later
-	// function testTotalEffectiveStakeNoMinipools() public {
-	// 	address nodeOp = getActorWithGGP(1000 ether);
-	// 	vm.startPrank(nodeOp);
-	// 	staking.stakeGGP(1000 ether);
-
-	// 	uint256 totalEffectiveStake = staking.getTotalEffectiveGGPStake();
-	// 	assertEq(totalEffectiveStake, 0);
-	// 	vm.stopPrank();
-	// }
-
-	//commenting this out since it is failing, because effective stake only applies to minipools that have borrowed liquid stakers funds. But we will come back to focusing on rewards later
-	// function testTotalEffectiveStakeWithMinipool() public {
-	// 	uint128 ggpStakeAmt = 1000 ether;
-	// 	uint256 depositAmt = 1000 ether;
-	// 	uint256 avaxAssignmentRequest = 1000 ether;
-
-	// 	address nodeOp = getActorWithGGP(ggpStakeAmt);
-	// 	vm.deal(nodeOp, depositAmt);
-
-	// 	vm.startPrank(nodeOp);
-	// 	staking.stakeGGP(ggpStakeAmt);
-
-	// 	(nodeID, duration, delegationFee) = randMinipool();
-
-	// 	minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee, avaxAssignmentRequest);
-
-	// 	uint256 totalEffectiveStake = staking.getTotalEffectiveGGPStake();
-	// 	assertEq(totalEffectiveStake, ggpStakeAmt);
-	// 	vm.stopPrank();
-	// }
-
-	//commenting this out since it is failing, because effective stake only applies to minipools that have borrowed liquid stakers funds. But we will come back to focusing on rewards later
-	// function testNodeOpEffectiveStake() public {
-	// 	uint128 ggpStakeAmt = 2000 ether;
-	// 	uint256 depositAmt = 1000 ether;
-	// 	uint256 avaxAssignmentRequest = 1000 ether;
-
-	// 	address nodeOp = getActorWithTokens(1000 ether, 2000 ether);
-	// 	address nodeOp2 = getActorWithTokens(1000 ether, 2000 ether);
-
-	// 	stakeAndCreateMinipool(nodeOp, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
-	// 	stakeAndCreateMinipool(nodeOp2, depositAmt, ggpStakeAmt, avaxAssignmentRequest);
-
-	// 	uint256 totalMinipools = store.getUint(keccak256("MinipoolManager.count"));
-	// 	assertEq(totalMinipools, 2);
-
-	// 	uint256 totalEffectiveNodeOpStake = staking.getUserEffectiveGGPStake(nodeOp);
-	// 	assertEq(totalEffectiveNodeOpStake, 1500 ether);
-	// }
-
 	function testInitialization() public {
 		assertTrue(store.getBool(keccak256("RewardsPool.initialized")));
 		assertGt(rewardsPool.getInflationIntervalStartTime(), 0);

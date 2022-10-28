@@ -151,9 +151,6 @@ contract Staking is Base {
 
 	/// @dev Also sets .rewardsStartTime if minipoolsCount goes from 0 -> 1
 	function increaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
-		if (getMinipoolCount(stakerAddr) == 0) {
-			setRewardsStartTime(stakerAddr, block.timestamp);
-		}
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
 	}

@@ -187,6 +187,24 @@ contract StakingTest is BaseTest {
 		assert(staking.getRewardsStartTime(address(nodeOp1)) == 1666291634);
 	}
 
+	function testGetGGPRewards() public {
+		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
+		rewardsPool.startRewardsCycle();
+		assertFalse(rewardsPool.canStartRewardsCycle());
+		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
+		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+
+		skip(dao.getRewardsCycleSeconds());
+
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		rewardsPool.startRewardsCycle();
+
+		assertGt(vault.balanceOfToken("NOPClaim", ggp), 0);
+		assertGt(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+	}
+
 	function testIncreaseGGPRewards() public {
 		vm.prank(nodeOp1);
 		staking.stakeGGP(100 ether);

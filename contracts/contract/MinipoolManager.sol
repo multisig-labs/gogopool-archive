@@ -206,6 +206,9 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		staking.increaseAVAXStake(msg.sender, msg.value);
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
 		staking.increaseMinipoolCount(msg.sender);
+		if (staking.getRewardsStartTime(msg.sender) == 0) {
+			staking.setRewardsStartTime(msg.sender, block.timestamp);
+		}
 		uint256 ratio = staking.getCollateralizationRatio(msg.sender);
 		if (ratio < dao.getMinCollateralizationRatio()) {
 			revert InsufficientGGPCollateralization();

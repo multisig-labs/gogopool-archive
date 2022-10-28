@@ -30,7 +30,7 @@ contract ScenariosTest is BaseTest {
 		vm.stopPrank();
 
 		// Give Rialto sim some funds to pay simulated validator rewards
-		vm.deal(address(rialtoSim), ONE_K);
+		vm.deal(address(rialtoSim), (ONE_K * 4));
 
 		nodeOp1 = getActorWithTokens("nodeOp1", ONE_K, ONE_K);
 		nodeOp2 = getActorWithTokens("nodeOp2", ONE_K, ONE_K);
@@ -185,5 +185,166 @@ contract ScenariosTest is BaseTest {
 		vm.prank(liqStaker2);
 		ggAVAX.withdrawAVAX(amt);
 		assertEq(liqStaker2.balance, amt);
+	}
+
+	function testStakingGGPOnly() public {
+		vm.startPrank(nodeOp1);
+		ggp.approve(address(staking), 100 ether);
+		staking.stakeGGP(100 ether);
+		skip(dao.getRewardsCycleSeconds());
+		rialtoSim.processGGPRewards();
+		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
+	}
+
+	//Documenting that this is possible
+	function testStakeMinipoolUnstakeStakeScenario() public {
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
+		// Liq Stakers deposit all their AVAX and get ggAVAX in return
+		vm.prank(liqStaker1);
+		ggAVAX.depositAVAX{value: ONE_K}();
+
+		vm.prank(liqStaker2);
+		ggAVAX.depositAVAX{value: ONE_K}();
+
+		vm.startPrank(nodeOp1);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, depositAmt, duration);
+		vm.stopPrank();
+
+		// Cannot unstake GGP at this point
+		vm.expectRevert(Staking.CannotWithdrawUnder150CollateralizationRatio.selector);
+		vm.prank(nodeOp1);
+		staking.withdrawGGP(ggpStakeAmt);
+
+		mp = rialtoSim.processMinipoolStart(mp.nodeID);
+		skip(mp.duration);
+		mp = rialtoSim.processMinipoolEndWithRewards(mp.nodeID);
+
+		// test that the node op can withdraw the funds they are due
+		uint256 nodeOp1PriorBalance = nodeOp1.balance;
+		vm.prank(nodeOp1);
+		minipoolMgr.withdrawMinipoolFunds(mp.nodeID);
+		assertEq((nodeOp1.balance - nodeOp1PriorBalance), mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt);
+
+		//test that node op can withdraw all their GGP
+		uint256 nodeOp1PriorBalanceGGP = ggp.balanceOf(nodeOp1);
+		vm.prank(nodeOp1);
+		staking.withdrawGGP(ggpStakeAmt);
+		assertEq((ggp.balanceOf(nodeOp1) - nodeOp1PriorBalanceGGP), ggpStakeAmt);
+		assertEq(staking.getGGPStake(address(nodeOp1)), 0);
+
+		//fwd in time 1 day before the rewards cycle
+		skip(block.timestamp - rewardsPool.getRewardsCycleStartTime() - 1 days);
+
+		//stake at max collat
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
+		uint256 highwater = staking.getAVAXAssignedHighWater(address(nodeOp1));
+		uint256 ggp150pct = highwater.divWadDown(ggpPriceInAvax);
+		uint256 ggpMaxCollat = ggp150pct.mulWadDown(dao.getMaxCollateralizationRatio());
+		dealGGP(nodeOp1, ggpMaxCollat);
+		vm.startPrank(nodeOp1);
+		ggp.approve(address(staking), ggpMaxCollat);
+		staking.stakeGGP(ggpMaxCollat);
+		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
+
+		skip(1 days);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
+		rialtoSim.processGGPRewards();
+
+		assertEq(staking.getGGPRewards(address(nodeOp1)), nopClaim.getRewardsCycleTotal());
+	}
+
+	// Verifies minipools get properly rewarded for each rewards cycle and high water mark is working correcly
+	function testRewardsManipulation() public {
+		skip(dao.getRewardsCycleSeconds());
+		rialtoSim.processGGPRewards();
+
+		// half way + 1 day (15th day of the 28 day cycle)
+		skip((dao.getRewardsCycleSeconds() / 2) + 1 days);
+		assertFalse(rewardsPool.canStartRewardsCycle());
+
+		uint256 duration = dao.getRewardsEligibilityMinSeconds();
+		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
+		// Liq Stakers deposit all their AVAX and get ggAVAX in return
+		vm.prank(liqStaker1);
+		ggAVAX.depositAVAX{value: ONE_K}();
+
+		vm.prank(liqStaker2);
+		ggAVAX.depositAVAX{value: ONE_K}();
+
+		vm.startPrank(nodeOp1);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, depositAmt, duration);
+		uint256 rewardsStartTimeMP1 = staking.getRewardsStartTime(address(nodeOp1));
+		vm.stopPrank();
+
+		mp1 = rialtoSim.processMinipoolStart(mp1.nodeID);
+
+		//fwd in time to  the rewards cycle
+		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
+		assertFalse(nopClaim.isEligible(address(nodeOp1)));
+		rialtoSim.processGGPRewards();
+
+		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
+		skip(1 days);
+
+		mp1 = rialtoSim.processMinipoolEndWithRewards(mp1.nodeID);
+
+		// test that the node op can withdraw the funds they are due
+		uint256 nodeOp1PriorBalance = nodeOp1.balance;
+		vm.prank(nodeOp1);
+		minipoolMgr.withdrawMinipoolFunds(mp1.nodeID);
+		assertEq((nodeOp1.balance - nodeOp1PriorBalance), mp1.avaxNodeOpAmt + mp1.avaxNodeOpRewardAmt);
+
+		//day 15 of second cycle
+		skip((dao.getRewardsCycleSeconds() / 2));
+		vm.prank(nodeOp1);
+		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
+		mp2 = rialtoSim.processMinipoolStart(mp2.nodeID);
+
+		//fwd in time to  the rewards cycle
+		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
+
+		//they should get rewarded for their first minipool only
+		assertEq(staking.getAVAXAssignedHighWater(address(nodeOp1)), depositAmt);
+		assertEq(staking.getRewardsStartTime(address(nodeOp1)), rewardsStartTimeMP1);
+		assertTrue(nopClaim.isEligible(address(nodeOp1)));
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		rialtoSim.processGGPRewards();
+
+		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
+
+		skip(1 days);
+
+		mp2 = rialtoSim.processMinipoolEndWithRewards(mp2.nodeID);
+
+		// // test that the node op can withdraw the funds they are due
+		nodeOp1PriorBalance = nodeOp1.balance;
+		vm.prank(nodeOp1);
+		minipoolMgr.withdrawMinipoolFunds(mp2.nodeID);
+		assertEq((nodeOp1.balance - nodeOp1PriorBalance), mp2.avaxNodeOpAmt + mp2.avaxNodeOpRewardAmt);
+
+		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
+
+		// //they should get rewarded for their second minipool only
+		assertEq(staking.getAVAXAssignedHighWater(address(nodeOp1)), depositAmt);
+		assertTrue(nopClaim.isEligible(address(nodeOp1)));
+		rialtoSim.processGGPRewards();
+
+		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
+
+		//test that node op can withdraw all their GGP
+		uint256 nodeOp1PriorBalanceGGP = ggp.balanceOf(nodeOp1);
+		vm.prank(nodeOp1);
+		staking.withdrawGGP(ggpStakeAmt);
+		assertEq((ggp.balanceOf(nodeOp1) - nodeOp1PriorBalanceGGP), ggpStakeAmt);
+		assertEq(staking.getGGPStake(address(nodeOp1)), 0);
 	}
 }

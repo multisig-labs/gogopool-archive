@@ -190,7 +190,7 @@ abstract contract BaseTest is Test {
 		return actor;
 	}
 
-	function dealGGP(address actor, uint128 amount) public {
+	function dealGGP(address actor, uint256 amount) public {
 		vm.prank(guardian);
 		ggp.transfer(actor, amount);
 	}
