@@ -30,7 +30,7 @@ var (
 
 // OracleMetaData contains all meta data concerning the Oracle contract.
 var OracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidGGPPrice\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"GGPPriceUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceFromOneInch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAX\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"setGGPPriceInAVAX\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setOneInch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidGGPPrice\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"GGPPriceUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAX\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAXFromOneInch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"setGGPPriceInAVAX\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setOneInch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // OracleABI is the input ABI used to generate the binding from.
@@ -210,51 +210,6 @@ func (_Oracle *OracleCallerSession) GetContractAddress(contractName string) (com
 	return _Oracle.Contract.GetContractAddress(&_Oracle.CallOpts, contractName)
 }
 
-// GetGGPPriceFromOneInch is a free data retrieval call binding the contract method 0x5e1ccad7.
-//
-// Solidity: function getGGPPriceFromOneInch() view returns(uint256 price, uint256 timestamp)
-func (_Oracle *OracleCaller) GetGGPPriceFromOneInch(opts *bind.CallOpts) (struct {
-	Price     *big.Int
-	Timestamp *big.Int
-}, error) {
-	var out []interface{}
-	err := _Oracle.contract.Call(opts, &out, "getGGPPriceFromOneInch")
-
-	outstruct := new(struct {
-		Price     *big.Int
-		Timestamp *big.Int
-	})
-	if err != nil {
-		return *outstruct, err
-	}
-
-	outstruct.Price = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	outstruct.Timestamp = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
-
-	return *outstruct, err
-
-}
-
-// GetGGPPriceFromOneInch is a free data retrieval call binding the contract method 0x5e1ccad7.
-//
-// Solidity: function getGGPPriceFromOneInch() view returns(uint256 price, uint256 timestamp)
-func (_Oracle *OracleSession) GetGGPPriceFromOneInch() (struct {
-	Price     *big.Int
-	Timestamp *big.Int
-}, error) {
-	return _Oracle.Contract.GetGGPPriceFromOneInch(&_Oracle.CallOpts)
-}
-
-// GetGGPPriceFromOneInch is a free data retrieval call binding the contract method 0x5e1ccad7.
-//
-// Solidity: function getGGPPriceFromOneInch() view returns(uint256 price, uint256 timestamp)
-func (_Oracle *OracleCallerSession) GetGGPPriceFromOneInch() (struct {
-	Price     *big.Int
-	Timestamp *big.Int
-}, error) {
-	return _Oracle.Contract.GetGGPPriceFromOneInch(&_Oracle.CallOpts)
-}
-
 // GetGGPPriceInAVAX is a free data retrieval call binding the contract method 0x78e865fe.
 //
 // Solidity: function getGGPPriceInAVAX() view returns(uint256 price, uint256 timestamp)
@@ -298,6 +253,51 @@ func (_Oracle *OracleCallerSession) GetGGPPriceInAVAX() (struct {
 	Timestamp *big.Int
 }, error) {
 	return _Oracle.Contract.GetGGPPriceInAVAX(&_Oracle.CallOpts)
+}
+
+// GetGGPPriceInAVAXFromOneInch is a free data retrieval call binding the contract method 0x4c97e785.
+//
+// Solidity: function getGGPPriceInAVAXFromOneInch() view returns(uint256 price, uint256 timestamp)
+func (_Oracle *OracleCaller) GetGGPPriceInAVAXFromOneInch(opts *bind.CallOpts) (struct {
+	Price     *big.Int
+	Timestamp *big.Int
+}, error) {
+	var out []interface{}
+	err := _Oracle.contract.Call(opts, &out, "getGGPPriceInAVAXFromOneInch")
+
+	outstruct := new(struct {
+		Price     *big.Int
+		Timestamp *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Price = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Timestamp = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// GetGGPPriceInAVAXFromOneInch is a free data retrieval call binding the contract method 0x4c97e785.
+//
+// Solidity: function getGGPPriceInAVAXFromOneInch() view returns(uint256 price, uint256 timestamp)
+func (_Oracle *OracleSession) GetGGPPriceInAVAXFromOneInch() (struct {
+	Price     *big.Int
+	Timestamp *big.Int
+}, error) {
+	return _Oracle.Contract.GetGGPPriceInAVAXFromOneInch(&_Oracle.CallOpts)
+}
+
+// GetGGPPriceInAVAXFromOneInch is a free data retrieval call binding the contract method 0x4c97e785.
+//
+// Solidity: function getGGPPriceInAVAXFromOneInch() view returns(uint256 price, uint256 timestamp)
+func (_Oracle *OracleCallerSession) GetGGPPriceInAVAXFromOneInch() (struct {
+	Price     *big.Int
+	Timestamp *big.Int
+}, error) {
+	return _Oracle.Contract.GetGGPPriceInAVAXFromOneInch(&_Oracle.CallOpts)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.

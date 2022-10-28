@@ -393,7 +393,7 @@ contract DelegationManager is Base, IWithdrawer {
 	// Calculate how much GGP should be slashed given an expectedRewardAmt
 	function calculateSlashAmt(uint256 avaxRewardAmt) public view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPrice();
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 		return (1 ether * avaxRewardAmt) / ggpPriceInAvax;
 	}
 

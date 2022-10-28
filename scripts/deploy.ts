@@ -92,7 +92,8 @@ const deploy = async () => {
 	// Register any contract with Storage as first constructor param
 	for (const contract of toDeploy) {
 		const store = instances.Storage;
-		if (contracts[contract][0] === "Storage") {
+		// Drat GGP doesnt take storage as arg, but we still want it regestered, so special case it
+		if (contracts[contract][0] === "Storage" || contract === "TokenGGP") {
 			console.log(`Registering ${contract}`);
 			await store.setAddress(
 				hash(["string", "string"], ["contract.address", contract]),

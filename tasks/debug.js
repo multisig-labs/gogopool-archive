@@ -196,7 +196,7 @@ task("debug:list_vars", "List important system variables").setAction(
 
 		log("");
 		const oracle = await get("Oracle");
-		const oracleResults = await oracle.getGGPPrice();
+		const oracleResults = await oracle.getGGPPriceInAVAX();
 		const ggpPrice = await oracleResults.price;
 		const ggpTs = await oracleResults.timestamp;
 		log(

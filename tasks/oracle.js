@@ -12,7 +12,7 @@ task("oracle:set_oneinch", "")
 
 task("oracle:get_ggp_price_oneinch", "").setAction(async () => {
 	const oracle = await get("Oracle");
-	const result = await oracle.getGGPPriceFromOneInch();
+	const result = await oracle.getGGPPriceInAVAXFromOneInch();
 	log(
 		`OneInch GGP Price: ${ethers.utils.formatEther(result.price)} @ ts ${
 			result.timestamp
@@ -46,7 +46,7 @@ task("oracle:set_ggp", "")
 		}
 
 		if (timestamp === 0) {
-			const results = await oracle.getGGPPrice();
+			const results = await oracle.getGGPPriceInAVAX();
 			const lastTimestamp = results.timestamp;
 			timestamp = lastTimestamp + parseDelta(interval);
 		}
@@ -55,7 +55,7 @@ task("oracle:set_ggp", "")
 
 task("oracle:get_ggp", "").setAction(async () => {
 	const oracle = await get("Oracle");
-	const results = await oracle.getGGPPrice();
+	const results = await oracle.getGGPPriceInAVAX();
 	log(
 		`GGP Price: ${ethers.utils.formatEther(results.price)} Timestamp: ${
 			results.timestamp
