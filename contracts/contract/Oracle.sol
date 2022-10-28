@@ -23,15 +23,15 @@ contract Oracle is Base {
 		version = 1;
 	}
 
-	// Set the address of the One Inch price aggregator contract
+	/// @notice Set the address of the One Inch price aggregator contract
 	function setOneInch(address addr) external onlyGuardian {
 		setAddress(keccak256("Oracle.OneInch"), addr);
 	}
 
-	// Get an aggregated price from the 1Inch contract.
-	// NEVER call this on-chain, only rialto should call, then
-	// send a setGGPPrice tx
-	function getGGPPriceFromOneInch() external view returns (uint256 price, uint256 timestamp) {
+	/// @notice Get an aggregated price from the 1Inch contract.
+	/// @dev NEVER call this on-chain, only off-chain oracle should call, then
+	///      send a setGGPPriceInAVAX tx
+	function getGGPPriceInAVAXFromOneInch() external view returns (uint256 price, uint256 timestamp) {
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		address addr = getAddress(keccak256("Oracle.OneInch"));
 		IOneInch oneinch = IOneInch(addr);
@@ -48,6 +48,7 @@ contract Oracle is Base {
 		timestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 	}
 
+	/// @notice Set the price of GGP denominated in AVAX, and the time it was updated
 	function setGGPPriceInAVAX(uint256 price, uint256 timestamp) external onlyMultisig {
 		uint256 lastTimestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 		if (timestamp < lastTimestamp || timestamp > block.timestamp) {
