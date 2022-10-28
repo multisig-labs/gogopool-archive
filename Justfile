@@ -72,6 +72,19 @@ cast cmd contractName sig *args:
 	if ([ "{{cmd}}" == "send" ]); then legacy="--legacy"; else legacy=""; fi;
 	cast {{cmd}} ${legacy} --private-key $PRIVATE_KEY ${addrs[{{contractName}}]} "{{sig}}" {{args}}
 
+# Print signatures for all errors found in /artifacts
+decoded-errors: compile
+	#!/usr/bin/env bash
+	join() { local d=$1 s=$2; shift 2 && printf %s "$s${@/#/$d}"; }
+	shopt -s globstar # so /**/ works
+	errors=$(cat artifacts/**/*.json | jq -r '.abi[]? | select(.type == "error") | .name' | sort | uniq)
+	sigsArray=()
+	for x in $errors;	do
+		sigsArray+=("\"$(cast sig "${x}()")\":\"${x}()\"")
+	done
+	sigs=$(join ',' ${sigsArray[*]})
+	echo "{${sigs}}" | jq
+
 # Run solhint linter and output table of results
 solhint:
 	npx solhint -f table contracts/**/*.sol
