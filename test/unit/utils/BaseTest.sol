@@ -132,7 +132,7 @@ abstract contract BaseTest is Test {
 	function initDao() internal {
 		store.setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), 0.1 ether);
 		// GGP Inflation settings may change when we finialize tokenomics
-		store.setUint(keccak256("ProtocolDAO.InflationInterval"), 1 days);
+		store.setUint(keccak256("ProtocolDAO.InflationIntervalSeconds"), 1 days);
 		store.setUint(keccak256("ProtocolDAO.InflationIntervalStartTime"), block.timestamp);
 		store.setUint(keccak256("ProtocolDAO.InflationIntervalRate"), 1000133680617113500); // 5% annual calculated on a daily interval - Calculate in js example: let dailyInflation = web3.utils.toBN((1 + 0.05) ** (1 / (365)) * 1e18);
 		store.setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 14 days);
