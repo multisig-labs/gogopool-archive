@@ -26,4 +26,4 @@ npx hardhat minipool:recordStakingEnd --actor rialto1 --reward 300 --node $NODE
 npx hardhat nopClaim:distributeRewards
 
 npx hardhat staking:getGGPRewards --actor cam
-npx hardhat vault:depositToken --actor cam --contract NOPClaim --amt 200
+npx hardhat vault:depositToken --actor cam --contract ClaimNodeOp --amt 200

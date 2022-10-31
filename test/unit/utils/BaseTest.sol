@@ -6,17 +6,17 @@ import "../../../lib/forge-std/src/Test.sol";
 import {MinipoolManager} from "../../../contracts/contract/MinipoolManager.sol";
 import {MultisigManager} from "../../../contracts/contract/MultisigManager.sol";
 import {Storage} from "../../../contracts/contract/Storage.sol";
-import {ProtocolDAOClaim} from "../../../contracts/contract/rewards/claims/ProtocolDAOClaim.sol";
+import {ClaimProtocolDAO} from "../../../contracts/contract/ClaimProtocolDAO.sol";
 import {Vault} from "../../../contracts/contract/Vault.sol";
 import {Oracle} from "../../../contracts/contract/Oracle.sol";
-import {ProtocolDAO} from "../../../contracts/contract/dao/ProtocolDAO.sol";
-import {NOPClaim} from "../../../contracts/contract/rewards/claims/NOPClaim.sol";
+import {ProtocolDAO} from "../../../contracts/contract/ProtocolDAO.sol";
+import {ClaimNodeOp} from "../../../contracts/contract/ClaimNodeOp.sol";
 import {TokenGGP} from "../../../contracts/contract/tokens/TokenGGP.sol";
 import {TokenggAVAX} from "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import {WAVAX} from "../../../contracts/contract/utils/WAVAX.sol";
 import {MinipoolStatus} from "../../../contracts/types/MinipoolStatus.sol";
 import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
-import {RewardsPool} from "../../../contracts/contract/rewards/RewardsPool.sol";
+import {RewardsPool} from "../../../contracts/contract/RewardsPool.sol";
 import {Staking} from "../../../contracts/contract/Staking.sol";
 import {Ocyticus} from "../../../contracts/contract/Ocyticus.sol";
 
@@ -48,9 +48,9 @@ abstract contract BaseTest is Test {
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	ProtocolDAO public dao;
-	ProtocolDAOClaim public daoClaim;
+	ClaimProtocolDAO public daoClaim;
 	RewardsPool public rewardsPool;
-	NOPClaim public nopClaim;
+	ClaimNodeOp public nopClaim;
 	Staking public staking;
 	Ocyticus public ocyticus;
 
@@ -105,15 +105,15 @@ abstract contract BaseTest is Test {
 		staking = new Staking(store, ggp);
 		registerContract(store, "Staking", address(staking));
 
-		daoClaim = new ProtocolDAOClaim(store);
-		registerContract(store, "ProtocolDAOClaim", address(daoClaim));
+		daoClaim = new ClaimProtocolDAO(store);
+		registerContract(store, "ClaimProtocolDAO", address(daoClaim));
 
 		rewardsPool = new RewardsPool(store);
 		registerContract(store, "RewardsPool", address(rewardsPool));
 		rewardsPool.initialize();
 
-		nopClaim = new NOPClaim(store, ggp);
-		registerContract(store, "NOPClaim", address(nopClaim));
+		nopClaim = new ClaimNodeOp(store, ggp);
+		registerContract(store, "ClaimNodeOp", address(nopClaim));
 
 		ocyticus = new Ocyticus(store);
 		registerContract(store, "Ocyticus", address(ocyticus));
@@ -138,8 +138,8 @@ abstract contract BaseTest is Test {
 		store.setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 14 days);
 		store.setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
 		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
-		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
-		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"), 0.70 ether);
 		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
 		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserve
 		store.setUint(keccak256("ProtocolDAO.MinipoolMinStakingAmount"), 2_000 ether);

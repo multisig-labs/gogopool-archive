@@ -104,8 +104,8 @@ gen: compile
 	cd $GOPATH/pkg/mod/github.com/ava-labs/coreth@v${CORETH}
 	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/minipool_manager.go
 	cat $THATDIR/artifacts/contracts/contract/Staking.sol/Staking.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg staking --out $THATDIR/gen/staking.go
-	cat $THATDIR/artifacts/contracts/contract/rewards/RewardsPool.sol/RewardsPool.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg rewards_pool --out $THATDIR/gen/rewards_pool.go
-	cat $THATDIR/artifacts/contracts/contract/rewards/claims/NOPClaim.sol/NOPClaim.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg nop_claim --out $THATDIR/gen/nop_claim.go
+	cat $THATDIR/artifacts/contracts/contract/RewardsPool.sol/RewardsPool.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg rewards_pool --out $THATDIR/gen/rewards_pool.go
+	cat $THATDIR/artifacts/contracts/contract/ClaimNodeOp.sol/ClaimNodeOp.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg nop_claim --out $THATDIR/gen/nop_claim.go
 	cat $THATDIR/artifacts/contracts/contract/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/oracle.go
 	cat $THATDIR/artifacts/contracts/contract/Storage.sol/Storage.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg storage --out $THATDIR/gen/storage.go
 	echo "Complete! Copying to rialto repo..."

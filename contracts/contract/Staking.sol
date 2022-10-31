@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "./Base.sol";
 import {MinipoolManager} from "./MinipoolManager.sol";
 import {Oracle} from "./Oracle.sol";
-import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
+import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
 
@@ -167,7 +167,7 @@ contract Staking is Base {
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
 	}
 
-	// TODO cant use onlyLatestContract("NOPClaim", msg.sender) since we also call from increaseMinipoolCount. Wat do?
+	// TODO cant use onlyLatestContract("ClaimNodeOp", msg.sender) since we also call from increaseMinipoolCount. Wat do?
 	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyLatestNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")), time);
@@ -180,12 +180,12 @@ contract Staking is Base {
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
 	}
 
-	function increaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("NOPClaim", msg.sender) {
+	function increaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("ClaimNodeOp", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
 
-	function decreaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("NOPClaim", msg.sender) {
+	function decreaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("ClaimNodeOp", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
@@ -257,8 +257,8 @@ contract Staking is Base {
 	}
 
 	/// @notice Convenience function to allow for restaking claimed GGP rewards
-	function restakeGGP(address stakerAddress, uint256 amount) public onlyLatestContract("NOPClaim", msg.sender) {
-		// Transfer GGP tokens from the NOPClaims contract to this contract
+	function restakeGGP(address stakerAddress, uint256 amount) public onlyLatestContract("ClaimNodeOp", msg.sender) {
+		// Transfer GGP tokens from the ClaimNodeOp contract to this contract
 		ggp.transferFrom(msg.sender, address(this), amount);
 		_stakeGGP(stakerAddress, amount);
 	}

@@ -6,7 +6,7 @@ import {IWithdrawer} from "../interface/IWithdrawer.sol";
 import {MinipoolStatus} from "../types/MinipoolStatus.sol";
 import {MultisigManager} from "./MultisigManager.sol";
 import {Oracle} from "./Oracle.sol";
-import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
+import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Staking} from "./Staking.sol";
 import {Storage} from "./Storage.sol";
 import {TokenggAVAX} from "./tokens/TokenggAVAX.sol";

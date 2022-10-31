@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity 0.8.17;
 
-import "../../Base.sol";
-import {Storage} from "../../Storage.sol";
-import {TokenGGP} from "../../tokens/TokenGGP.sol";
-import {Vault} from "../../Vault.sol";
+import "./Base.sol";
+import {Storage} from "./Storage.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
+import {Vault} from "./Vault.sol";
 
-contract ProtocolDAOClaim is Base {
+contract ClaimProtocolDAO is Base {
 	error InvalidAmount();
 
 	event GGPTokensSentByDAOProtocol(string invoiceID, address indexed from, address indexed to, uint256 amount);
@@ -24,7 +24,7 @@ contract ProtocolDAOClaim is Base {
 		Vault vault = Vault(getContractAddress("Vault"));
 		TokenGGP ggpToken = TokenGGP(getContractAddress("TokenGGP"));
 
-		if (amount == 0 || amount > vault.balanceOfToken("ProtocolDAOClaim", ggpToken)) {
+		if (amount == 0 || amount > vault.balanceOfToken("ClaimProtocolDAO", ggpToken)) {
 			revert InvalidAmount();
 		}
 

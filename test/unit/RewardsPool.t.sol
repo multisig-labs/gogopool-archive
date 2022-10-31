@@ -87,19 +87,19 @@ contract RewardsPoolTest is BaseTest {
 	}
 
 	function testGetClaimingContractDistribution() public {
-		assert(rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim") == 0);
-		assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == 0);
+		assert(rewardsPool.getClaimingContractDistribution("ClaimProtocolDAO") == 0);
+		assert(rewardsPool.getClaimingContractDistribution("ClaimNodeOp") == 0);
 
 		skip(dao.getRewardsCycleSeconds());
 
 		rewardsPool.startRewardsCycle();
 		uint256 rewardsTotal = rewardsPool.getRewardsCycleTotalAmount();
 
-		uint256 protocolAllot = rewardsTotal.mulWadDown(dao.getClaimingContractPct("ProtocolDAOClaim"));
-		assert(rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim") == protocolAllot);
+		uint256 protocolAllot = rewardsTotal.mulWadDown(dao.getClaimingContractPct("ClaimProtocolDAO"));
+		assert(rewardsPool.getClaimingContractDistribution("ClaimProtocolDAO") == protocolAllot);
 
-		uint256 nopAllot = rewardsTotal.mulWadDown(dao.getClaimingContractPct("NOPClaim"));
-		assert(rewardsPool.getClaimingContractDistribution("NOPClaim") == nopAllot);
+		uint256 nopAllot = rewardsTotal.mulWadDown(dao.getClaimingContractPct("ClaimNodeOp"));
+		assert(rewardsPool.getClaimingContractDistribution("ClaimNodeOp") == nopAllot);
 	}
 
 	function testStartRewardsCycle() public {
@@ -108,8 +108,8 @@ contract RewardsPoolTest is BaseTest {
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
 		rewardsPool.startRewardsCycle();
 		assertFalse(rewardsPool.canStartRewardsCycle());
-		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
+		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 		assertEq(store.getUint(keccak256("RewardsPool.RewardsCycleTotalAmount")), 0);
 
 		skip(dao.getRewardsCycleSeconds());
@@ -120,7 +120,7 @@ contract RewardsPoolTest is BaseTest {
 
 		assertEq(rewardsPool.getRewardsCycleStartTime(), rewardsCycleStartTime + dao.getRewardsCycleSeconds());
 		assertGt(rewardsPool.getRewardsCycleTotalAmount(), 0);
-		assertGt(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertGt(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
+		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 	}
 }

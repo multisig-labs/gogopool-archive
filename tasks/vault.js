@@ -39,6 +39,6 @@ task("vault:deposit_token", "deposit a token from to vault")
 		let tx = await ggp.approve(vault.address, amt);
 		await logtx(tx);
 
-		tx = await vault.depositToken("NOPClaim", ggp.address, amt);
+		tx = await vault.depositToken("ClaimNodeOp", ggp.address, amt);
 		await logtx(tx);
 	});

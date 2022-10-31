@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 // SPDX-License-Identifier: GPL-3.0-only
 
 import {MinipoolManager} from "../MinipoolManager.sol";
-import {NOPClaim} from "../rewards/claims/NOPClaim.sol";
-import {RewardsPool} from "../rewards/RewardsPool.sol";
+import {ClaimNodeOp} from "../ClaimNodeOp.sol";
+import {RewardsPool} from "../RewardsPool.sol";
 import {Staking} from "../Staking.sol";
 
 // import {console} from "forge-std/console.sol";
@@ -18,13 +18,13 @@ contract RialtoSimulator {
 	error UnableToClaim();
 
 	MinipoolManager internal minipoolMgr;
-	NOPClaim internal nopClaim;
+	ClaimNodeOp internal nopClaim;
 	RewardsPool internal rewardsPool;
 	Staking internal staking;
 
 	constructor(
 		MinipoolManager minipoolMgr_,
-		NOPClaim nopClaim_,
+		ClaimNodeOp nopClaim_,
 		RewardsPool rewardsPool_,
 		Staking staking_
 	) {

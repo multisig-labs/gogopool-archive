@@ -15,7 +15,7 @@ task(
 	"Calculate and distribute rewards to the node operators"
 ).setAction(async () => {
 	const rialto = await getNamedAccounts().rialto1;
-	const nopClaim = await get("NOPClaim", rialto);
+	const nopClaim = await get("ClaimNodeOp", rialto);
 	const stakers = await getStakers();
 
 	eligibleStakers = [];
@@ -45,7 +45,7 @@ task("nopClaim:isEligible", "is a staker eligible")
 	.addParam("staker", "Account used to send tx")
 	.setAction(async ({ staker }) => {
 		const signer = (await getNamedAccounts())[staker];
-		const nopClaim = await get("NOPClaim");
+		const nopClaim = await get("ClaimNodeOp");
 		const staking = await get("Staking");
 		log(signer.address);
 		const index = await staking.getIndexOf(signer.address);
@@ -74,7 +74,7 @@ task("staking:getGGPRewards")
 	.setAction(async ({ actor }) => {
 		const a = (await getNamedAccounts())[actor];
 		const staking = await get("Staking");
-		const nop = await get("NOPClaim", a);
+		const nop = await get("ClaimNodeOp", a);
 		const preview = await nop.previewClaimAmount();
 		console.log("preview amount", preview);
 		const rewardsAmount = await staking.getGGPRewards(a.address);
@@ -86,7 +86,7 @@ task("staking:claimAndRestake")
 	.addParam("amt", "test", "amount to claim")
 	.setAction(async ({ actor, rewards }) => {
 		const a = (await getNamedAccounts())[actor];
-		const nopClaim = await get("NOPClaim", a);
+		const nopClaim = await get("ClaimNodeOp", a);
 		tx = await await nopClaim.claimAndRestake(utils.parseEther(rewards));
 		logtx(tx);
 	});
@@ -95,7 +95,7 @@ task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")
 	.addParam("staker", "Account used to send tx")
 	.setAction(async ({ staker }) => {
 		const signer = (await getNamedAccounts())[staker];
-		const nopClaim = await get("NOPClaim", signer);
+		const nopClaim = await get("ClaimNodeOp", signer);
 		const staking = await get("Staking", signer);
 		const rewardAmt = utils.formatEther(
 			`${await staking.getGGPRewards(signer.address)}`

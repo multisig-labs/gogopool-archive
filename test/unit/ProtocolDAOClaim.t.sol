@@ -2,15 +2,15 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
-import {ProtocolDAO} from "../../contracts/contract/dao/ProtocolDAO.sol";
+import {ProtocolDAO} from "../../contracts/contract/ProtocolDAO.sol";
 
-contract ProtocolDAOClaimTest is BaseTest {
+contract ClaimProtocolDAOTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 
 		vm.startPrank(guardian);
 		ggp.approve(address(vault), 1000 ether);
-		vault.depositToken("ProtocolDAOClaim", ggp, 1000 ether);
+		vault.depositToken("ClaimProtocolDAO", ggp, 1000 ether);
 		vm.stopPrank();
 	}
 
@@ -23,10 +23,10 @@ contract ProtocolDAOClaimTest is BaseTest {
 		daoClaim.spend("Invoice1", alice, 100 ether);
 
 		vm.startPrank(guardian);
-		vm.expectRevert(ProtocolDAOClaim.InvalidAmount.selector);
+		vm.expectRevert(ClaimProtocolDAO.InvalidAmount.selector);
 		daoClaim.spend("Invoice1", alice, 0 ether);
 
-		vm.expectRevert(ProtocolDAOClaim.InvalidAmount.selector);
+		vm.expectRevert(ClaimProtocolDAO.InvalidAmount.selector);
 		daoClaim.spend("Invoice1", alice, 1001 ether);
 
 		daoClaim.spend("Invoice1", alice, 1000 ether);

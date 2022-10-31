@@ -28,9 +28,9 @@ const contracts: IFU = {
 	TokenggAVAX: ["Storage", "WAVAX"],
 	MinipoolManager: ["Storage", "TokenGGP", "TokenggAVAX"],
 	RewardsPool: ["Storage"],
-	NOPClaim: ["Storage", "TokenGGP"],
+	ClaimNodeOp: ["Storage", "TokenGGP"],
 	Staking: ["Storage", "TokenGGP"],
-	ProtocolDAOClaim: ["Storage"],
+	ClaimProtocolDAO: ["Storage"],
 	// Needed for Panopticon, should have added to `deploy-base` but
 	// didnt want to change all the addresses, so putting it at the end here
 	Multicall3: [],

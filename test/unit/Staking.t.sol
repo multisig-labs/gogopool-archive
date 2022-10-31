@@ -191,8 +191,8 @@ contract StakingTest is BaseTest {
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
 		rewardsPool.startRewardsCycle();
 		assertFalse(rewardsPool.canStartRewardsCycle());
-		assertEq(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertEq(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
+		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 
 		skip(dao.getRewardsCycleSeconds());
 
@@ -201,8 +201,8 @@ contract StakingTest is BaseTest {
 
 		rewardsPool.startRewardsCycle();
 
-		assertGt(vault.balanceOfToken("NOPClaim", ggp), 0);
-		assertGt(vault.balanceOfToken("ProtocolDAOClaim", ggp), 0);
+		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
+		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 	}
 
 	function testIncreaseGGPRewards() public {

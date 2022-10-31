@@ -7,7 +7,7 @@ import "../BaseUpgradeable.sol";
 import {ERC20Upgradeable} from "./upgradeable/ERC20Upgradeable.sol";
 import {ERC4626Upgradeable} from "./upgradeable/ERC4626Upgradeable.sol";
 import {IWithdrawer} from "../../interface/IWithdrawer.sol";
-import {ProtocolDAO} from "../dao/ProtocolDAO.sol";
+import {ProtocolDAO} from "../ProtocolDAO.sol";
 import {Storage} from "../Storage.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity 0.8.17;
 
-import "../Base.sol";
-import {NOPClaim} from "./claims/NOPClaim.sol";
-import {ProtocolDAO} from "../dao/ProtocolDAO.sol";
-import {Storage} from "../Storage.sol";
-import {TokenGGP} from "../tokens/TokenGGP.sol";
-import {Vault} from "../Vault.sol";
+import "./Base.sol";
+import {ClaimNodeOp} from "./ClaimNodeOp.sol";
+import {ProtocolDAO} from "./ProtocolDAO.sol";
+import {Storage} from "./Storage.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
+import {Vault} from "./Vault.sol";
 
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
@@ -19,7 +19,7 @@ contract RewardsPool is Base {
 
 	event GGPInflated(uint256 newTokens);
 	event NewRewardsCycleStarted(uint256 totalRewardsAmt);
-	event NOPClaimRewardsTransfered(uint256 value);
+	event ClaimNodeOpRewardsTransfered(uint256 value);
 	event ProtocolDAORewardsTransfered(uint256 value);
 
 	constructor(Storage storageAddress) Base(storageAddress) {
@@ -139,14 +139,14 @@ contract RewardsPool is Base {
 		inflate();
 
 		// Soon as we mint new tokens, send the DAO's share to it's claiming contract, then attempt to transfer them to the dao if possible
-		uint256 daoClaimContractAllotment = getClaimingContractDistribution("ProtocolDAOClaim");
-		uint256 nopClaimContractAllotment = getClaimingContractDistribution("NOPClaim");
+		uint256 daoClaimContractAllotment = getClaimingContractDistribution("ClaimProtocolDAO");
+		uint256 nopClaimContractAllotment = getClaimingContractDistribution("ClaimNodeOp");
 
 		if (daoClaimContractAllotment + nopClaimContractAllotment > getRewardsCycleTotalAmount()) {
 			revert IncorrectRewardsDistribution();
 		}
 
-		NOPClaim nopClaim = NOPClaim(getContractAddress("NOPClaim"));
+		ClaimNodeOp nopClaim = ClaimNodeOp(getContractAddress("ClaimNodeOp"));
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		Vault vault = Vault(getContractAddress("Vault"));
 
@@ -154,18 +154,18 @@ contract RewardsPool is Base {
 			emit ProtocolDAORewardsTransfered(daoClaimContractAllotment);
 
 			// Transfers the DAO's tokens to it's claiming contract from the rewards pool
-			vault.transferToken("ProtocolDAOClaim", ggp, daoClaimContractAllotment);
+			vault.transferToken("ClaimProtocolDAO", ggp, daoClaimContractAllotment);
 		}
 
 		//TODO: add Rialto's Claim here
 
 		if (nopClaimContractAllotment > 0) {
-			emit NOPClaimRewardsTransfered(nopClaimContractAllotment);
+			emit ClaimNodeOpRewardsTransfered(nopClaimContractAllotment);
 
 			//set the total for this cycle in the contracts storage
 			nopClaim.setRewardsCycleTotal(nopClaimContractAllotment);
 			// Transfers the DAO's tokens to it's claiming contract from the rewards pool
-			vault.transferToken("NOPClaim", ggp, nopClaimContractAllotment);
+			vault.transferToken("ClaimNodeOp", ggp, nopClaimContractAllotment);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
-import {ProtocolDAO} from "../../contracts/contract/dao/ProtocolDAO.sol";
+import {ProtocolDAO} from "../../contracts/contract/ProtocolDAO.sol";
 
 contract ProtocolDAOTest is BaseTest {
 	function setUp() public override {

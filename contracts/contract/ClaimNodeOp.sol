@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity 0.8.17;
 
-import "../../Base.sol";
-import {MinipoolManager} from "../../MinipoolManager.sol";
-import {ProtocolDAO} from "../../dao/ProtocolDAO.sol";
-import {RewardsPool} from "../RewardsPool.sol";
-import {Staking} from "../../Staking.sol";
-import {Storage} from "../../Storage.sol";
-import {TokenGGP} from "../../tokens/TokenGGP.sol";
-import {Vault} from "../../Vault.sol";
+import "./Base.sol";
+import {MinipoolManager} from "./MinipoolManager.sol";
+import {ProtocolDAO} from "./ProtocolDAO.sol";
+import {RewardsPool} from "./RewardsPool.sol";
+import {Staking} from "./Staking.sol";
+import {Storage} from "./Storage.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
+import {Vault} from "./Vault.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
-contract NOPClaim is Base {
+contract ClaimNodeOp is Base {
 	using FixedPointMathLib for uint256;
 
 	error InvalidAmount();

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity 0.8.17;
 
-import "../Base.sol";
-import {TokenGGP} from "../tokens/TokenGGP.sol";
-import {Storage} from "../Storage.sol";
+import "./Base.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
+import {Storage} from "./Storage.sol";
 
 contract ProtocolDAO is Base {
 	error NotDAOMember();
@@ -27,14 +27,14 @@ contract ProtocolDAO is Base {
 		}
 		setBool(keccak256("ProtocolDAO.initialized"), true);
 
-		//NOPClaim settings
+		//ClaimNodeOp settings
 		setUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"), 14 days);
 
 		//RewardsPool Settings
 		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
 		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
-		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ProtocolDAOClaim"), 0.10 ether);
-		setUint(keccak256("ProtocolDAO.ClaimingContractPct.NOPClaim"), 0.70 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"), 0.70 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
 
 		// GGP Inflation settings

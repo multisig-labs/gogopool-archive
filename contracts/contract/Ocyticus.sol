@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "./Base.sol";
 import {MultisigManager} from "./MultisigManager.sol";
-import {ProtocolDAO} from "./dao/ProtocolDAO.sol";
+import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 
 // Panic when we want to pause the protocol

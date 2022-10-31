@@ -55,13 +55,13 @@ task("inflation:startRewardsCycle", "start a new rewards cycle")
 			`${await rewardsPool.getRewardsCycleTotalAmount()}`
 		);
 		const daoAllowance = utils.formatEther(
-			`${await rewardsPool.getClaimingContractDistribution("ProtocolDAOClaim")}`
+			`${await rewardsPool.getClaimingContractDistribution("ClaimProtocolDAO")}`
 		);
 		const nopClaimContractAllowance = utils.formatEther(
-			`${await rewardsPool.getClaimingContractDistribution("NOPClaim")}`
+			`${await rewardsPool.getClaimingContractDistribution("ClaimNodeOp")}`
 		);
 		log(
-			`Total Rewards this cycle: ${totalRewardsThisCycle} GGP. Rewards tranfered to the Protocal DAO: ${daoAllowance} GGP. Rewards transferred to the NOPClaim: ${nopClaimContractAllowance} GGP`
+			`Total Rewards this cycle: ${totalRewardsThisCycle} GGP. Rewards tranfered to the Protocal DAO: ${daoAllowance} GGP. Rewards transferred to the ClaimNodeOp: ${nopClaimContractAllowance} GGP`
 		);
 	});
 
