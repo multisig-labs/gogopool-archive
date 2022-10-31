@@ -35,6 +35,39 @@ task(
 });
 
 task(
+	"debug:setup-dao",
+	"Run after a ARN testnet deploy to init necessary DAO configs"
+).setAction(async () => {
+	const store = await get("Storage");
+	let tx;
+	tx = await store.setUint(
+		hash(["string"], ["ProtocolDAO.InflationIntervalSeconds"]),
+		ethers.BigNumber.from("60")
+	);
+	await logtx(tx);
+
+	tx = await store.setUint(
+		hash(["string"], ["ProtocolDAO.InflationIntervalRate"]),
+		// 50% annual inflation with 1min periods
+		// (1 + targetAnnualRate) ** (1 / intervalsPerYear) * 1000000000000000000
+		ethers.BigNumber.from("1000000771433151600")
+	);
+	await logtx(tx);
+
+	tx = await store.setUint(
+		hash(["string"], ["ProtocolDAO.RewardsEligibilityMinSeconds"]),
+		ethers.BigNumber.from("1")
+	);
+	await logtx(tx);
+
+	tx = await store.setUint(
+		hash(["string"], ["ProtocolDAO.RewardsCycleSeconds"]),
+		ethers.BigNumber.from("600")
+	);
+	await logtx(tx);
+});
+
+task(
 	"debug:setup_anr_accounts",
 	"Run against a fresh ANR instance (before a deploy) to xfer all genesis funds to a deployer addr derived from the mnemonic"
 ).setAction(async () => {

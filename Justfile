@@ -38,12 +38,13 @@ deploy-base: (_ping ETH_RPC_URL)
 deploy contracts="": (_ping ETH_RPC_URL)
 	DEPLOY_CONTRACTS="{{contracts}}" npx hardhat run --network {{HARDHAT_NETWORK}} scripts/deploy.ts
 
-# Compile and Deploy contracts and init actors to a fresh EVM
+# Compile and Deploy contracts to a testnet and init actors and settings
 setup-evm:
 	just clean
 	just deploy-base
 	just deploy
 	just task debug:setup
+	just task debug:setup-dao
 
 # HARDHAT_NETWORK should be "localhost" for tasks, but must be "hardhat" when starting the node
 # Start a local hardhat EVM node
