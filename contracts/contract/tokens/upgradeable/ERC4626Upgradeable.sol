@@ -2,9 +2,10 @@
 pragma solidity >=0.8.0;
 
 import {ERC20Upgradeable} from "./ERC20Upgradeable.sol";
-import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
-import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
+
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
+import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
+import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
 abstract contract ERC4626Upgradeable is ERC20Upgradeable {
 	using SafeTransferLib for ERC20;
