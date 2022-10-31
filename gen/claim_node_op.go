@@ -1,7 +1,7 @@
 // Code generated - DO NOT EDIT.
 // This file is a generated binding and any manual changes will be lost.
 
-package nop_claim
+package claim_node_op
 
 import (
 	"errors"
@@ -28,113 +28,113 @@ var (
 	_ = event.NewSubscription
 )
 
-// NopClaimMetaData contains all meta data concerning the NopClaim contract.
-var NopClaimMetaData = &bind.MetaData{
+// ClaimNodeOpMetaData contains all meta data concerning the ClaimNodeOp contract.
+var ClaimNodeOpMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoRewardsToClaim\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPRewardsClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalEligibleGGPStaked\",\"type\":\"uint256\"}],\"name\":\"calculateAndDistributeRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimAmount\",\"type\":\"uint256\"}],\"name\":\"claimAndRestake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"isEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"setRewardsCycleTotal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
-// NopClaimABI is the input ABI used to generate the binding from.
-// Deprecated: Use NopClaimMetaData.ABI instead.
-var NopClaimABI = NopClaimMetaData.ABI
+// ClaimNodeOpABI is the input ABI used to generate the binding from.
+// Deprecated: Use ClaimNodeOpMetaData.ABI instead.
+var ClaimNodeOpABI = ClaimNodeOpMetaData.ABI
 
-// NopClaim is an auto generated Go binding around an Ethereum contract.
-type NopClaim struct {
-	NopClaimCaller     // Read-only binding to the contract
-	NopClaimTransactor // Write-only binding to the contract
-	NopClaimFilterer   // Log filterer for contract events
+// ClaimNodeOp is an auto generated Go binding around an Ethereum contract.
+type ClaimNodeOp struct {
+	ClaimNodeOpCaller     // Read-only binding to the contract
+	ClaimNodeOpTransactor // Write-only binding to the contract
+	ClaimNodeOpFilterer   // Log filterer for contract events
 }
 
-// NopClaimCaller is an auto generated read-only Go binding around an Ethereum contract.
-type NopClaimCaller struct {
+// ClaimNodeOpCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ClaimNodeOpCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// NopClaimTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type NopClaimTransactor struct {
+// ClaimNodeOpTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ClaimNodeOpTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// NopClaimFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type NopClaimFilterer struct {
+// ClaimNodeOpFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ClaimNodeOpFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// NopClaimSession is an auto generated Go binding around an Ethereum contract,
+// ClaimNodeOpSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type NopClaimSession struct {
-	Contract     *NopClaim         // Generic contract binding to set the session for
+type ClaimNodeOpSession struct {
+	Contract     *ClaimNodeOp      // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// NopClaimCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// ClaimNodeOpCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type NopClaimCallerSession struct {
-	Contract *NopClaimCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts   // Call options to use throughout this session
+type ClaimNodeOpCallerSession struct {
+	Contract *ClaimNodeOpCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts      // Call options to use throughout this session
 }
 
-// NopClaimTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// ClaimNodeOpTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type NopClaimTransactorSession struct {
-	Contract     *NopClaimTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts   // Transaction auth options to use throughout this session
+type ClaimNodeOpTransactorSession struct {
+	Contract     *ClaimNodeOpTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts      // Transaction auth options to use throughout this session
 }
 
-// NopClaimRaw is an auto generated low-level Go binding around an Ethereum contract.
-type NopClaimRaw struct {
-	Contract *NopClaim // Generic contract binding to access the raw methods on
+// ClaimNodeOpRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ClaimNodeOpRaw struct {
+	Contract *ClaimNodeOp // Generic contract binding to access the raw methods on
 }
 
-// NopClaimCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type NopClaimCallerRaw struct {
-	Contract *NopClaimCaller // Generic read-only contract binding to access the raw methods on
+// ClaimNodeOpCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ClaimNodeOpCallerRaw struct {
+	Contract *ClaimNodeOpCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// NopClaimTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type NopClaimTransactorRaw struct {
-	Contract *NopClaimTransactor // Generic write-only contract binding to access the raw methods on
+// ClaimNodeOpTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ClaimNodeOpTransactorRaw struct {
+	Contract *ClaimNodeOpTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewNopClaim creates a new instance of NopClaim, bound to a specific deployed contract.
-func NewNopClaim(address common.Address, backend bind.ContractBackend) (*NopClaim, error) {
-	contract, err := bindNopClaim(address, backend, backend, backend)
+// NewClaimNodeOp creates a new instance of ClaimNodeOp, bound to a specific deployed contract.
+func NewClaimNodeOp(address common.Address, backend bind.ContractBackend) (*ClaimNodeOp, error) {
+	contract, err := bindClaimNodeOp(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &NopClaim{NopClaimCaller: NopClaimCaller{contract: contract}, NopClaimTransactor: NopClaimTransactor{contract: contract}, NopClaimFilterer: NopClaimFilterer{contract: contract}}, nil
+	return &ClaimNodeOp{ClaimNodeOpCaller: ClaimNodeOpCaller{contract: contract}, ClaimNodeOpTransactor: ClaimNodeOpTransactor{contract: contract}, ClaimNodeOpFilterer: ClaimNodeOpFilterer{contract: contract}}, nil
 }
 
-// NewNopClaimCaller creates a new read-only instance of NopClaim, bound to a specific deployed contract.
-func NewNopClaimCaller(address common.Address, caller bind.ContractCaller) (*NopClaimCaller, error) {
-	contract, err := bindNopClaim(address, caller, nil, nil)
+// NewClaimNodeOpCaller creates a new read-only instance of ClaimNodeOp, bound to a specific deployed contract.
+func NewClaimNodeOpCaller(address common.Address, caller bind.ContractCaller) (*ClaimNodeOpCaller, error) {
+	contract, err := bindClaimNodeOp(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &NopClaimCaller{contract: contract}, nil
+	return &ClaimNodeOpCaller{contract: contract}, nil
 }
 
-// NewNopClaimTransactor creates a new write-only instance of NopClaim, bound to a specific deployed contract.
-func NewNopClaimTransactor(address common.Address, transactor bind.ContractTransactor) (*NopClaimTransactor, error) {
-	contract, err := bindNopClaim(address, nil, transactor, nil)
+// NewClaimNodeOpTransactor creates a new write-only instance of ClaimNodeOp, bound to a specific deployed contract.
+func NewClaimNodeOpTransactor(address common.Address, transactor bind.ContractTransactor) (*ClaimNodeOpTransactor, error) {
+	contract, err := bindClaimNodeOp(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &NopClaimTransactor{contract: contract}, nil
+	return &ClaimNodeOpTransactor{contract: contract}, nil
 }
 
-// NewNopClaimFilterer creates a new log filterer instance of NopClaim, bound to a specific deployed contract.
-func NewNopClaimFilterer(address common.Address, filterer bind.ContractFilterer) (*NopClaimFilterer, error) {
-	contract, err := bindNopClaim(address, nil, nil, filterer)
+// NewClaimNodeOpFilterer creates a new log filterer instance of ClaimNodeOp, bound to a specific deployed contract.
+func NewClaimNodeOpFilterer(address common.Address, filterer bind.ContractFilterer) (*ClaimNodeOpFilterer, error) {
+	contract, err := bindClaimNodeOp(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &NopClaimFilterer{contract: contract}, nil
+	return &ClaimNodeOpFilterer{contract: contract}, nil
 }
 
-// bindNopClaim binds a generic wrapper to an already deployed contract.
-func bindNopClaim(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(NopClaimABI))
+// bindClaimNodeOp binds a generic wrapper to an already deployed contract.
+func bindClaimNodeOp(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(ClaimNodeOpABI))
 	if err != nil {
 		return nil, err
 	}
@@ -145,46 +145,46 @@ func bindNopClaim(address common.Address, caller bind.ContractCaller, transactor
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_NopClaim *NopClaimRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _NopClaim.Contract.NopClaimCaller.contract.Call(opts, result, method, params...)
+func (_ClaimNodeOp *ClaimNodeOpRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimNodeOp.Contract.ClaimNodeOpCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_NopClaim *NopClaimRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _NopClaim.Contract.NopClaimTransactor.contract.Transfer(opts)
+func (_ClaimNodeOp *ClaimNodeOpRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.ClaimNodeOpTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_NopClaim *NopClaimRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _NopClaim.Contract.NopClaimTransactor.contract.Transact(opts, method, params...)
+func (_ClaimNodeOp *ClaimNodeOpRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.ClaimNodeOpTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_NopClaim *NopClaimCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _NopClaim.Contract.contract.Call(opts, result, method, params...)
+func (_ClaimNodeOp *ClaimNodeOpCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimNodeOp.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_NopClaim *NopClaimTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _NopClaim.Contract.contract.Transfer(opts)
+func (_ClaimNodeOp *ClaimNodeOpTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_NopClaim *NopClaimTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _NopClaim.Contract.contract.Transact(opts, method, params...)
+func (_ClaimNodeOp *ClaimNodeOpTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.contract.Transact(opts, method, params...)
 }
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
 // Solidity: function getContractAddress(string contractName) view returns(address)
-func (_NopClaim *NopClaimCaller) GetContractAddress(opts *bind.CallOpts, contractName string) (common.Address, error) {
+func (_ClaimNodeOp *ClaimNodeOpCaller) GetContractAddress(opts *bind.CallOpts, contractName string) (common.Address, error) {
 	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "getContractAddress", contractName)
+	err := _ClaimNodeOp.contract.Call(opts, &out, "getContractAddress", contractName)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -199,23 +199,23 @@ func (_NopClaim *NopClaimCaller) GetContractAddress(opts *bind.CallOpts, contrac
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
 // Solidity: function getContractAddress(string contractName) view returns(address)
-func (_NopClaim *NopClaimSession) GetContractAddress(contractName string) (common.Address, error) {
-	return _NopClaim.Contract.GetContractAddress(&_NopClaim.CallOpts, contractName)
+func (_ClaimNodeOp *ClaimNodeOpSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _ClaimNodeOp.Contract.GetContractAddress(&_ClaimNodeOp.CallOpts, contractName)
 }
 
 // GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
 // Solidity: function getContractAddress(string contractName) view returns(address)
-func (_NopClaim *NopClaimCallerSession) GetContractAddress(contractName string) (common.Address, error) {
-	return _NopClaim.Contract.GetContractAddress(&_NopClaim.CallOpts, contractName)
+func (_ClaimNodeOp *ClaimNodeOpCallerSession) GetContractAddress(contractName string) (common.Address, error) {
+	return _ClaimNodeOp.Contract.GetContractAddress(&_ClaimNodeOp.CallOpts, contractName)
 }
 
 // GetRewardsCycleTotal is a free data retrieval call binding the contract method 0xc7379d47.
 //
 // Solidity: function getRewardsCycleTotal() view returns(uint256)
-func (_NopClaim *NopClaimCaller) GetRewardsCycleTotal(opts *bind.CallOpts) (*big.Int, error) {
+func (_ClaimNodeOp *ClaimNodeOpCaller) GetRewardsCycleTotal(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "getRewardsCycleTotal")
+	err := _ClaimNodeOp.contract.Call(opts, &out, "getRewardsCycleTotal")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -230,23 +230,23 @@ func (_NopClaim *NopClaimCaller) GetRewardsCycleTotal(opts *bind.CallOpts) (*big
 // GetRewardsCycleTotal is a free data retrieval call binding the contract method 0xc7379d47.
 //
 // Solidity: function getRewardsCycleTotal() view returns(uint256)
-func (_NopClaim *NopClaimSession) GetRewardsCycleTotal() (*big.Int, error) {
-	return _NopClaim.Contract.GetRewardsCycleTotal(&_NopClaim.CallOpts)
+func (_ClaimNodeOp *ClaimNodeOpSession) GetRewardsCycleTotal() (*big.Int, error) {
+	return _ClaimNodeOp.Contract.GetRewardsCycleTotal(&_ClaimNodeOp.CallOpts)
 }
 
 // GetRewardsCycleTotal is a free data retrieval call binding the contract method 0xc7379d47.
 //
 // Solidity: function getRewardsCycleTotal() view returns(uint256)
-func (_NopClaim *NopClaimCallerSession) GetRewardsCycleTotal() (*big.Int, error) {
-	return _NopClaim.Contract.GetRewardsCycleTotal(&_NopClaim.CallOpts)
+func (_ClaimNodeOp *ClaimNodeOpCallerSession) GetRewardsCycleTotal() (*big.Int, error) {
+	return _ClaimNodeOp.Contract.GetRewardsCycleTotal(&_ClaimNodeOp.CallOpts)
 }
 
 // Ggp is a free data retrieval call binding the contract method 0xf321df49.
 //
 // Solidity: function ggp() view returns(address)
-func (_NopClaim *NopClaimCaller) Ggp(opts *bind.CallOpts) (common.Address, error) {
+func (_ClaimNodeOp *ClaimNodeOpCaller) Ggp(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "ggp")
+	err := _ClaimNodeOp.contract.Call(opts, &out, "ggp")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -261,23 +261,23 @@ func (_NopClaim *NopClaimCaller) Ggp(opts *bind.CallOpts) (common.Address, error
 // Ggp is a free data retrieval call binding the contract method 0xf321df49.
 //
 // Solidity: function ggp() view returns(address)
-func (_NopClaim *NopClaimSession) Ggp() (common.Address, error) {
-	return _NopClaim.Contract.Ggp(&_NopClaim.CallOpts)
+func (_ClaimNodeOp *ClaimNodeOpSession) Ggp() (common.Address, error) {
+	return _ClaimNodeOp.Contract.Ggp(&_ClaimNodeOp.CallOpts)
 }
 
 // Ggp is a free data retrieval call binding the contract method 0xf321df49.
 //
 // Solidity: function ggp() view returns(address)
-func (_NopClaim *NopClaimCallerSession) Ggp() (common.Address, error) {
-	return _NopClaim.Contract.Ggp(&_NopClaim.CallOpts)
+func (_ClaimNodeOp *ClaimNodeOpCallerSession) Ggp() (common.Address, error) {
+	return _ClaimNodeOp.Contract.Ggp(&_ClaimNodeOp.CallOpts)
 }
 
 // IsEligible is a free data retrieval call binding the contract method 0x66e305fd.
 //
 // Solidity: function isEligible(address stakerAddr) view returns(bool)
-func (_NopClaim *NopClaimCaller) IsEligible(opts *bind.CallOpts, stakerAddr common.Address) (bool, error) {
+func (_ClaimNodeOp *ClaimNodeOpCaller) IsEligible(opts *bind.CallOpts, stakerAddr common.Address) (bool, error) {
 	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "isEligible", stakerAddr)
+	err := _ClaimNodeOp.contract.Call(opts, &out, "isEligible", stakerAddr)
 
 	if err != nil {
 		return *new(bool), err
@@ -292,23 +292,23 @@ func (_NopClaim *NopClaimCaller) IsEligible(opts *bind.CallOpts, stakerAddr comm
 // IsEligible is a free data retrieval call binding the contract method 0x66e305fd.
 //
 // Solidity: function isEligible(address stakerAddr) view returns(bool)
-func (_NopClaim *NopClaimSession) IsEligible(stakerAddr common.Address) (bool, error) {
-	return _NopClaim.Contract.IsEligible(&_NopClaim.CallOpts, stakerAddr)
+func (_ClaimNodeOp *ClaimNodeOpSession) IsEligible(stakerAddr common.Address) (bool, error) {
+	return _ClaimNodeOp.Contract.IsEligible(&_ClaimNodeOp.CallOpts, stakerAddr)
 }
 
 // IsEligible is a free data retrieval call binding the contract method 0x66e305fd.
 //
 // Solidity: function isEligible(address stakerAddr) view returns(bool)
-func (_NopClaim *NopClaimCallerSession) IsEligible(stakerAddr common.Address) (bool, error) {
-	return _NopClaim.Contract.IsEligible(&_NopClaim.CallOpts, stakerAddr)
+func (_ClaimNodeOp *ClaimNodeOpCallerSession) IsEligible(stakerAddr common.Address) (bool, error) {
+	return _ClaimNodeOp.Contract.IsEligible(&_ClaimNodeOp.CallOpts, stakerAddr)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
 // Solidity: function version() view returns(uint8)
-func (_NopClaim *NopClaimCaller) Version(opts *bind.CallOpts) (uint8, error) {
+func (_ClaimNodeOp *ClaimNodeOpCaller) Version(opts *bind.CallOpts) (uint8, error) {
 	var out []interface{}
-	err := _NopClaim.contract.Call(opts, &out, "version")
+	err := _ClaimNodeOp.contract.Call(opts, &out, "version")
 
 	if err != nil {
 		return *new(uint8), err
@@ -323,83 +323,83 @@ func (_NopClaim *NopClaimCaller) Version(opts *bind.CallOpts) (uint8, error) {
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
 // Solidity: function version() view returns(uint8)
-func (_NopClaim *NopClaimSession) Version() (uint8, error) {
-	return _NopClaim.Contract.Version(&_NopClaim.CallOpts)
+func (_ClaimNodeOp *ClaimNodeOpSession) Version() (uint8, error) {
+	return _ClaimNodeOp.Contract.Version(&_ClaimNodeOp.CallOpts)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
 // Solidity: function version() view returns(uint8)
-func (_NopClaim *NopClaimCallerSession) Version() (uint8, error) {
-	return _NopClaim.Contract.Version(&_NopClaim.CallOpts)
+func (_ClaimNodeOp *ClaimNodeOpCallerSession) Version() (uint8, error) {
+	return _ClaimNodeOp.Contract.Version(&_ClaimNodeOp.CallOpts)
 }
 
 // CalculateAndDistributeRewards is a paid mutator transaction binding the contract method 0xd8a64c07.
 //
 // Solidity: function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) returns()
-func (_NopClaim *NopClaimTransactor) CalculateAndDistributeRewards(opts *bind.TransactOpts, stakerAddr common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
-	return _NopClaim.contract.Transact(opts, "calculateAndDistributeRewards", stakerAddr, totalEligibleGGPStaked)
+func (_ClaimNodeOp *ClaimNodeOpTransactor) CalculateAndDistributeRewards(opts *bind.TransactOpts, stakerAddr common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.contract.Transact(opts, "calculateAndDistributeRewards", stakerAddr, totalEligibleGGPStaked)
 }
 
 // CalculateAndDistributeRewards is a paid mutator transaction binding the contract method 0xd8a64c07.
 //
 // Solidity: function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) returns()
-func (_NopClaim *NopClaimSession) CalculateAndDistributeRewards(stakerAddr common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.CalculateAndDistributeRewards(&_NopClaim.TransactOpts, stakerAddr, totalEligibleGGPStaked)
+func (_ClaimNodeOp *ClaimNodeOpSession) CalculateAndDistributeRewards(stakerAddr common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.CalculateAndDistributeRewards(&_ClaimNodeOp.TransactOpts, stakerAddr, totalEligibleGGPStaked)
 }
 
 // CalculateAndDistributeRewards is a paid mutator transaction binding the contract method 0xd8a64c07.
 //
 // Solidity: function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) returns()
-func (_NopClaim *NopClaimTransactorSession) CalculateAndDistributeRewards(stakerAddr common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.CalculateAndDistributeRewards(&_NopClaim.TransactOpts, stakerAddr, totalEligibleGGPStaked)
+func (_ClaimNodeOp *ClaimNodeOpTransactorSession) CalculateAndDistributeRewards(stakerAddr common.Address, totalEligibleGGPStaked *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.CalculateAndDistributeRewards(&_ClaimNodeOp.TransactOpts, stakerAddr, totalEligibleGGPStaked)
 }
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
 //
 // Solidity: function claimAndRestake(uint256 claimAmount) returns()
-func (_NopClaim *NopClaimTransactor) ClaimAndRestake(opts *bind.TransactOpts, claimAmount *big.Int) (*types.Transaction, error) {
-	return _NopClaim.contract.Transact(opts, "claimAndRestake", claimAmount)
+func (_ClaimNodeOp *ClaimNodeOpTransactor) ClaimAndRestake(opts *bind.TransactOpts, claimAmount *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.contract.Transact(opts, "claimAndRestake", claimAmount)
 }
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
 //
 // Solidity: function claimAndRestake(uint256 claimAmount) returns()
-func (_NopClaim *NopClaimSession) ClaimAndRestake(claimAmount *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.ClaimAndRestake(&_NopClaim.TransactOpts, claimAmount)
+func (_ClaimNodeOp *ClaimNodeOpSession) ClaimAndRestake(claimAmount *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.ClaimAndRestake(&_ClaimNodeOp.TransactOpts, claimAmount)
 }
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
 //
 // Solidity: function claimAndRestake(uint256 claimAmount) returns()
-func (_NopClaim *NopClaimTransactorSession) ClaimAndRestake(claimAmount *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.ClaimAndRestake(&_NopClaim.TransactOpts, claimAmount)
+func (_ClaimNodeOp *ClaimNodeOpTransactorSession) ClaimAndRestake(claimAmount *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.ClaimAndRestake(&_ClaimNodeOp.TransactOpts, claimAmount)
 }
 
 // SetRewardsCycleTotal is a paid mutator transaction binding the contract method 0xec23112f.
 //
 // Solidity: function setRewardsCycleTotal(uint256 amount) returns()
-func (_NopClaim *NopClaimTransactor) SetRewardsCycleTotal(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
-	return _NopClaim.contract.Transact(opts, "setRewardsCycleTotal", amount)
+func (_ClaimNodeOp *ClaimNodeOpTransactor) SetRewardsCycleTotal(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.contract.Transact(opts, "setRewardsCycleTotal", amount)
 }
 
 // SetRewardsCycleTotal is a paid mutator transaction binding the contract method 0xec23112f.
 //
 // Solidity: function setRewardsCycleTotal(uint256 amount) returns()
-func (_NopClaim *NopClaimSession) SetRewardsCycleTotal(amount *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.SetRewardsCycleTotal(&_NopClaim.TransactOpts, amount)
+func (_ClaimNodeOp *ClaimNodeOpSession) SetRewardsCycleTotal(amount *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.SetRewardsCycleTotal(&_ClaimNodeOp.TransactOpts, amount)
 }
 
 // SetRewardsCycleTotal is a paid mutator transaction binding the contract method 0xec23112f.
 //
 // Solidity: function setRewardsCycleTotal(uint256 amount) returns()
-func (_NopClaim *NopClaimTransactorSession) SetRewardsCycleTotal(amount *big.Int) (*types.Transaction, error) {
-	return _NopClaim.Contract.SetRewardsCycleTotal(&_NopClaim.TransactOpts, amount)
+func (_ClaimNodeOp *ClaimNodeOpTransactorSession) SetRewardsCycleTotal(amount *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.SetRewardsCycleTotal(&_ClaimNodeOp.TransactOpts, amount)
 }
 
-// NopClaimGGPRewardsClaimedIterator is returned from FilterGGPRewardsClaimed and is used to iterate over the raw logs and unpacked data for GGPRewardsClaimed events raised by the NopClaim contract.
-type NopClaimGGPRewardsClaimedIterator struct {
-	Event *NopClaimGGPRewardsClaimed // Event containing the contract specifics and raw log
+// ClaimNodeOpGGPRewardsClaimedIterator is returned from FilterGGPRewardsClaimed and is used to iterate over the raw logs and unpacked data for GGPRewardsClaimed events raised by the ClaimNodeOp contract.
+type ClaimNodeOpGGPRewardsClaimedIterator struct {
+	Event *ClaimNodeOpGGPRewardsClaimed // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -413,7 +413,7 @@ type NopClaimGGPRewardsClaimedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *NopClaimGGPRewardsClaimedIterator) Next() bool {
+func (it *ClaimNodeOpGGPRewardsClaimedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -422,7 +422,7 @@ func (it *NopClaimGGPRewardsClaimedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(NopClaimGGPRewardsClaimed)
+			it.Event = new(ClaimNodeOpGGPRewardsClaimed)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -437,7 +437,7 @@ func (it *NopClaimGGPRewardsClaimedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(NopClaimGGPRewardsClaimed)
+		it.Event = new(ClaimNodeOpGGPRewardsClaimed)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -453,19 +453,19 @@ func (it *NopClaimGGPRewardsClaimedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *NopClaimGGPRewardsClaimedIterator) Error() error {
+func (it *ClaimNodeOpGGPRewardsClaimedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *NopClaimGGPRewardsClaimedIterator) Close() error {
+func (it *ClaimNodeOpGGPRewardsClaimedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// NopClaimGGPRewardsClaimed represents a GGPRewardsClaimed event raised by the NopClaim contract.
-type NopClaimGGPRewardsClaimed struct {
+// ClaimNodeOpGGPRewardsClaimed represents a GGPRewardsClaimed event raised by the ClaimNodeOp contract.
+type ClaimNodeOpGGPRewardsClaimed struct {
 	To     common.Address
 	Amount *big.Int
 	Raw    types.Log // Blockchain specific contextual infos
@@ -474,31 +474,31 @@ type NopClaimGGPRewardsClaimed struct {
 // FilterGGPRewardsClaimed is a free log retrieval operation binding the contract event 0xe6efee8958feb2079af9a7a1df26a6fae99525397bebfc3f64a4b7c3b41984d1.
 //
 // Solidity: event GGPRewardsClaimed(address indexed to, uint256 amount)
-func (_NopClaim *NopClaimFilterer) FilterGGPRewardsClaimed(opts *bind.FilterOpts, to []common.Address) (*NopClaimGGPRewardsClaimedIterator, error) {
+func (_ClaimNodeOp *ClaimNodeOpFilterer) FilterGGPRewardsClaimed(opts *bind.FilterOpts, to []common.Address) (*ClaimNodeOpGGPRewardsClaimedIterator, error) {
 
 	var toRule []interface{}
 	for _, toItem := range to {
 		toRule = append(toRule, toItem)
 	}
 
-	logs, sub, err := _NopClaim.contract.FilterLogs(opts, "GGPRewardsClaimed", toRule)
+	logs, sub, err := _ClaimNodeOp.contract.FilterLogs(opts, "GGPRewardsClaimed", toRule)
 	if err != nil {
 		return nil, err
 	}
-	return &NopClaimGGPRewardsClaimedIterator{contract: _NopClaim.contract, event: "GGPRewardsClaimed", logs: logs, sub: sub}, nil
+	return &ClaimNodeOpGGPRewardsClaimedIterator{contract: _ClaimNodeOp.contract, event: "GGPRewardsClaimed", logs: logs, sub: sub}, nil
 }
 
 // WatchGGPRewardsClaimed is a free log subscription operation binding the contract event 0xe6efee8958feb2079af9a7a1df26a6fae99525397bebfc3f64a4b7c3b41984d1.
 //
 // Solidity: event GGPRewardsClaimed(address indexed to, uint256 amount)
-func (_NopClaim *NopClaimFilterer) WatchGGPRewardsClaimed(opts *bind.WatchOpts, sink chan<- *NopClaimGGPRewardsClaimed, to []common.Address) (event.Subscription, error) {
+func (_ClaimNodeOp *ClaimNodeOpFilterer) WatchGGPRewardsClaimed(opts *bind.WatchOpts, sink chan<- *ClaimNodeOpGGPRewardsClaimed, to []common.Address) (event.Subscription, error) {
 
 	var toRule []interface{}
 	for _, toItem := range to {
 		toRule = append(toRule, toItem)
 	}
 
-	logs, sub, err := _NopClaim.contract.WatchLogs(opts, "GGPRewardsClaimed", toRule)
+	logs, sub, err := _ClaimNodeOp.contract.WatchLogs(opts, "GGPRewardsClaimed", toRule)
 	if err != nil {
 		return nil, err
 	}
@@ -508,8 +508,8 @@ func (_NopClaim *NopClaimFilterer) WatchGGPRewardsClaimed(opts *bind.WatchOpts, 
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(NopClaimGGPRewardsClaimed)
-				if err := _NopClaim.contract.UnpackLog(event, "GGPRewardsClaimed", log); err != nil {
+				event := new(ClaimNodeOpGGPRewardsClaimed)
+				if err := _ClaimNodeOp.contract.UnpackLog(event, "GGPRewardsClaimed", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -533,9 +533,9 @@ func (_NopClaim *NopClaimFilterer) WatchGGPRewardsClaimed(opts *bind.WatchOpts, 
 // ParseGGPRewardsClaimed is a log parse operation binding the contract event 0xe6efee8958feb2079af9a7a1df26a6fae99525397bebfc3f64a4b7c3b41984d1.
 //
 // Solidity: event GGPRewardsClaimed(address indexed to, uint256 amount)
-func (_NopClaim *NopClaimFilterer) ParseGGPRewardsClaimed(log types.Log) (*NopClaimGGPRewardsClaimed, error) {
-	event := new(NopClaimGGPRewardsClaimed)
-	if err := _NopClaim.contract.UnpackLog(event, "GGPRewardsClaimed", log); err != nil {
+func (_ClaimNodeOp *ClaimNodeOpFilterer) ParseGGPRewardsClaimed(log types.Log) (*ClaimNodeOpGGPRewardsClaimed, error) {
+	event := new(ClaimNodeOpGGPRewardsClaimed)
+	if err := _ClaimNodeOp.contract.UnpackLog(event, "GGPRewardsClaimed", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

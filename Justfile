@@ -105,16 +105,22 @@ gen: compile
 	cat $THATDIR/artifacts/contracts/contract/MinipoolManager.sol/MinipoolManager.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg minipool_manager --out $THATDIR/gen/minipool_manager.go
 	cat $THATDIR/artifacts/contracts/contract/Staking.sol/Staking.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg staking --out $THATDIR/gen/staking.go
 	cat $THATDIR/artifacts/contracts/contract/RewardsPool.sol/RewardsPool.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg rewards_pool --out $THATDIR/gen/rewards_pool.go
-	cat $THATDIR/artifacts/contracts/contract/ClaimNodeOp.sol/ClaimNodeOp.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg nop_claim --out $THATDIR/gen/nop_claim.go
+	cat $THATDIR/artifacts/contracts/contract/ClaimNodeOp.sol/ClaimNodeOp.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg claim_node_op --out $THATDIR/gen/claim_node_op.go
 	cat $THATDIR/artifacts/contracts/contract/Oracle.sol/Oracle.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg oracle --out $THATDIR/gen/oracle.go
 	cat $THATDIR/artifacts/contracts/contract/Storage.sol/Storage.json | jq '.abi' | go run cmd/abigen/main.go --abi - --pkg storage --out $THATDIR/gen/storage.go
 	echo "Complete! Copying to rialto repo..."
-	cp $THATDIR/gen/minipool_manager.go $THATDIR/../rialto/pkg/contracts/minipool_manager
-	cp $THATDIR/gen/staking.go $THATDIR/../rialto/pkg/contracts/staking
-	cp $THATDIR/gen/rewards_pool.go $THATDIR/../rialto/pkg/contracts/rewards_pool
-	cp $THATDIR/gen/nop_claim.go $THATDIR/../rialto/pkg/contracts/nop_claim
-	cp $THATDIR/gen/oracle.go $THATDIR/../rialto/pkg/contracts/oracle
-	cp $THATDIR/gen/storage.go $THATDIR/../rialto/pkg/contracts/storage
+	mkdir -p $THATDIR/../rialto/pkg/contracts/minipool_manager
+	mkdir -p $THATDIR/../rialto/pkg/contracts/staking
+	mkdir -p $THATDIR/../rialto/pkg/contracts/rewards_pool
+	mkdir -p $THATDIR/../rialto/pkg/contracts/claim_node_op
+	mkdir -p $THATDIR/../rialto/pkg/contracts/oracle
+	mkdir -p $THATDIR/../rialto/pkg/contracts/storage
+	cp $THATDIR/gen/minipool_manager.go $THATDIR/../rialto/pkg/contracts/minipool_manager/
+	cp $THATDIR/gen/staking.go $THATDIR/../rialto/pkg/contracts/staking/
+	cp $THATDIR/gen/rewards_pool.go $THATDIR/../rialto/pkg/contracts/rewards_pool/
+	cp $THATDIR/gen/claim_node_op.go $THATDIR/../rialto/pkg/contracts/claim_node_op/
+	cp $THATDIR/gen/oracle.go $THATDIR/../rialto/pkg/contracts/oracle/
+	cp $THATDIR/gen/storage.go $THATDIR/../rialto/pkg/contracts/storage/
 
 # Print a tab-separated list of all settings usage in contracts
 review-settings:
