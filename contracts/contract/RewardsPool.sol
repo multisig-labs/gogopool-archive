@@ -84,12 +84,12 @@ contract RewardsPool is Base {
 
 	/* REWARDS */
 
-  function getRewardsCycleCount() public view returns (uint256) {
+	function getRewardsCycleCount() public view returns (uint256) {
 		return getUint(keccak256("RewardsPool.RewardsCycleCount"));
 	}
 
-	function increaseRewardsCycleCount() internal returns (uint256) {
-		return addUint(keccak256("RewardsPool.RewardsCycleCount"), 1);
+	function increaseRewardsCycleCount() internal {
+		addUint(keccak256("RewardsPool.RewardsCycleCount"), 1);
 	}
 
 	function getRewardsCycleStartTime() public view returns (uint256) {

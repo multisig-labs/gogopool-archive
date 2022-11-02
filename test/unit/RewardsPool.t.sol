@@ -111,6 +111,7 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 		assertEq(store.getUint(keccak256("RewardsPool.RewardsCycleTotalAmount")), 0);
+		assertEq(rewardsPool.getRewardsCycleCount(), 0);
 
 		skip(dao.getRewardsCycleSeconds());
 
@@ -122,5 +123,6 @@ contract RewardsPoolTest is BaseTest {
 		assertGt(rewardsPool.getRewardsCycleTotalAmount(), 0);
 		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
+		assertEq(rewardsPool.getRewardsCycleCount(), 1);
 	}
 }

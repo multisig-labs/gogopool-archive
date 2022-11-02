@@ -18,6 +18,7 @@ contract ClaimNodeOp is Base {
 
 	error InvalidAmount();
 	error NoRewardsToClaim();
+	error RewardsAlreadyDistributed();
 
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
@@ -33,7 +34,7 @@ contract ClaimNodeOp is Base {
 	}
 
 	function setRewardsCycleTotal(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
-		return setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
+		setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 
 	// Eligiblity: time in protocol (secs) > RewardsEligibilityMinSeconds
@@ -54,8 +55,8 @@ contract ClaimNodeOp is Base {
 	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external {
 		Staking staking = Staking(getContractAddress("Staking"));
 		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
-		if(staking.getLastRewardsCycleCompleted() == rewardsPool.getRewardsCycleCount()){
-			return 0;
+		if (staking.getLastRewardsCycleCompleted(stakerAddr) == rewardsPool.getRewardsCycleCount()) {
+			revert RewardsAlreadyDistributed();
 		}
 		staking.setLastRewardsCycleCompleted(stakerAddr, rewardsPool.getRewardsCycleCount());
 		uint256 ggpEffectiveStaked = staking.getEffectiveGGPStaked(stakerAddr);

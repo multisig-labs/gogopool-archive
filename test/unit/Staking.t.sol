@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
+import {RialtoSimulator} from "../../contracts/contract/utils/RialtoSimulator.sol";
 
 contract StakingTest is BaseTest {
 	using FixedPointMathLib for uint256;
@@ -9,10 +10,20 @@ contract StakingTest is BaseTest {
 	address private nodeOp1;
 	address private nodeOp2;
 	address private nodeOp3;
+	RialtoSimulator private rialtoSim;
+
 	uint256 internal constant TOTAL_INITIAL_GGP_SUPPLY = 22_500_000 ether;
 
 	function setUp() public override {
 		super.setUp();
+
+		rialtoSim = new RialtoSimulator(minipoolMgr, nopClaim, rewardsPool, staking);
+		vm.startPrank(guardian);
+		multisigMgr.disableMultisig(address(rialto));
+		multisigMgr.registerMultisig(address(rialtoSim));
+		multisigMgr.enableMultisig(address(rialtoSim));
+		vm.stopPrank();
+
 		nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
 		vm.prank(nodeOp1);
 		ggp.approve(address(staking), MAX_AMT);
@@ -188,21 +199,30 @@ contract StakingTest is BaseTest {
 	}
 
 	function testGetGGPRewards() public {
+		vm.startPrank(nodeOp1);
+		staking.stakeGGP(100 ether);
+		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
+		vm.stopPrank();
+
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
 		rewardsPool.startRewardsCycle();
 		assertFalse(rewardsPool.canStartRewardsCycle());
 		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 
+		skip(2 weeks);
 		skip(dao.getRewardsCycleSeconds());
 
 		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
 		assertTrue(rewardsPool.canStartRewardsCycle());
 
-		rewardsPool.startRewardsCycle();
+		rialtoSim.processGGPRewards();
 
 		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
+
+		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
 	}
 
 	function testIncreaseGGPRewards() public {
@@ -224,6 +244,35 @@ contract StakingTest is BaseTest {
 		staking.decreaseGGPRewards(address(nodeOp1), 10 ether);
 		assert(staking.getGGPRewards(address(nodeOp1)) == 90 ether);
 		vm.stopPrank();
+	}
+
+	function testGetLastRewardsCycleCompleted() public {
+		vm.startPrank(nodeOp1);
+		staking.stakeGGP(100 ether);
+		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
+		vm.stopPrank();
+
+		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
+		rewardsPool.startRewardsCycle();
+		assertFalse(rewardsPool.canStartRewardsCycle());
+		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
+		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
+
+		skip(2 weeks);
+		skip(dao.getRewardsCycleSeconds());
+
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+		assertEq(staking.getLastRewardsCycleCompleted(address(nodeOp1)), 0);
+
+		rialtoSim.processGGPRewards();
+
+		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
+		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
+
+		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
+		assertEq(staking.getLastRewardsCycleCompleted(address(nodeOp1)), 1);
 	}
 
 	function testGetMinimumGGPStake() public {
@@ -260,7 +309,7 @@ contract StakingTest is BaseTest {
 	}
 
 	function testGetEffectiveGGPStakedWithLowGGPPrice() public {
-		vm.prank(rialto);
+		vm.prank(address(rialtoSim));
 		oracle.setGGPPriceInAVAX(0.1 ether, block.timestamp);
 
 		vm.startPrank(nodeOp1);
