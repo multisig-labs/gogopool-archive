@@ -362,6 +362,19 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
+	function testSlashGGP() public {
+		uint256 amt = 100 ether;
+		vm.prank(nodeOp1);
+		staking.stakeGGP(amt);
+		assertEq(vault.balanceOfToken("Staking", ggp), amt);
+		assert(staking.getGGPStake(nodeOp1) == amt);
+		vm.prank(address(minipoolMgr));
+		staking.slashGGP(nodeOp1, amt);
+		assertEq(staking.getGGPStake(nodeOp1), 0);
+		assertEq(vault.balanceOfToken("Staking", ggp), 0);
+		assertEq(vault.balanceOfToken("ProtocolDAO", ggp), amt);
+	}
+
 	function testStakeWithdraw() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(300 ether);

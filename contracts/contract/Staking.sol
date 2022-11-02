@@ -315,7 +315,9 @@ contract Staking is Base {
 
 	//Minipool Manager will call this if a minipool ended and was not in good standing
 	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlyLatestContract("MinipoolManager", msg.sender) {
+		Vault vault = Vault(getContractAddress("Vault"));
 		decreaseGGPStake(stakerAddr, ggpAmt);
+		vault.transferToken("ProtocolDAO", ggp, ggpAmt);
 		// Lets handle the emit in minipool manager
 		// TODO So, if we reduce the staker's GGP count in storage, but the GGP is still in the vault, its kind of "unassigned"
 		// and floating in there. Maybe we have to move the GGP to the DAO?
