@@ -17,7 +17,6 @@ import {WAVAX} from "../../../contracts/contract/utils/WAVAX.sol";
 import {MinipoolStatus} from "../../../contracts/types/MinipoolStatus.sol";
 import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 import {RewardsPool} from "../../../contracts/contract/RewardsPool.sol";
-// import {RialtoSimulator} from "../../../contracts/contract/utils/RialtoSimulator.sol";
 import {Staking} from "../../../contracts/contract/Staking.sol";
 import {Ocyticus} from "../../../contracts/contract/Ocyticus.sol";
 
@@ -51,7 +50,6 @@ abstract contract BaseTest is Test {
 	ProtocolDAO public dao;
 	ClaimProtocolDAO public daoClaim;
 	RewardsPool public rewardsPool;
-	// RialtoSimulator public rialtoSim;
 	ClaimNodeOp public nopClaim;
 	Staking public staking;
 	Ocyticus public ocyticus;
@@ -113,9 +111,6 @@ abstract contract BaseTest is Test {
 		rewardsPool = new RewardsPool(store);
 		registerContract(store, "RewardsPool", address(rewardsPool));
 		rewardsPool.initialize();
-
-		// rialtoSim = new RialtoSimulator(minipoolMgr, nopClaim, rewardsPool, staking);
-		// registerContract(store, "RialtoSimulator", address(rialtoSim));
 
 		nopClaim = new ClaimNodeOp(store, ggp);
 		registerContract(store, "ClaimNodeOp", address(nopClaim));

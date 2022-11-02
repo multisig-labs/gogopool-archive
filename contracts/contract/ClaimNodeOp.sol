@@ -18,7 +18,7 @@ contract ClaimNodeOp is Base {
 
 	error InvalidAmount();
 	error NoRewardsToClaim();
-	error RewardsAlreadyDistributed();
+	error RewardsAlreadyDistributedToStaker(address);
 
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
@@ -56,7 +56,7 @@ contract ClaimNodeOp is Base {
 		Staking staking = Staking(getContractAddress("Staking"));
 		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
 		if (staking.getLastRewardsCycleCompleted(stakerAddr) == rewardsPool.getRewardsCycleCount()) {
-			revert RewardsAlreadyDistributed();
+			revert RewardsAlreadyDistributedToStaker(stakerAddr);
 		}
 		staking.setLastRewardsCycleCompleted(stakerAddr, rewardsPool.getRewardsCycleCount());
 		uint256 ggpEffectiveStaked = staking.getEffectiveGGPStaked(stakerAddr);
