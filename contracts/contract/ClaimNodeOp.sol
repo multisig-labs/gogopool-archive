@@ -53,6 +53,11 @@ contract ClaimNodeOp is Base {
 	//TODO: Set some limitor on this. Right now it can be called and new rewards will be distributed at any time
 	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external {
 		Staking staking = Staking(getContractAddress("Staking"));
+		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
+		if(staking.getLastRewardsCycleCompleted() == rewardsPool.getRewardsCycleCount()){
+			return 0;
+		}
+		staking.setLastRewardsCycleCompleted(stakerAddr, rewardsPool.getRewardsCycleCount());
 		uint256 ggpEffectiveStaked = staking.getEffectiveGGPStaked(stakerAddr);
 		uint256 percentage = ggpEffectiveStaked.divWadDown(totalEligibleGGPStaked);
 		uint256 rewardsCycleTotal = getRewardsCycleTotal();

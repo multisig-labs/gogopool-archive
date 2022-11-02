@@ -47,6 +47,7 @@ contract Staking is Base {
 		uint256 minipoolCount;
 		uint256 rewardsStartTime;
 		uint256 ggpRewards;
+		uint256 lastRewardsCycleCompleted;
 	}
 
 	uint256 internal constant TENTH = 0.1 ether;
@@ -190,6 +191,18 @@ contract Staking is Base {
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
 
+	/* LAST REWARDS CYCLE PAID OUT */
+
+	function getLastRewardsCycleCompleted(address stakerAddr) public view returns (uint256) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")));
+	}
+
+	function setLastRewardsCycleCompleted(address stakerAddr, uint256 cycleNumber) public onlyLatestContract("ClaimNodeOp", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")), cycleNumber);
+	}
+
 	/// @notice Get a stakers's minimum ggp stake to collateralize their minipools, based on current GGP price
 	/// @return Amount of GGP
 	function getMinimumGGPStake(address stakerAddr) public view returns (uint256) {
@@ -331,6 +344,7 @@ contract Staking is Base {
 		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
 		staker.ggpRewards = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
+		staker.lastRewardsCycleCompleted = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")));
 	}
 
 	// Get all stakers (limit=0 means no pagination)

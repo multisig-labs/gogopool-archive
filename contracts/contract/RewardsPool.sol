@@ -84,6 +84,14 @@ contract RewardsPool is Base {
 
 	/* REWARDS */
 
+  function getRewardsCycleCount() public view returns (uint256) {
+		return getUint(keccak256("RewardsPool.RewardsCycleCount"));
+	}
+
+	function increaseRewardsCycleCount() internal returns (uint256) {
+		return addUint(keccak256("RewardsPool.RewardsCycleCount"), 1);
+	}
+
 	function getRewardsCycleStartTime() public view returns (uint256) {
 		return getUint(keccak256("RewardsPool.RewardsCycleStartTime"));
 	}
@@ -132,7 +140,7 @@ contract RewardsPool is Base {
 
 		// Set this as the start of the new rewards cycle
 		setUint(keccak256("RewardsPool.RewardsCycleStartTime"), block.timestamp);
-
+		increaseRewardsCycleCount();
 		// Mint any new tokens from GGP inflation
 		// note: this will always 'mint' (release) new tokens if the rewards cycle length requirement is met
 		// since inflation is on a 1 day interval and it needs at least one cycle since last calculation
