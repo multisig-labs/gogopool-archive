@@ -11,7 +11,6 @@ contract ProtocolDAOTest is BaseTest {
 
 	function testGetInflation() public view {
 		assert(dao.getInflationIntervalRate() > 0);
-		assert(dao.getInflationIntervalStartTime() != 0);
 		assert(dao.getInflationIntervalSeconds() != 0);
 	}
 }

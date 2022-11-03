@@ -33,8 +33,7 @@ contract Oracle is Base {
 	///      send a setGGPPriceInAVAX tx
 	function getGGPPriceInAVAXFromOneInch() external view returns (uint256 price, uint256 timestamp) {
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
-		address addr = getAddress(keccak256("Oracle.OneInch"));
-		IOneInch oneinch = IOneInch(addr);
+		IOneInch oneinch = IOneInch(getAddress(keccak256("Oracle.OneInch")));
 		price = oneinch.getRateToEth(ggp, false);
 		timestamp = block.timestamp;
 	}

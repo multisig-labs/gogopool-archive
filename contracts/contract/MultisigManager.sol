@@ -7,7 +7,8 @@ import {Storage} from "./Storage.sol";
 /*
 	Data Storage Schema
 	MultisigManager.count = Starts at 0 and counts up by 1 after an addr is added.
-	MultisigManager.index<address> = <index> of multisigAddress
+
+	MultisigManager.index<address> = <index> + 1 of multisigAddress
 	MultisigManager.item<index>.address = C-chain address used as primary key
 	MultisigManager.item<index>.enabled = bool
 */
@@ -26,18 +27,17 @@ contract MultisigManager is Base {
 		version = 1;
 	}
 
-	// Register a multisig. Defaults to disabled when first registered.
+	/// @notice Register a multisig. Defaults to disabled when first registered.
 	function registerMultisig(address addr) external onlyGuardian {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex != -1) {
 			revert MultisigAlreadyRegistered();
 		}
-		uint256 count = getUint(keccak256("MultisigManager.count"));
-		setAddress(keccak256(abi.encodePacked("MultisigManager.item", count, ".address")), addr);
+		uint256 index = getUint(keccak256("MultisigManager.count"));
+		setAddress(keccak256(abi.encodePacked("MultisigManager.item", index, ".address")), addr);
 
-		// NOTE the index is actually 1 more than where it is actually stored. The 1 is subtracted in getIndexOf().
-		// Copied from RP, probably so they can use "-1" to signify that something doesnt exist
-		setUint(keccak256(abi.encodePacked("MultisigManager.index", addr)), count + 1);
+		// The index is stored 1 greater than the actual value. The 1 is subtracted in getIndexOf().
+		setUint(keccak256(abi.encodePacked("MultisigManager.index", addr)), index + 1);
 		addUint(keccak256("MultisigManager.count"), 1);
 		emit RegisteredMultisig(addr);
 	}
@@ -51,8 +51,8 @@ contract MultisigManager is Base {
 		emit EnabledMultisig(addr);
 	}
 
-	// If they have existing validations then this will prevent the multisig from completing
-	// so the minipool will need to manually be reassigned to a new multisig
+	/// @dev this will prevent the multisig from completing validations
+	/// 		the minipool will need to be manually reassigned to a new multisig
 	function disableMultisig(address addr) external guardianOrLatestContract("Ocyticus", msg.sender) {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex == -1) {
@@ -62,8 +62,6 @@ contract MultisigManager is Base {
 		emit DisabledMultisig(addr);
 	}
 
-	// In future, have a way to choose which multisig gets used for each validator
-	// i.e. round-robin, or based on GGP staked, etc
 	function requireNextActiveMultisig() external view returns (address) {
 		uint256 total = getUint(keccak256("MultisigManager.count"));
 		address addr;
@@ -77,8 +75,6 @@ contract MultisigManager is Base {
 		revert NoEnabledMultisigFound();
 	}
 
-	// The index of an item
-	// Returns -1 if the value is not found
 	function getIndexOf(address addr) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("MultisigManager.index", addr)))) - 1;
 	}

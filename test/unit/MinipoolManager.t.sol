@@ -525,6 +525,7 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), 0);
 
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
+		assertEq(staking.getAVAXAssignedHighWater(mp1Updated.owner), 0);
 	}
 
 	function testCancelMinipoolByMultisig() public {

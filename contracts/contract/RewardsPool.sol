@@ -52,8 +52,9 @@ contract RewardsPool is Base {
 	}
 
 	/// @notice Function to compute how many tokens should be minted
-	/// @return currentTotalSupply, newTotalSupplyAfterMint
-	function getInflationAmt() public view returns (uint256, uint256) {
+	/// @return currentTotalSupply current total supply
+	/// @return newTotalSupply supply after mint
+	function getInflationAmt() public view returns (uint256 currentTotalSupply, uint256 newTotalSupply) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationRate = dao.getInflationIntervalRate();
 		uint256 inflationIntervalsElapsed = getInflationIntervalsElapsed();
@@ -70,15 +71,15 @@ contract RewardsPool is Base {
 	/// @dev Mint new tokens if enough time has elapsed since last mint
 	function inflate() internal {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		uint256 inflationIntervalElapsedSeconds = (dao.getInflationIntervalSeconds() * getInflationIntervalsElapsed());
+		uint256 inflationIntervalElapsedSeconds = (block.timestamp - getInflationIntervalStartTime());
 		(uint256 currentTotalSupply, uint256 newTotalSupply) = getInflationAmt();
 		uint256 newTokens = newTotalSupply - currentTotalSupply;
 
 		emit GGPInflated(newTokens);
 
 		dao.setTotalGGPCirculatingSupply(newTotalSupply);
+
 		addUint(keccak256("RewardsPool.InflationIntervalStartTime"), inflationIntervalElapsedSeconds);
-		// How many new tokens we have available to distribute this rewards cycle
 		setUint(keccak256("RewardsPool.RewardsCycleTotalAmount"), newTokens);
 	}
 
@@ -96,7 +97,7 @@ contract RewardsPool is Base {
 		return getUint(keccak256("RewardsPool.RewardsCycleStartTime"));
 	}
 
-	function getRewardsCycleTotalAmount() public view returns (uint256) {
+	function getRewardsCycleTotalAmt() public view returns (uint256) {
 		return getUint(keccak256("RewardsPool.RewardsCycleTotalAmount"));
 	}
 
@@ -112,7 +113,7 @@ contract RewardsPool is Base {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 claimContractPct = dao.getClaimingContractPct(claimingContract);
 		// How much rewards are available for this claim interval?
-		uint256 currentCycleRewardsTotal = getRewardsCycleTotalAmount();
+		uint256 currentCycleRewardsTotal = getRewardsCycleTotalAmt();
 
 		// How much this claiming contract is entitled to in perc
 		uint256 contractRewardsTotal = 0;
@@ -128,51 +129,40 @@ contract RewardsPool is Base {
 		return getRewardsCyclesElapsed() > 0 && getInflationIntervalsElapsed() > 0;
 	}
 
-	/* CYCLES */
-
 	/// @notice Public function that will run a GGP rewards cycle if possible
 	function startRewardsCycle() external {
 		if (!canStartRewardsCycle()) {
 			revert UnableToStartRewardsCycle();
 		}
 
-		emit NewRewardsCycleStarted(getRewardsCycleTotalAmount());
+		emit NewRewardsCycleStarted(getRewardsCycleTotalAmt());
 
-		// Set this as the start of the new rewards cycle
+		// Set start of new rewards cycle
 		setUint(keccak256("RewardsPool.RewardsCycleStartTime"), block.timestamp);
 		increaseRewardsCycleCount();
 		// Mint any new tokens from GGP inflation
-		// note: this will always 'mint' (release) new tokens if the rewards cycle length requirement is met
-		// since inflation is on a 1 day interval and it needs at least one cycle since last calculation
+		// This will always 'mint' (release) new tokens if the rewards cycle length requirement is met
+		// 		since inflation is on a 1 day interval and it needs at least one cycle since last calculation
 		inflate();
 
-		// Soon as we mint new tokens, send the DAO's share to it's claiming contract, then attempt to transfer them to the dao if possible
 		uint256 daoClaimContractAllotment = getClaimingContractDistribution("ClaimProtocolDAO");
 		uint256 nopClaimContractAllotment = getClaimingContractDistribution("ClaimNodeOp");
-
-		if (daoClaimContractAllotment + nopClaimContractAllotment > getRewardsCycleTotalAmount()) {
+		if (daoClaimContractAllotment + nopClaimContractAllotment > getRewardsCycleTotalAmt()) {
 			revert IncorrectRewardsDistribution();
 		}
 
-		ClaimNodeOp nopClaim = ClaimNodeOp(getContractAddress("ClaimNodeOp"));
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		Vault vault = Vault(getContractAddress("Vault"));
 
 		if (daoClaimContractAllotment > 0) {
 			emit ProtocolDAORewardsTransfered(daoClaimContractAllotment);
-
-			// Transfers the DAO's tokens to it's claiming contract from the rewards pool
 			vault.transferToken("ClaimProtocolDAO", ggp, daoClaimContractAllotment);
 		}
 
-		//TODO: add Rialto's Claim here
-
 		if (nopClaimContractAllotment > 0) {
 			emit ClaimNodeOpRewardsTransfered(nopClaimContractAllotment);
-
-			//set the total for this cycle in the contracts storage
+			ClaimNodeOp nopClaim = ClaimNodeOp(getContractAddress("ClaimNodeOp"));
 			nopClaim.setRewardsCycleTotal(nopClaimContractAllotment);
-			// Transfers the DAO's tokens to it's claiming contract from the rewards pool
 			vault.transferToken("ClaimNodeOp", ggp, nopClaimContractAllotment);
 		}
 	}

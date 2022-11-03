@@ -37,7 +37,7 @@ contract ClaimNodeOp is Base {
 		setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 
-	// Eligiblity: time in protocol (secs) > RewardsEligibilityMinSeconds
+	/// @dev Eligiblity: time in protocol (secs) > RewardsEligibilityMinSeconds
 	function isEligible(address stakerAddr) external view returns (bool) {
 		Staking staking = Staking(getContractAddress("Staking"));
 		try staking.getRewardsStartTime(stakerAddr) returns (uint256 rewardsStartTime) {
@@ -49,8 +49,8 @@ contract ClaimNodeOp is Base {
 		}
 	}
 
-	// Get the share of rewards for a node as a fraction of 1 ether
-	// Rialto will call this
+	/// @notice Set the share of rewards for a staker as a fraction of 1 ether
+	/// @dev Rialto will call this
 	//TODO: Set some limitor on this. Right now it can be called and new rewards will be distributed at any time
 	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external {
 		Staking staking = Staking(getContractAddress("Staking"));
@@ -70,14 +70,14 @@ contract ClaimNodeOp is Base {
 		staking.resetAVAXAssignedHighWater(stakerAddr);
 		staking.increaseGGPRewards(stakerAddr, rewardsAmt);
 
-		//check if their rewards time should be reset
+		// check if their rewards time should be reset
 		uint256 minipoolCount = staking.getMinipoolCount(stakerAddr);
 		if (minipoolCount == 0) {
 			staking.setRewardsStartTime(stakerAddr, 0);
 		}
 	}
 
-	// Make an ggp claim and automatically restake the unclaimed rewards
+	/// @notice Claim ggp and automatically restake unclaimed rewards
 	function claimAndRestake(uint256 claimAmount) external {
 		Staking staking = Staking(getContractAddress("Staking"));
 		uint256 ggpRewards = staking.getGGPRewards(msg.sender);
@@ -100,7 +100,6 @@ contract ClaimNodeOp is Base {
 			vault.withdrawToken(msg.sender, ggp, claimAmount);
 		}
 
-		//reset rewards number
 		staking.decreaseGGPRewards(msg.sender, ggpRewards);
 		emit GGPRewardsClaimed(msg.sender, claimAmount);
 	}

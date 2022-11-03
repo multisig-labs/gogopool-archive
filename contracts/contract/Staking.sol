@@ -17,6 +17,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	A "staker" is a user of the protocol who stakes GGP into this contract
 
 	staker.count = Starts at 0 and counts up by 1 after a staker is added.
+
 	staker.index<stakerAddr> = <index> of stakerAddr
 	staker.item<index>.stakerAddr = wallet address of staker, used as primary key
 	staker.item<index>.ggpStaked = Total amt of GGP staked across all minipools
@@ -150,7 +151,6 @@ contract Staking is Base {
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 	}
 
-	/// @dev Also sets .rewardsStartTime if minipoolsCount goes from 0 -> 1
 	function increaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
@@ -225,8 +225,7 @@ contract Staking is Base {
 		}
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
-		uint256 ggpStaked = getGGPStake(stakerAddr);
-		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
+		uint256 ggpStakedInAvax = getGGPStake(stakerAddr).mulWadDown(ggpPriceInAvax);
 		return ggpStakedInAvax.divWadDown(avaxAssigned);
 	}
 
@@ -242,21 +241,23 @@ contract Staking is Base {
 		if (getCollateralizationRatio(stakerAddr) < TENTH) {
 			return 0;
 		}
+
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
-		uint256 ggpStaked = getGGPStake(stakerAddr);
-		uint256 ggpStakedInAvax = ggpStaked.mulWadDown(ggpPriceInAvax);
+		uint256 ggpStakedInAvax = getGGPStake(stakerAddr).mulWadDown(ggpPriceInAvax);
 		uint256 ratio = ggpStakedInAvax.divWadDown(avaxAssignedHighWater);
+
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 maxRatio = dao.getMaxCollateralizationRatio();
-		ratio = (ratio > maxRatio) ? maxRatio : ratio;
-		return ratio;
+
+		return (ratio > maxRatio) ? maxRatio : ratio;
 	}
 
 	/// @notice GGP that will count towards rewards this cycle
 	function getEffectiveGGPStaked(address stakerAddr) external view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
+
 		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
 		uint256 ratio = getEffectiveRewardsRatio(stakerAddr);
 		return avaxAssignedHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);
@@ -313,14 +314,11 @@ contract Staking is Base {
 		vault.withdrawToken(msg.sender, ggp, amount);
 	}
 
-	//Minipool Manager will call this if a minipool ended and was not in good standing
+	/// @notice Minipool Manager will call this if a minipool ended and was not in good standing
 	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlyLatestContract("MinipoolManager", msg.sender) {
 		Vault vault = Vault(getContractAddress("Vault"));
 		decreaseGGPStake(stakerAddr, ggpAmt);
 		vault.transferToken("ProtocolDAO", ggp, ggpAmt);
-		// Lets handle the emit in minipool manager
-		// TODO So, if we reduce the staker's GGP count in storage, but the GGP is still in the vault, its kind of "unassigned"
-		// and floating in there. Maybe we have to move the GGP to the DAO?
 	}
 
 	function requireValidStaker(address stakerAddr) public view returns (int256) {
@@ -332,8 +330,8 @@ contract Staking is Base {
 		}
 	}
 
-	// The index of an item
-	// Returns -1 if the value is not found
+	/// @notice Get index of the staker
+	/// @return staker index or -1 if the value was not found
 	function getIndexOf(address stakerAddr) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("staker.index", stakerAddr)))) - 1;
 	}

@@ -93,7 +93,7 @@ contract RewardsPoolTest is BaseTest {
 		skip(dao.getRewardsCycleSeconds());
 
 		rewardsPool.startRewardsCycle();
-		uint256 rewardsTotal = rewardsPool.getRewardsCycleTotalAmount();
+		uint256 rewardsTotal = rewardsPool.getRewardsCycleTotalAmt();
 
 		uint256 protocolAllot = rewardsTotal.mulWadDown(dao.getClaimingContractPct("ClaimProtocolDAO"));
 		assert(rewardsPool.getClaimingContractDistribution("ClaimProtocolDAO") == protocolAllot);
@@ -120,7 +120,7 @@ contract RewardsPoolTest is BaseTest {
 		rewardsPool.startRewardsCycle();
 
 		assertEq(rewardsPool.getRewardsCycleStartTime(), rewardsCycleStartTime + dao.getRewardsCycleSeconds());
-		assertGt(rewardsPool.getRewardsCycleTotalAmount(), 0);
+		assertGt(rewardsPool.getRewardsCycleTotalAmt(), 0);
 		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
 		assertEq(rewardsPool.getRewardsCycleCount(), 1);

@@ -6,10 +6,7 @@ import {MultisigManager} from "./MultisigManager.sol";
 import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 
-// Panic when we want to pause the protocol
-
-// Maintain a list of EOAs that are allowed to emergency pause the protocol
-// but not modify any other settings like a guardian would be able to
+/// @notice Methods to pause the protocol
 contract Ocyticus is Base {
 	error NotAllowed();
 
@@ -41,7 +38,7 @@ contract Ocyticus is Base {
 		disableAllMultisigs();
 	}
 
-	// NOTE Multisigs will need to be enabled seperately, we dont know which ones to enable
+	/// @dev Multisigs will need to be enabled seperately, we dont know which ones to enable
 	function resumeEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		dao.resumeContract("TokenggAVAX");

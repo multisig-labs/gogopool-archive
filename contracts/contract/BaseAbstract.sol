@@ -7,10 +7,6 @@ import {Storage} from "./Storage.sol";
 // import {console} from "forge-std/console.sol";
 // import {format} from "sol-utils/format.sol";
 
-/// @title Base settings / modifiers for each contract in GoGoPool
-/// @author Chandler
-// Based on RocketBase by RocketPool
-
 abstract contract BaseAbstract {
 	error InvalidOrOutdatedContract();
 	error MustBeGuardian();
@@ -19,17 +15,11 @@ abstract contract BaseAbstract {
 	error ContractNotFound();
 	error MustBeGuardianOrValidContract();
 
-	// Version of the contract
 	uint8 public version;
 
-	// The main storage contract where primary persistant storage is maintained
 	Storage internal gogoStorage;
 
-	/*** Modifiers **********************************************************/
-
-	/**
-	 * @dev Throws if called by any sender that doesn't match a GoGo Pool network contract
-	 */
+	/// @dev Verify caller is a registered GoGoPool contract
 	modifier onlyLatestNetworkContract() {
 		if (getBool(keccak256(abi.encodePacked("contract.exists", msg.sender))) == false) {
 			revert InvalidOrOutdatedContract();
@@ -37,9 +27,7 @@ abstract contract BaseAbstract {
 		_;
 	}
 
-	/**
-	 * @dev Throws if called by any sender that doesn't match one of the supplied contract or is the latest version of that contract
-	 */
+	/// @dev Verify caller is latest version of `contractName`
 	modifier onlyLatestContract(string memory contractName, address contractAddress) {
 		if (contractAddress != getAddress(keccak256(abi.encodePacked("contract.address", contractName)))) {
 			revert InvalidOrOutdatedContract();
@@ -47,9 +35,7 @@ abstract contract BaseAbstract {
 		_;
 	}
 
-	// I want a modifier that allows the guardian or
-	// ocyticus to be able to call
-
+	/// @dev Verify caller is a guardian or latest version of `contractName`
 	modifier guardianOrLatestContract(string memory contractName, address contractAddress) {
 		bool isContract = contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		bool isGuardian = msg.sender == gogoStorage.getGuardian();
@@ -60,9 +46,7 @@ abstract contract BaseAbstract {
 		_;
 	}
 
-	/**
-	 * @dev Throws if called by any account other than a guardian account (temporary account allowed access to settings before DAO is fully enabled)
-	 */
+	/// @dev Verify caller is the guardian
 	modifier onlyGuardian() {
 		if (msg.sender != gogoStorage.getGuardian()) {
 			revert MustBeGuardian();
@@ -70,6 +54,7 @@ abstract contract BaseAbstract {
 		_;
 	}
 
+	/// @dev Verify caller is a valid multisig
 	modifier onlyMultisig() {
 		int256 multisigIndex = int256(getUint(keccak256(abi.encodePacked("MultisigManager.index", msg.sender)))) - 1;
 		address addr = getAddress(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".address")));
@@ -80,6 +65,7 @@ abstract contract BaseAbstract {
 		_;
 	}
 
+	/// @dev Verify contract is not paused
 	modifier whenNotPaused() {
 		string memory contractName = getContractName(address(this));
 		if (getBool(keccak256(abi.encodePacked("contract.paused", contractName)))) {
@@ -88,9 +74,6 @@ abstract contract BaseAbstract {
 		_;
 	}
 
-	/*** Methods **********************************************************/
-
-	/// @dev Get the address of a network contract by name
 	function getContractAddress(string memory contractName) public view returns (address) {
 		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		if (contractAddress == address(0x0)) {
@@ -99,13 +82,6 @@ abstract contract BaseAbstract {
 		return contractAddress;
 	}
 
-	/// @dev Get the address of a network contract by name (returns address(0x0) instead of reverting if contract does not exist)
-	function getContractAddressUnsafe(string memory contractName) internal view returns (address) {
-		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
-		return contractAddress;
-	}
-
-	/// @dev Get the name of a network contract by address
 	function getContractName(address contractAddress) internal view returns (string memory) {
 		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", contractAddress)));
 		if (bytes(contractName).length == 0) {
@@ -114,23 +90,6 @@ abstract contract BaseAbstract {
 		return contractName;
 	}
 
-	/// @dev Get revert error message from a .call method
-	function getRevertMsg(bytes memory returnData) internal pure returns (string memory) {
-		// If the _res length is less than 68, then the transaction failed silently (without a revert message)
-		if (returnData.length < 68) return "Transaction reverted silently";
-		// solhint-disable-next-line no-inline-assembly
-		assembly {
-			// Slice the sighash.
-			returnData := add(returnData, 0x04)
-		}
-		return abi.decode(returnData, (string)); // All that remains is the revert string
-	}
-
-	/*** GoGo Storage Methods ****************************************/
-
-	// Note: Unused helpers have been removed to keep contract sizes down
-
-	/// @dev Storage get methods
 	function getAddress(bytes32 key) internal view returns (address) {
 		return gogoStorage.getAddress(key);
 	}
@@ -159,7 +118,6 @@ abstract contract BaseAbstract {
 		return gogoStorage.getString(key);
 	}
 
-	/// @dev Storage set methods
 	function setAddress(bytes32 key, address value) internal {
 		gogoStorage.setAddress(key, value);
 	}
@@ -188,7 +146,6 @@ abstract contract BaseAbstract {
 		gogoStorage.setString(key, value);
 	}
 
-	/// @dev Storage delete methods
 	function deleteAddress(bytes32 key) internal {
 		gogoStorage.deleteAddress(key);
 	}
@@ -217,7 +174,6 @@ abstract contract BaseAbstract {
 		gogoStorage.deleteString(key);
 	}
 
-	/// @dev Storage arithmetic methods
 	function addUint(bytes32 key, uint256 amount) internal {
 		gogoStorage.addUint(key, amount);
 	}
