@@ -202,7 +202,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 			revert InvalidAVAXAssignmentRequest();
 		}
 
-		if (msg.value + avaxAssignmentRequest < dao.getMinipoolMinAVAXStakingAmount()) {
+		if (msg.value + avaxAssignmentRequest < dao.getMinipoolMinAVAXStakingAmt()) {
 			revert InsufficientAVAXForMinipoolCreation();
 		}
 

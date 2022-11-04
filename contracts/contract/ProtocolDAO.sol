@@ -34,7 +34,7 @@ contract ProtocolDAO is Base {
 		setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserve
 
 		// Minipool
-		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmount"), 2_000 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmt"), 2_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);
@@ -113,8 +113,8 @@ contract ProtocolDAO is Base {
 
 	// *** Minipool Settings ***
 
-	function getMinipoolMinAVAXStakingAmount() public view returns (uint256) {
-		return getUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmount"));
+	function getMinipoolMinAVAXStakingAmt() public view returns (uint256) {
+		return getUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmt"));
 	}
 
 	function getMinipoolNodeCommissionFeePct() public view returns (uint256) {

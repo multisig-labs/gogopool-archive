@@ -33,7 +33,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 	error InvalidStakingDeposit();
 	error WithdrawAmountTooLarge();
 
-	event NewRewardsCycle(uint256 indexed cycleEnd, uint256 rewardsAmount);
+	event NewRewardsCycle(uint256 indexed cycleEnd, uint256 rewardsAmt);
 	event WithdrawnForStaking(address indexed caller, uint256 assets);
 	event DepositedFromStaking(address indexed caller, uint256 baseAmt, uint256 rewardsAmt);
 
@@ -218,11 +218,17 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		return super.redeem(shares, receiver, owner);
 	}
 
-	function beforeWithdraw(uint256 amount, uint256 shares) internal override {
+	function beforeWithdraw(
+		uint256 amount,
+		uint256 /* shares */
+	) internal override {
 		totalReleasedAssets -= amount;
 	}
 
-	function afterDeposit(uint256 amount, uint256 shares) internal override {
+	function afterDeposit(
+		uint256 amount,
+		uint256 /* shares */
+	) internal override {
 		totalReleasedAssets += amount;
 	}
 

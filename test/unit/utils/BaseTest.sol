@@ -146,7 +146,7 @@ abstract contract BaseTest is Test {
 		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether); // 10% collateral held in reserve
 
 		// Minipool
-		store.setUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmount"), 2_000 ether);
+		store.setUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmt"), 2_000 ether);
 		store.setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
 		store.setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
 		store.setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);

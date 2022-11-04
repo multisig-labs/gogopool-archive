@@ -78,29 +78,29 @@ contract ClaimNodeOp is Base {
 	}
 
 	/// @notice Claim ggp and automatically restake unclaimed rewards
-	function claimAndRestake(uint256 claimAmount) external {
+	function claimAndRestake(uint256 claimAmt) external {
 		Staking staking = Staking(getContractAddress("Staking"));
 		uint256 ggpRewards = staking.getGGPRewards(msg.sender);
 		if (ggpRewards == 0) {
 			revert NoRewardsToClaim();
 		}
-		if (claimAmount > ggpRewards) {
+		if (claimAmt > ggpRewards) {
 			revert InvalidAmount();
 		}
 
 		Vault vault = Vault(getContractAddress("Vault"));
-		uint256 restakeAmount = ggpRewards - claimAmount;
-		if (restakeAmount > 0) {
-			vault.withdrawToken(address(this), ggp, restakeAmount);
-			ggp.approve(address(staking), restakeAmount);
-			staking.restakeGGP(msg.sender, restakeAmount);
+		uint256 restakeAmt = ggpRewards - claimAmt;
+		if (restakeAmt > 0) {
+			vault.withdrawToken(address(this), ggp, restakeAmt);
+			ggp.approve(address(staking), restakeAmt);
+			staking.restakeGGP(msg.sender, restakeAmt);
 		}
 
-		if (claimAmount > 0) {
-			vault.withdrawToken(msg.sender, ggp, claimAmount);
+		if (claimAmt > 0) {
+			vault.withdrawToken(msg.sender, ggp, claimAmt);
 		}
 
 		staking.decreaseGGPRewards(msg.sender, ggpRewards);
-		emit GGPRewardsClaimed(msg.sender, claimAmount);
+		emit GGPRewardsClaimed(msg.sender, claimAmt);
 	}
 }
