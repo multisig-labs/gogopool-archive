@@ -30,7 +30,7 @@ var (
 
 // RewardsPoolMetaData contains all meta data concerning the RewardsPool contract.
 var RewardsPoolMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectRewardsDistribution\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnableToStartRewardsCycle\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ClaimNodeOpRewardsTransfered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newTokens\",\"type\":\"uint256\"}],\"name\":\"GGPInflated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalRewardsAmt\",\"type\":\"uint256\"}],\"name\":\"NewRewardsCycleStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ProtocolDAORewardsTransfered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canStartRewardsCycle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractDistribution\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationAmt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalsElapsed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotalAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCyclesElapsed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startRewardsCycle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectRewardsDistribution\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnableToStartRewardsCycle\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ClaimNodeOpRewardsTransfered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newTokens\",\"type\":\"uint256\"}],\"name\":\"GGPInflated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalRewardsAmt\",\"type\":\"uint256\"}],\"name\":\"NewRewardsCycleStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"ProtocolDAORewardsTransfered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canStartRewardsCycle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"claimingContract\",\"type\":\"string\"}],\"name\":\"getClaimingContractDistribution\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationAmt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"currentTotalSupply\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newTotalSupply\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInflationIntervalsElapsed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleStartTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotalAmt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCyclesElapsed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startRewardsCycle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // RewardsPoolABI is the input ABI used to generate the binding from.
@@ -274,33 +274,46 @@ func (_RewardsPool *RewardsPoolCallerSession) GetContractAddress(contractName st
 
 // GetInflationAmt is a free data retrieval call binding the contract method 0x595c5e6d.
 //
-// Solidity: function getInflationAmt() view returns(uint256, uint256)
-func (_RewardsPool *RewardsPoolCaller) GetInflationAmt(opts *bind.CallOpts) (*big.Int, *big.Int, error) {
+// Solidity: function getInflationAmt() view returns(uint256 currentTotalSupply, uint256 newTotalSupply)
+func (_RewardsPool *RewardsPoolCaller) GetInflationAmt(opts *bind.CallOpts) (struct {
+	CurrentTotalSupply *big.Int
+	NewTotalSupply     *big.Int
+}, error) {
 	var out []interface{}
 	err := _RewardsPool.contract.Call(opts, &out, "getInflationAmt")
 
+	outstruct := new(struct {
+		CurrentTotalSupply *big.Int
+		NewTotalSupply     *big.Int
+	})
 	if err != nil {
-		return *new(*big.Int), *new(*big.Int), err
+		return *outstruct, err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.CurrentTotalSupply = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.NewTotalSupply = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
 
-	return out0, out1, err
+	return *outstruct, err
 
 }
 
 // GetInflationAmt is a free data retrieval call binding the contract method 0x595c5e6d.
 //
-// Solidity: function getInflationAmt() view returns(uint256, uint256)
-func (_RewardsPool *RewardsPoolSession) GetInflationAmt() (*big.Int, *big.Int, error) {
+// Solidity: function getInflationAmt() view returns(uint256 currentTotalSupply, uint256 newTotalSupply)
+func (_RewardsPool *RewardsPoolSession) GetInflationAmt() (struct {
+	CurrentTotalSupply *big.Int
+	NewTotalSupply     *big.Int
+}, error) {
 	return _RewardsPool.Contract.GetInflationAmt(&_RewardsPool.CallOpts)
 }
 
 // GetInflationAmt is a free data retrieval call binding the contract method 0x595c5e6d.
 //
-// Solidity: function getInflationAmt() view returns(uint256, uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetInflationAmt() (*big.Int, *big.Int, error) {
+// Solidity: function getInflationAmt() view returns(uint256 currentTotalSupply, uint256 newTotalSupply)
+func (_RewardsPool *RewardsPoolCallerSession) GetInflationAmt() (struct {
+	CurrentTotalSupply *big.Int
+	NewTotalSupply     *big.Int
+}, error) {
 	return _RewardsPool.Contract.GetInflationAmt(&_RewardsPool.CallOpts)
 }
 
@@ -366,6 +379,37 @@ func (_RewardsPool *RewardsPoolCallerSession) GetInflationIntervalsElapsed() (*b
 	return _RewardsPool.Contract.GetInflationIntervalsElapsed(&_RewardsPool.CallOpts)
 }
 
+// GetRewardsCycleCount is a free data retrieval call binding the contract method 0x70efa960.
+//
+// Solidity: function getRewardsCycleCount() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetRewardsCycleCount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _RewardsPool.contract.Call(opts, &out, "getRewardsCycleCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetRewardsCycleCount is a free data retrieval call binding the contract method 0x70efa960.
+//
+// Solidity: function getRewardsCycleCount() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetRewardsCycleCount() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleCount(&_RewardsPool.CallOpts)
+}
+
+// GetRewardsCycleCount is a free data retrieval call binding the contract method 0x70efa960.
+//
+// Solidity: function getRewardsCycleCount() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCycleCount() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleCount(&_RewardsPool.CallOpts)
+}
+
 // GetRewardsCycleStartTime is a free data retrieval call binding the contract method 0x726f564b.
 //
 // Solidity: function getRewardsCycleStartTime() view returns(uint256)
@@ -397,12 +441,12 @@ func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCycleStartTime() (*big.I
 	return _RewardsPool.Contract.GetRewardsCycleStartTime(&_RewardsPool.CallOpts)
 }
 
-// GetRewardsCycleTotalAmount is a free data retrieval call binding the contract method 0x8d88948a.
+// GetRewardsCycleTotalAmt is a free data retrieval call binding the contract method 0xebf03150.
 //
-// Solidity: function getRewardsCycleTotalAmount() view returns(uint256)
-func (_RewardsPool *RewardsPoolCaller) GetRewardsCycleTotalAmount(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getRewardsCycleTotalAmt() view returns(uint256)
+func (_RewardsPool *RewardsPoolCaller) GetRewardsCycleTotalAmt(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _RewardsPool.contract.Call(opts, &out, "getRewardsCycleTotalAmount")
+	err := _RewardsPool.contract.Call(opts, &out, "getRewardsCycleTotalAmt")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -414,18 +458,18 @@ func (_RewardsPool *RewardsPoolCaller) GetRewardsCycleTotalAmount(opts *bind.Cal
 
 }
 
-// GetRewardsCycleTotalAmount is a free data retrieval call binding the contract method 0x8d88948a.
+// GetRewardsCycleTotalAmt is a free data retrieval call binding the contract method 0xebf03150.
 //
-// Solidity: function getRewardsCycleTotalAmount() view returns(uint256)
-func (_RewardsPool *RewardsPoolSession) GetRewardsCycleTotalAmount() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardsCycleTotalAmount(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCycleTotalAmt() view returns(uint256)
+func (_RewardsPool *RewardsPoolSession) GetRewardsCycleTotalAmt() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleTotalAmt(&_RewardsPool.CallOpts)
 }
 
-// GetRewardsCycleTotalAmount is a free data retrieval call binding the contract method 0x8d88948a.
+// GetRewardsCycleTotalAmt is a free data retrieval call binding the contract method 0xebf03150.
 //
-// Solidity: function getRewardsCycleTotalAmount() view returns(uint256)
-func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCycleTotalAmount() (*big.Int, error) {
-	return _RewardsPool.Contract.GetRewardsCycleTotalAmount(&_RewardsPool.CallOpts)
+// Solidity: function getRewardsCycleTotalAmt() view returns(uint256)
+func (_RewardsPool *RewardsPoolCallerSession) GetRewardsCycleTotalAmt() (*big.Int, error) {
+	return _RewardsPool.Contract.GetRewardsCycleTotalAmt(&_RewardsPool.CallOpts)
 }
 
 // GetRewardsCyclesElapsed is a free data retrieval call binding the contract method 0x55cc1aaa.

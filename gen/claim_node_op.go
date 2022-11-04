@@ -30,7 +30,7 @@ var (
 
 // ClaimNodeOpMetaData contains all meta data concerning the ClaimNodeOp contract.
 var ClaimNodeOpMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoRewardsToClaim\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPRewardsClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalEligibleGGPStaked\",\"type\":\"uint256\"}],\"name\":\"calculateAndDistributeRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimAmount\",\"type\":\"uint256\"}],\"name\":\"claimAndRestake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"isEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"setRewardsCycleTotal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"},{\"internalType\":\"contractERC20\",\"name\":\"ggp_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoRewardsToClaim\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"RewardsAlreadyDistributedToStaker\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"GGPRewardsClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalEligibleGGPStaked\",\"type\":\"uint256\"}],\"name\":\"calculateAndDistributeRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimAmt\",\"type\":\"uint256\"}],\"name\":\"claimAndRestake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsCycleTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ggp\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakerAddr\",\"type\":\"address\"}],\"name\":\"isEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"setRewardsCycleTotal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // ClaimNodeOpABI is the input ABI used to generate the binding from.
@@ -357,23 +357,23 @@ func (_ClaimNodeOp *ClaimNodeOpTransactorSession) CalculateAndDistributeRewards(
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
 //
-// Solidity: function claimAndRestake(uint256 claimAmount) returns()
-func (_ClaimNodeOp *ClaimNodeOpTransactor) ClaimAndRestake(opts *bind.TransactOpts, claimAmount *big.Int) (*types.Transaction, error) {
-	return _ClaimNodeOp.contract.Transact(opts, "claimAndRestake", claimAmount)
+// Solidity: function claimAndRestake(uint256 claimAmt) returns()
+func (_ClaimNodeOp *ClaimNodeOpTransactor) ClaimAndRestake(opts *bind.TransactOpts, claimAmt *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.contract.Transact(opts, "claimAndRestake", claimAmt)
 }
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
 //
-// Solidity: function claimAndRestake(uint256 claimAmount) returns()
-func (_ClaimNodeOp *ClaimNodeOpSession) ClaimAndRestake(claimAmount *big.Int) (*types.Transaction, error) {
-	return _ClaimNodeOp.Contract.ClaimAndRestake(&_ClaimNodeOp.TransactOpts, claimAmount)
+// Solidity: function claimAndRestake(uint256 claimAmt) returns()
+func (_ClaimNodeOp *ClaimNodeOpSession) ClaimAndRestake(claimAmt *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.ClaimAndRestake(&_ClaimNodeOp.TransactOpts, claimAmt)
 }
 
 // ClaimAndRestake is a paid mutator transaction binding the contract method 0x99fe6aa3.
 //
-// Solidity: function claimAndRestake(uint256 claimAmount) returns()
-func (_ClaimNodeOp *ClaimNodeOpTransactorSession) ClaimAndRestake(claimAmount *big.Int) (*types.Transaction, error) {
-	return _ClaimNodeOp.Contract.ClaimAndRestake(&_ClaimNodeOp.TransactOpts, claimAmount)
+// Solidity: function claimAndRestake(uint256 claimAmt) returns()
+func (_ClaimNodeOp *ClaimNodeOpTransactorSession) ClaimAndRestake(claimAmt *big.Int) (*types.Transaction, error) {
+	return _ClaimNodeOp.Contract.ClaimAndRestake(&_ClaimNodeOp.TransactOpts, claimAmt)
 }
 
 // SetRewardsCycleTotal is a paid mutator transaction binding the contract method 0xec23112f.
