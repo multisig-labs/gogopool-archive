@@ -1,2 +1,2 @@
-bol-utils/=lib/sol-utils/src/
+sol-utils/=lib/sol-utils/src/
 @rari-capital/solmate=lib/solmate
