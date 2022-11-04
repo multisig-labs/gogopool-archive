@@ -6,11 +6,11 @@ import {Storage} from "./Storage.sol";
 
 /*
 	Data Storage Schema
-	MultisigManager.count = Starts at 0 and counts up by 1 after an addr is added.
+	multisig.count = Starts at 0 and counts up by 1 after an addr is added.
 
-	MultisigManager.index<address> = <index> + 1 of multisigAddress
-	MultisigManager.item<index>.address = C-chain address used as primary key
-	MultisigManager.item<index>.enabled = bool
+	multisig.index<address> = <index> + 1 of multisigAddress
+	multisig.item<index>.address = C-chain address used as primary key
+	multisig.item<index>.enabled = bool
 */
 
 contract MultisigManager is Base {
@@ -33,12 +33,12 @@ contract MultisigManager is Base {
 		if (multisigIndex != -1) {
 			revert MultisigAlreadyRegistered();
 		}
-		uint256 index = getUint(keccak256("MultisigManager.count"));
-		setAddress(keccak256(abi.encodePacked("MultisigManager.item", index, ".address")), addr);
+		uint256 index = getUint(keccak256("multisig.count"));
+		setAddress(keccak256(abi.encodePacked("multisig.item", index, ".address")), addr);
 
 		// The index is stored 1 greater than the actual value. The 1 is subtracted in getIndexOf().
-		setUint(keccak256(abi.encodePacked("MultisigManager.index", addr)), index + 1);
-		addUint(keccak256("MultisigManager.count"), 1);
+		setUint(keccak256(abi.encodePacked("multisig.index", addr)), index + 1);
+		addUint(keccak256("multisig.count"), 1);
 		emit RegisteredMultisig(addr);
 	}
 
@@ -47,7 +47,7 @@ contract MultisigManager is Base {
 		if (multisigIndex == -1) {
 			revert MultisigNotFound();
 		}
-		setBool(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".enabled")), true);
+		setBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")), true);
 		emit EnabledMultisig(addr);
 	}
 
@@ -58,12 +58,12 @@ contract MultisigManager is Base {
 		if (multisigIndex == -1) {
 			revert MultisigNotFound();
 		}
-		setBool(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".enabled")), false);
+		setBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")), false);
 		emit DisabledMultisig(addr);
 	}
 
 	function requireNextActiveMultisig() external view returns (address) {
-		uint256 total = getUint(keccak256("MultisigManager.count"));
+		uint256 total = getUint(keccak256("multisig.count"));
 		address addr;
 		bool enabled;
 		for (uint256 i = 0; i < total; i++) {
@@ -76,15 +76,15 @@ contract MultisigManager is Base {
 	}
 
 	function getIndexOf(address addr) public view returns (int256) {
-		return int256(getUint(keccak256(abi.encodePacked("MultisigManager.index", addr)))) - 1;
+		return int256(getUint(keccak256(abi.encodePacked("multisig.index", addr)))) - 1;
 	}
 
 	function getCount() public view returns (uint256) {
-		return getUint(keccak256("MultisigManager.count"));
+		return getUint(keccak256("multisig.count"));
 	}
 
 	function getMultisig(uint256 index) public view returns (address addr, bool enabled) {
-		addr = getAddress(keccak256(abi.encodePacked("MultisigManager.item", index, ".address")));
-		enabled = (addr != address(0)) && getBool(keccak256(abi.encodePacked("MultisigManager.item", index, ".enabled")));
+		addr = getAddress(keccak256(abi.encodePacked("multisig.item", index, ".address")));
+		enabled = (addr != address(0)) && getBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")));
 	}
 }

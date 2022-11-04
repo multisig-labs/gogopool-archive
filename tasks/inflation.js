@@ -21,9 +21,7 @@ task("inflation:cycleStatus", "How many rewards cycles have passed").setAction(
 		log(
 			`RewardsCycleStartTime: ${await rewardsPool.getRewardsCycleStartTime()}`
 		);
-		log(
-			`RewardsCycleTotalAmount: ${await rewardsPool.getRewardsCycleTotalAmount()}`
-		);
+		log(`RewardsCycleTotalAmt: ${await rewardsPool.getRewardsCycleTotalAmt()}`);
 		log(
 			`InflationIntervalStartTime: ${await dao.getInflationIntervalStartTime()}`
 		);
@@ -52,7 +50,7 @@ task("inflation:startRewardsCycle", "start a new rewards cycle")
 		await logtx(tx);
 		// log how much was distributed to each contract and total
 		const totalRewardsThisCycle = utils.formatEther(
-			`${await rewardsPool.getRewardsCycleTotalAmount()}`
+			`${await rewardsPool.getRewardsCycleTotalAmt()}`
 		);
 		const daoAllowance = utils.formatEther(
 			`${await rewardsPool.getClaimingContractDistribution("ClaimProtocolDAO")}`

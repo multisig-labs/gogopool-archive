@@ -56,9 +56,9 @@ abstract contract BaseAbstract {
 
 	/// @dev Verify caller is a valid multisig
 	modifier onlyMultisig() {
-		int256 multisigIndex = int256(getUint(keccak256(abi.encodePacked("MultisigManager.index", msg.sender)))) - 1;
-		address addr = getAddress(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".address")));
-		bool enabled = (addr != address(0)) && getBool(keccak256(abi.encodePacked("MultisigManager.item", multisigIndex, ".enabled")));
+		int256 multisigIndex = int256(getUint(keccak256(abi.encodePacked("multisig.index", msg.sender)))) - 1;
+		address addr = getAddress(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".address")));
+		bool enabled = (addr != address(0)) && getBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")));
 		if (enabled == false) {
 			revert MustBeMultisig();
 		}

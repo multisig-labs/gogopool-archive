@@ -110,7 +110,7 @@ contract RewardsPoolTest is BaseTest {
 		assertFalse(rewardsPool.canStartRewardsCycle());
 		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
-		assertEq(store.getUint(keccak256("RewardsPool.RewardsCycleTotalAmount")), 0);
+		assertEq(store.getUint(keccak256("RewardsPool.RewardsCycleTotalAmt")), 0);
 		assertEq(rewardsPool.getRewardsCycleCount(), 0);
 
 		skip(dao.getRewardsCycleSeconds());

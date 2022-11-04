@@ -58,8 +58,8 @@ contract RewardsPool is Base {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationRate = dao.getInflationIntervalRate();
 		uint256 inflationIntervalsElapsed = getInflationIntervalsElapsed();
-		uint256 currentTotalSupply = dao.getTotalGGPCirculatingSupply();
-		uint256 newTotalSupply = currentTotalSupply;
+		currentTotalSupply = dao.getTotalGGPCirculatingSupply();
+		newTotalSupply = currentTotalSupply;
 
 		// Compute inflation for total inflation intervals elapsed
 		for (uint256 i = 0; i < inflationIntervalsElapsed; i++) {
@@ -80,7 +80,7 @@ contract RewardsPool is Base {
 		dao.setTotalGGPCirculatingSupply(newTotalSupply);
 
 		addUint(keccak256("RewardsPool.InflationIntervalStartTime"), inflationIntervalElapsedSeconds);
-		setUint(keccak256("RewardsPool.RewardsCycleTotalAmount"), newTokens);
+		setUint(keccak256("RewardsPool.RewardsCycleTotalAmt"), newTokens);
 	}
 
 	/* REWARDS */
@@ -98,7 +98,7 @@ contract RewardsPool is Base {
 	}
 
 	function getRewardsCycleTotalAmt() public view returns (uint256) {
-		return getUint(keccak256("RewardsPool.RewardsCycleTotalAmount"));
+		return getUint(keccak256("RewardsPool.RewardsCycleTotalAmt"));
 	}
 
 	function getRewardsCyclesElapsed() public view returns (uint256) {
