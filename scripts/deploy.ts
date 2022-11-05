@@ -34,6 +34,7 @@ const contracts: IFU = {
 	// Needed for Panopticon, should have added to `deploy-base` but
 	// didnt want to change all the addresses, so putting it at the end here
 	Multicall3: [],
+	Ocyticus: ["Storage"],
 };
 
 const deployAsProxy = ["TokenggAVAX"];
