@@ -15,6 +15,7 @@ const {
 } = require("./lib/utils");
 const { writeFile } = require("node:fs/promises");
 
+///
 task(
 	"debug:setup",
 	"Run after a local deploy to init necessary configs"
@@ -203,7 +204,7 @@ task("debug:list_vars", "List important system variables").setAction(
 		log("");
 		log("ggAVAX Variables:");
 		const rewardsCycleEnd = await ggAVAX.rewardsCycleEnd();
-		const lastRewardsAmount = await ggAVAX.lastRewardsAmount();
+		const lastRewardsAmount = await ggAVAX.lastRewardsAmt();
 		const networkTotalAssets = await ggAVAX.totalReleasedAssets();
 		const stakingTotalAssets = await ggAVAX.stakingTotalAssets();
 		const amountAvailableForStaking = await ggAVAX.amountAvailableForStaking();

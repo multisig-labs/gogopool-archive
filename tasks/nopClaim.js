@@ -92,9 +92,9 @@ task("staking:claimAndRestake")
 	});
 
 task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")
-	.addParam("staker", "Account used to send tx")
-	.setAction(async ({ staker }) => {
-		const signer = (await getNamedAccounts())[staker];
+	.addParam("actor", "Account used to send tx")
+	.setAction(async ({ actor }) => {
+		const signer = (await getNamedAccounts())[actor];
 		const nopClaim = await get("ClaimNodeOp", signer);
 		const staking = await get("Staking", signer);
 		const rewardAmt = utils.formatEther(
@@ -102,7 +102,7 @@ task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")
 		);
 		const halfRewardAmt = rewardAmt / 2;
 		log(
-			`${staker} has ${rewardAmt} in GGP rewards they can claim. Claiming half (${halfRewardAmt}) and restaking the other half`
+			`${actor} has ${rewardAmt} in GGP rewards they can claim. Claiming half (${halfRewardAmt}) and restaking the other half`
 		);
 		try {
 			tx = await nopClaim.claimAndRestake(utils.parseEther(`${halfRewardAmt}`));
@@ -118,10 +118,10 @@ task("nopClaim:claimAndRestakeHalf", "claim rewards for the given user")
 			`${await staking.getGGPRewards(signer.address)}`
 		);
 		log(
-			`${staker} has claimed GGP rewards they now have ${rewardAmtAfterClaim} in GGP rewards`
+			`${actor} has claimed GGP rewards they now have ${rewardAmtAfterClaim} in GGP rewards`
 		);
 		const newGGPStaked = utils.formatEther(
 			`${await staking.getGGPStake(signer.address)}`
 		);
-		log(`${staker} now has ${newGGPStaked} in GGP staked`);
+		log(`${actor} now has ${newGGPStaked} in GGP staked`);
 	});
