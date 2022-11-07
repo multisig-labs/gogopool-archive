@@ -151,6 +151,38 @@ task("debug:topup_actor_balances")
 		}
 	});
 
+task("debug:list_contract_balances").setAction(async () => {
+	const actors = await getNamedAccounts();
+	const ggAVAX = await get("TokenggAVAX");
+	const ggp = await get("TokenGGP");
+
+	log("");
+	logf(
+		"%-16s %-42s %-20s %-20s %-20s %-20s",
+		"User",
+		"Address",
+		"AVAX",
+		"ggAVAX",
+		"equivAVAX",
+		"GGP"
+	);
+	for (const name in addrs) {
+		const balAVAX = await hre.ethers.provider.getBalance(addrs[name]);
+		const balGGAVAX = await ggAVAX.balanceOf(addrs[name]);
+		const balEQAVAX = await ggAVAX.previewRedeem(balGGAVAX);
+		const balGGP = await ggp.balanceOf(addrs[name]);
+		logf(
+			"%-16s %-42s %-20.5f %-20.5f %-20.5f %-20.5f",
+			name,
+			addrs[name],
+			hre.ethers.utils.formatUnits(balAVAX),
+			hre.ethers.utils.formatUnits(balGGAVAX),
+			hre.ethers.utils.formatUnits(balEQAVAX),
+			hre.ethers.utils.formatUnits(balGGP)
+		);
+	}
+});
+
 task("debug:list_actor_balances").setAction(async () => {
 	const actors = await getNamedAccounts();
 	const ggAVAX = await get("TokenggAVAX");
