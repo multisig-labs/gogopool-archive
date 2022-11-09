@@ -5,6 +5,7 @@ import "./Base.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {Storage} from "./Storage.sol";
 
+/// @title Settings for the Protocol
 contract ProtocolDAO is Base {
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
@@ -45,52 +46,54 @@ contract ProtocolDAO is Base {
 		setUint(keccak256("ProtocolDAO.MinCollateralizationRatio"), 0.1 ether);
 	}
 
+	/// @notice Get if a contract is paused
+	/// @param contractName The contract that is being checked
 	function getContractPaused(string memory contractName) public view returns (bool) {
 		return getBool(keccak256(abi.encodePacked("contract.paused", contractName)));
 	}
 
+	/// @notice Pause a contract
+	/// @param contractName The contract whose actions should be paused
 	function pauseContract(string memory contractName) public {
 		setBool(keccak256(abi.encodePacked("contract.paused", contractName)), true);
 	}
 
+	/// @notice Unpause a contract
+	/// @param contractName The contract whose actions should be resumed
 	function resumeContract(string memory contractName) public {
 		setBool(keccak256(abi.encodePacked("contract.paused", contractName)), false);
 	}
 
 	// *** Rewards Pool ***
 
+	/// @notice Get how many seconds a node must be registered for rewards to be eligible for the rewards cycle
+	/// @return uint256 The min number of seconds to be considered eligible
 	function getRewardsEligibilityMinSeconds() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.RewardsEligibilityMinSeconds"));
 	}
 
-	/**
-	 * Get how many seconds in a rewards cycle
-	 * @return uint256 Number of seconds in a rewards interval
-	 */
+	/// @notice Get how many seconds in a rewards cycle
 	function getRewardsCycleSeconds() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.RewardsCycleSeconds"));
 	}
 
-	/**
-	 * The amount of ggp that has been released so far
-	 * @return uint256 The supply of ggp that is in circulation
-	 */
+	/// @notice The total amount of GGP that is in circulation
 	function getTotalGGPCirculatingSupply() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"));
 	}
 
+	/// @notice Set the amount of GGP that is in circulation
 	function setTotalGGPCirculatingSupply(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
 		return setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), amount);
 	}
 
-	/**
-	 * Get the percentage a contract is owed this rewards cycle
-	 * @return uint256 Rewards percentage a contract will receive this cycle
-	 */
+	/// @notice The percentage a contract is owed for a rewards cycle
+	/// @return uint256 Rewards percentage a contract will receive this cycle
 	function getClaimingContractPct(string memory claimingContract) public view returns (uint256) {
 		return getUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", claimingContract)));
 	}
 
+	/// @notice Set the percentage a contract is owed for a rewards cycle
 	function setClaimingContractPct(string memory claimingContract, uint256 decimal) public onlyGuardian {
 		setUint(keccak256(abi.encodePacked("ProtocolDAO.ClaimingContractPct.", claimingContract)), decimal);
 	}
@@ -113,10 +116,12 @@ contract ProtocolDAO is Base {
 
 	// *** Minipool Settings ***
 
+	/// @notice The min AVAX staking amount that is required for creating a minipool
 	function getMinipoolMinAVAXStakingAmt() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmt"));
 	}
 
+	/// @notice The node commision fee for running the hardware for the minipool
 	function getMinipoolNodeCommissionFeePct() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"));
 	}
@@ -131,20 +136,25 @@ contract ProtocolDAO is Base {
 		return getUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"));
 	}
 
+	/// @notice The expected rewards rate for validating Avalanche's P-chain
 	function getExpectedAVAXRewardsRate() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"));
 	}
 
+	/// @notice Set the rewards rate for validating Avalanche's p-chain
 	/// @dev Used for testing
 	function setExpectedAVAXRewardsRate(uint256 rate) public {
 		setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), rate);
 	}
 
 	//*** Staking ***
+
+	/// @notice The max collateralization ratio of GGP to Assigned AVAX eligible for rewards
 	function getMaxCollateralizationRatio() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.MaxCollateralizationRatio"));
 	}
 
+	/// @notice The min collateralization ratio of GGP to Assigned AVAX eligible for rewards or minipool creation
 	function getMinCollateralizationRatio() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.MinCollateralizationRatio"));
 	}

@@ -7,6 +7,7 @@ import {Storage} from "./Storage.sol";
 // import {console} from "forge-std/console.sol";
 // import {format} from "sol-utils/format.sol";
 
+/// @title Base contract for network contracts
 abstract contract BaseAbstract {
 	error InvalidOrOutdatedContract();
 	error MustBeGuardian();
@@ -74,6 +75,7 @@ abstract contract BaseAbstract {
 		_;
 	}
 
+	/// @dev Get the address of a network contract by name
 	function getContractAddress(string memory contractName) public view returns (address) {
 		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		if (contractAddress == address(0x0)) {
@@ -82,6 +84,7 @@ abstract contract BaseAbstract {
 		return contractAddress;
 	}
 
+	/// @dev Get the name of a network contract by address
 	function getContractName(address contractAddress) internal view returns (string memory) {
 		string memory contractName = getString(keccak256(abi.encodePacked("contract.name", contractAddress)));
 		if (bytes(contractName).length == 0) {

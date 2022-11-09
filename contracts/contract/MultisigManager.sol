@@ -13,6 +13,7 @@ import {Storage} from "./Storage.sol";
 	multisig.item<index>.enabled = bool
 */
 
+/// @title Multisig address creation and management for the protocol
 contract MultisigManager is Base {
 	error MultisigAlreadyRegistered();
 	error MultisigDisabled();
@@ -28,6 +29,7 @@ contract MultisigManager is Base {
 	}
 
 	/// @notice Register a multisig. Defaults to disabled when first registered.
+	/// @param addr Address of the multisig that is being registered
 	function registerMultisig(address addr) external onlyGuardian {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex != -1) {
@@ -42,6 +44,8 @@ contract MultisigManager is Base {
 		emit RegisteredMultisig(addr);
 	}
 
+	/// @notice Enabling a registered multisig
+	/// @param addr Address of the multisig that is being enabled
 	function enableMultisig(address addr) external onlyGuardian {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex == -1) {
@@ -51,8 +55,9 @@ contract MultisigManager is Base {
 		emit EnabledMultisig(addr);
 	}
 
-	/// @dev this will prevent the multisig from completing validations
-	/// 		the minipool will need to be manually reassigned to a new multisig
+	/// @notice Disabling a registered multisig
+	/// @param addr Address of the multisig that is being disabled
+	/// @dev this will prevent the multisig from completing validations. The minipool will need to be manually reassigned to a new multisig
 	function disableMultisig(address addr) external guardianOrLatestContract("Ocyticus", msg.sender) {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex == -1) {
@@ -62,6 +67,7 @@ contract MultisigManager is Base {
 		emit DisabledMultisig(addr);
 	}
 
+	/// @notice Gets the next registered and enabled Multisig
 	function requireNextActiveMultisig() external view returns (address) {
 		uint256 total = getUint(keccak256("multisig.count"));
 		address addr;
@@ -75,14 +81,21 @@ contract MultisigManager is Base {
 		revert NoEnabledMultisigFound();
 	}
 
+	/// @notice The index of a multisig. Returns -1 if the multisig is not found
+	/// @param addr Address of the multisig that is being searched for
+	/// @return The index for the given multisig
 	function getIndexOf(address addr) public view returns (int256) {
 		return int256(getUint(keccak256(abi.encodePacked("multisig.index", addr)))) - 1;
 	}
 
+	/// @notice Get the total count of the multisigs in the protocol
 	function getCount() public view returns (uint256) {
 		return getUint(keccak256("multisig.count"));
 	}
 
+	/// @notice Gets the multisig information using the multisig's index
+	/// @param index Index of the multisig
+	/// @return addr and enabled. The address and the enabled status of the multisig
 	function getMultisig(uint256 index) public view returns (address addr, bool enabled) {
 		addr = getAddress(keccak256(abi.encodePacked("multisig.item", index, ".address")));
 		enabled = (addr != address(0)) && getBool(keccak256(abi.encodePacked("multisig.item", index, ".enabled")));

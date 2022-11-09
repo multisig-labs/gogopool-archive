@@ -6,7 +6,7 @@ import {MultisigManager} from "./MultisigManager.sol";
 import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 
-/// @notice Methods to pause the protocol
+/// @title Methods to pause the protocol
 contract Ocyticus is Base {
 	error NotAllowed();
 
@@ -23,14 +23,17 @@ contract Ocyticus is Base {
 		defenders[msg.sender] = true;
 	}
 
+	/// @notice Add an address to the defender list
 	function addDefender(address defender) external onlyGuardian {
 		defenders[defender] = true;
 	}
 
+	/// @notice Remove an address from the defender list
 	function removeDefender(address defender) external onlyGuardian {
 		delete defenders[defender];
 	}
 
+	/// @notice Restrict actions in important contracts
 	function pauseEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		dao.pauseContract("TokenggAVAX");
@@ -38,6 +41,7 @@ contract Ocyticus is Base {
 		disableAllMultisigs();
 	}
 
+	/// @notice Reestablish all contract's abilities
 	/// @dev Multisigs will need to be enabled seperately, we dont know which ones to enable
 	function resumeEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
@@ -45,6 +49,7 @@ contract Ocyticus is Base {
 		dao.resumeContract("MinipoolManager");
 	}
 
+	/// @notice Disable every multisig in the protocol
 	function disableAllMultisigs() public onlyDefender {
 		MultisigManager mm = MultisigManager(getContractAddress("MultisigManager"));
 		uint256 count = mm.getCount();

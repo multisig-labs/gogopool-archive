@@ -11,6 +11,7 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 // AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances
 // based on RocketVault by RocketPool
 
+/// @notice Vault and ledger for AVAX and tokens
 contract Vault is Base {
 	error InsufficientContractBalance();
 	error InvalidAmount();

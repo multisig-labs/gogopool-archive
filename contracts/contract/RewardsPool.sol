@@ -10,6 +10,7 @@ import {Vault} from "./Vault.sol";
 
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
+/// @title Vault for GGP Rewards
 contract RewardsPool is Base {
 	using FixedPointMathLib for uint256;
 
@@ -44,6 +45,7 @@ contract RewardsPool is Base {
 		return getUint(keccak256("RewardsPool.InflationIntervalStartTime"));
 	}
 
+	/// @notice Inflation intervals that have elapsed since inflation was last calculated
 	/// @return Number of intervals since last inflation cycle (0, 1, 2, etc)
 	function getInflationIntervalsElapsed() public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
@@ -68,6 +70,7 @@ contract RewardsPool is Base {
 		return (currentTotalSupply, newTotalSupply);
 	}
 
+	/// @notice Releases more GGP if appropriate
 	/// @dev Mint new tokens if enough time has elapsed since last mint
 	function inflate() internal {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
@@ -85,22 +88,27 @@ contract RewardsPool is Base {
 
 	/* REWARDS */
 
+	/// @notice The current cycle number for GGP rewards
 	function getRewardsCycleCount() public view returns (uint256) {
 		return getUint(keccak256("RewardsPool.RewardsCycleCount"));
 	}
 
+	/// @notice Increase the cycle number for GGP rewards
 	function increaseRewardsCycleCount() internal {
 		addUint(keccak256("RewardsPool.RewardsCycleCount"), 1);
 	}
 
+	/// @notice The current rewards cycle start time
 	function getRewardsCycleStartTime() public view returns (uint256) {
 		return getUint(keccak256("RewardsPool.RewardsCycleStartTime"));
 	}
 
+	/// @notice The current rewards cycle total amount of GGP
 	function getRewardsCycleTotalAmt() public view returns (uint256) {
 		return getUint(keccak256("RewardsPool.RewardsCycleTotalAmt"));
 	}
 
+	/// @notice The number of reward cycles that have elapsed
 	function getRewardsCyclesElapsed() public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 startTime = getRewardsCycleStartTime();
@@ -108,6 +116,7 @@ contract RewardsPool is Base {
 	}
 
 	/// @notice Get the approx amount of GGP rewards owed for this cycle per claiming contract
+	/// @param claimingContract Name of the contract being claimed for
 	/// @return GGP Rewards amount for current cycle per claiming contract
 	function getClaimingContractDistribution(string memory claimingContract) public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
@@ -124,6 +133,7 @@ contract RewardsPool is Base {
 		return contractRewardsTotal;
 	}
 
+	/// @notice Checking if enough time has passed since the last rewards cycle
 	/// @dev Rialto calls this to see if at least one cycle has passed
 	function canStartRewardsCycle() public view returns (bool) {
 		return getRewardsCyclesElapsed() > 0 && getInflationIntervalsElapsed() > 0;

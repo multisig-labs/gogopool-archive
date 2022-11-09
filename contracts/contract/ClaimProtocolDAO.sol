@@ -6,6 +6,7 @@ import {Storage} from "./Storage.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {Vault} from "./Vault.sol";
 
+/// @title Protocol DAO claiming GGP Rewards
 contract ClaimProtocolDAO is Base {
 	error InvalidAmount();
 
@@ -15,7 +16,7 @@ contract ClaimProtocolDAO is Base {
 		version = 1;
 	}
 
-	// Spend the ProtocolDAOs GGP rewards
+	/// @notice Spends the ProtocolDAO's GGP rewards
 	function spend(
 		string memory invoiceID,
 		address recipientAddress,

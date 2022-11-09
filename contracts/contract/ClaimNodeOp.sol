@@ -13,6 +13,7 @@ import {Vault} from "./Vault.sol";
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
+/// @title Node Operators claiming GGP Rewards
 contract ClaimNodeOp is Base {
 	using FixedPointMathLib for uint256;
 
@@ -29,15 +30,18 @@ contract ClaimNodeOp is Base {
 		ggp = ggp_;
 	}
 
+	/// @notice Get the total rewards for the most recent cycle
 	function getRewardsCycleTotal() public view returns (uint256) {
 		return getUint(keccak256("NOPClaim.RewardsCycleTotal"));
 	}
 
+	/// @dev Sets the total rewards for the most recent cycle
 	function setRewardsCycleTotal(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
 		setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 
-	/// @dev Eligiblity: time in protocol (secs) > RewardsEligibilityMinSeconds
+	/// @notice Determines if a staker is eligible for the upcomign rewards cycle
+	/// @dev Eligiblity: time in protocol (secs) > RewardsEligibilityMinSeconds. Rialto will call this.
 	function isEligible(address stakerAddr) external view returns (bool) {
 		Staking staking = Staking(getContractAddress("Staking"));
 		try staking.getRewardsStartTime(stakerAddr) returns (uint256 rewardsStartTime) {
@@ -51,7 +55,6 @@ contract ClaimNodeOp is Base {
 
 	/// @notice Set the share of rewards for a staker as a fraction of 1 ether
 	/// @dev Rialto will call this
-	//TODO: Set some limitor on this. Right now it can be called and new rewards will be distributed at any time
 	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external {
 		Staking staking = Staking(getContractAddress("Staking"));
 		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
@@ -77,7 +80,8 @@ contract ClaimNodeOp is Base {
 		}
 	}
 
-	/// @notice Claim ggp and automatically restake unclaimed rewards
+	/// @notice Claim GGP and automatically restake the remaining unclaimed rewards
+	/// @param claimAmt The amount of GGP the staker would like to withdraw from the protocol
 	function claimAndRestake(uint256 claimAmt) external {
 		Staking staking = Staking(getContractAddress("Staking"));
 		uint256 ggpRewards = staking.getGGPRewards(msg.sender);

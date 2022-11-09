@@ -13,6 +13,7 @@ import {TokenGGP} from "./tokens/TokenGGP.sol";
 	Oracle.GGPTimestamp = block.timestamp of last update to GGP price
 */
 
+/// @title Interface for off-chain data
 contract Oracle is Base {
 	error InvalidGGPPrice();
 	error InvalidTimestamp();
@@ -29,8 +30,9 @@ contract Oracle is Base {
 	}
 
 	/// @notice Get an aggregated price from the 1Inch contract.
-	/// @dev NEVER call this on-chain, only off-chain oracle should call, then
-	///      send a setGGPPriceInAVAX tx
+	/// @dev NEVER call this on-chain, only off-chain oracle should call, then send a setGGPPriceInAVAX tx
+	/// @return price of ggp in AVAX
+	/// @return timestamp representing the current time
 	function getGGPPriceInAVAXFromOneInch() external view returns (uint256 price, uint256 timestamp) {
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		IOneInch oneinch = IOneInch(getAddress(keccak256("Oracle.OneInch")));
@@ -38,7 +40,9 @@ contract Oracle is Base {
 		timestamp = block.timestamp;
 	}
 
-	/// @notice Get the price of GGP denominated in AVAX, and the time it was updated
+	/// @notice Get the price of GGP denominated in AVAX
+	/// @return price of ggp in AVAX
+	/// @return timestamp representing when it was updated
 	function getGGPPriceInAVAX() external view returns (uint256 price, uint256 timestamp) {
 		price = getUint(keccak256("Oracle.GGPPriceInAVAX"));
 		if (price == 0) {
@@ -47,7 +51,9 @@ contract Oracle is Base {
 		timestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 	}
 
-	/// @notice Set the price of GGP denominated in AVAX, and the time it was updated
+	/// @notice Set the price of GGP denominated in AVAX
+	/// @param price Price of GGP in AVAX
+	/// @param timestamp Time the price was updated
 	function setGGPPriceInAVAX(uint256 price, uint256 timestamp) external onlyMultisig {
 		uint256 lastTimestamp = getUint(keccak256("Oracle.GGPTimestamp"));
 		if (timestamp < lastTimestamp || timestamp > block.timestamp) {
