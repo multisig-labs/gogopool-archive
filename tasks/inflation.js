@@ -68,18 +68,20 @@ task(
 	"inflation:transferGGP",
 	"transfer GGP to the vault from the deployer"
 ).setAction(async () => {
+	const dao = await get("ProtocolDAO");
 	const ggp = await get("TokenGGP");
 	const vault = await get("Vault");
 	const currentAmt = await vault.balanceOfToken("RewardsPool", ggp.address);
-	if (currentAmt >= utils.parseEther("18000000")) return;
 
-	tx = await ggp.approve(vault.address, utils.parseEther("18000000"));
-	await logtx(tx);
-	tx = await vault.depositToken(
-		"RewardsPool",
-		ggp.address,
-		utils.parseEther("18000000")
+	const rewardsAmt = (await ggp.totalSupply()).sub(
+		await dao.getTotalGGPCirculatingSupply()
 	);
+
+	if (currentAmt >= rewardsAmt) return;
+
+	tx = await ggp.approve(vault.address, rewardsAmt);
+	await logtx(tx);
+	tx = await vault.depositToken("RewardsPool", ggp.address, rewardsAmt);
 	await logtx(tx);
 	const transferedAmt = await vault.balanceOfToken("RewardsPool", ggp.address);
 
