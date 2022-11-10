@@ -40,17 +40,14 @@ contract ClaimNodeOp is Base {
 		setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 
-	/// @notice Determines if a staker is eligible for the upcomign rewards cycle
+	/// @notice Determines if a staker is eligible for the upcoming rewards cycle
 	/// @dev Eligiblity: time in protocol (secs) > RewardsEligibilityMinSeconds. Rialto will call this.
 	function isEligible(address stakerAddr) external view returns (bool) {
 		Staking staking = Staking(getContractAddress("Staking"));
-		try staking.getRewardsStartTime(stakerAddr) returns (uint256 rewardsStartTime) {
-			uint256 elapsedSecs = (block.timestamp - rewardsStartTime);
-			ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-			return (rewardsStartTime != 0 && elapsedSecs >= dao.getRewardsEligibilityMinSeconds());
-		} catch {
-			return false;
-		}
+		uint256 rewardsStartTime = staking.getRewardsStartTime(stakerAddr);
+		uint256 elapsedSecs = (block.timestamp - rewardsStartTime);
+		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
+		return (rewardsStartTime != 0 && elapsedSecs >= dao.getRewardsEligibilityMinSeconds());
 	}
 
 	/// @notice Set the share of rewards for a staker as a fraction of 1 ether

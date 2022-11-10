@@ -123,7 +123,7 @@ contract Staking is Base {
 	/// @notice The amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	function getAVAXAssigned(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
+		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
 	}
 
@@ -154,7 +154,7 @@ contract Staking is Base {
 	/// @notice Largest total AVAX amt assigned to a staker during a rewards period
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	function getAVAXAssignedHighWater(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
+		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
 	}
 
@@ -171,7 +171,7 @@ contract Staking is Base {
 	/// @notice The number of minipools the given staker has
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	function getMinipoolCount(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
+		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 	}
 
@@ -194,7 +194,7 @@ contract Staking is Base {
 	/// @notice The timestamp when the staker registered for GGP rewards
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	function getRewardsStartTime(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
+		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
 	}
 
@@ -211,7 +211,7 @@ contract Staking is Base {
 	/// @notice The amount of GGP rewards the staker has earned and not claimed
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	function getGGPRewards(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
+		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
 	}
 
@@ -234,7 +234,7 @@ contract Staking is Base {
 	/// @notice The most recent reward cycle number that the staker has been paid out for
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	function getLastRewardsCycleCompleted(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
+		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")));
 	}
 
@@ -380,7 +380,6 @@ contract Staking is Base {
 
 	/// @notice Verifying the staker exists in the protocol
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-
 	function requireValidStaker(address stakerAddr) public view returns (int256) {
 		int256 index = getIndexOf(stakerAddr);
 		if (index != -1) {
