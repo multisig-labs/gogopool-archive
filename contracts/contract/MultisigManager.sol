@@ -58,7 +58,7 @@ contract MultisigManager is Base {
 	/// @notice Disabling a registered multisig
 	/// @param addr Address of the multisig that is being disabled
 	/// @dev this will prevent the multisig from completing validations. The minipool will need to be manually reassigned to a new multisig
-	function disableMultisig(address addr) external guardianOrLatestContract("Ocyticus", msg.sender) {
+	function disableMultisig(address addr) external guardianOrRegisteredContract("Ocyticus", msg.sender) {
 		int256 multisigIndex = getIndexOf(addr);
 		if (multisigIndex == -1) {
 			revert MultisigNotFound();

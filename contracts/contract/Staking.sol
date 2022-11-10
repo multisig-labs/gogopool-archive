@@ -106,14 +106,14 @@ contract Staking is Base {
 
 	/// @notice Increase the amount of AVAX a given staker is staking
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseAVAXStake(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function increaseAVAXStake(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")), amount);
 	}
 
 	/// @notice Decrease the amount of AVAX a given staker is staking
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function decreaseAVAXStake(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function decreaseAVAXStake(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")), amount);
 	}
@@ -130,7 +130,7 @@ contract Staking is Base {
 	/// @notice Increase the amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @dev Also increases .avaxAssignedHighWater amount
-	function increaseAVAXAssigned(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function increaseAVAXAssigned(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
 
@@ -144,7 +144,7 @@ contract Staking is Base {
 	/// @notice Decrease the amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @dev Purposely does *not* decrease .avaxAssignedHighWater amount. That is done during GGP rewards payout
-	function decreaseAVAXAssigned(address stakerAddr, uint256 amount) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function decreaseAVAXAssigned(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
 	}
@@ -160,7 +160,7 @@ contract Staking is Base {
 
 	/// @notice Reset the AVAXAssignedHighWater to what the current AVAXAssigned is for the staker
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function resetAVAXAssignedHighWater(address stakerAddr) public onlyLatestNetworkContract {
+	function resetAVAXAssignedHighWater(address stakerAddr) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		uint256 currAVAXAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
 		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), currAVAXAssigned);
@@ -177,14 +177,14 @@ contract Staking is Base {
 
 	/// @notice Increase the number of minipools the given staker has
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function increaseMinipoolCount(address stakerAddr) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
 	}
 
 	/// @notice Decrease the number of minipools the given staker has
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function decreaseMinipoolCount(address stakerAddr) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function decreaseMinipoolCount(address stakerAddr) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
 	}
@@ -200,8 +200,8 @@ contract Staking is Base {
 
 	/// @notice Set the timestamp when the staker registered for GGP rewards
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	// TODO cant use onlyLatestContract("ClaimNodeOp", msg.sender) since we also call from increaseMinipoolCount. Wat do?
-	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyLatestNetworkContract {
+	// TODO cant use onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) since we also call from increaseMinipoolCount. Wat do?
+	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")), time);
 	}
@@ -217,14 +217,14 @@ contract Staking is Base {
 
 	/// @notice Increase the amount of GGP rewards the staker has earned and not claimed
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("ClaimNodeOp", msg.sender) {
+	function increaseGGPRewards(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
 
 	/// @notice Decrease the amount of GGP rewards the staker has earned and not claimed
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function decreaseGGPRewards(address stakerAddr, uint256 amount) public onlyLatestContract("ClaimNodeOp", msg.sender) {
+	function decreaseGGPRewards(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")), amount);
 	}
@@ -241,7 +241,7 @@ contract Staking is Base {
 	/// @notice Set the most recent reward cycle number that the staker has been paid out for
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @param cycleNumber The cycle that the staker was just rewarded for
-	function setLastRewardsCycleCompleted(address stakerAddr, uint256 cycleNumber) public onlyLatestContract("ClaimNodeOp", msg.sender) {
+	function setLastRewardsCycleCompleted(address stakerAddr, uint256 cycleNumber) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")), cycleNumber);
 	}
@@ -321,7 +321,7 @@ contract Staking is Base {
 	/// @notice Convenience function to allow for restaking claimed GGP rewards
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @param amount The amount of GGP being staked
-	function restakeGGP(address stakerAddr, uint256 amount) public onlyLatestContract("ClaimNodeOp", msg.sender) {
+	function restakeGGP(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		// Transfer GGP tokens from the ClaimNodeOp contract to this contract
 		ggp.transferFrom(msg.sender, address(this), amount);
 		_stakeGGP(stakerAddr, amount);
@@ -372,7 +372,7 @@ contract Staking is Base {
 	/// @notice Minipool Manager will call this if a minipool ended and was not in good standing
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @param ggpAmt The amount of GGP being slashed
-	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		Vault vault = Vault(getContractAddress("Vault"));
 		decreaseGGPStake(stakerAddr, ggpAmt);
 		vault.transferToken("ProtocolDAO", ggp, ggpAmt);

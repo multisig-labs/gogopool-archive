@@ -34,7 +34,7 @@ contract Vault is Base {
 	}
 
 	/// @notice Accept an AVAX deposit from a network contract
-	function depositAVAX() external payable onlyLatestNetworkContract {
+	function depositAVAX() external payable onlyRegisteredNetworkContract {
 		if (msg.value == 0) {
 			revert InvalidAmount();
 		}
@@ -47,7 +47,7 @@ contract Vault is Base {
 	}
 
 	/// @notice Withdraw an amount of AVAX to a network contract
-	function withdrawAVAX(uint256 amount) external onlyLatestNetworkContract {
+	function withdrawAVAX(uint256 amount) external onlyRegisteredNetworkContract {
 		if (amount == 0) {
 			revert InvalidAmount();
 		}
@@ -70,7 +70,7 @@ contract Vault is Base {
 		string memory fromContractName,
 		string memory toContractName,
 		uint256 amount
-	) external onlyLatestNetworkContract {
+	) external onlyRegisteredNetworkContract {
 		if (amount == 0) {
 			revert InvalidAmount();
 		}
@@ -112,7 +112,7 @@ contract Vault is Base {
 		address withdrawalAddress,
 		ERC20 tokenAddress,
 		uint256 amount
-	) external onlyLatestNetworkContract {
+	) external onlyRegisteredNetworkContract {
 		if (amount == 0) {
 			revert InvalidAmount();
 		}
@@ -133,7 +133,7 @@ contract Vault is Base {
 		string memory networkContractName,
 		ERC20 tokenAddress,
 		uint256 amount
-	) external onlyLatestNetworkContract {
+	) external onlyRegisteredNetworkContract {
 		if (amount == 0) {
 			revert InvalidAmount();
 		}

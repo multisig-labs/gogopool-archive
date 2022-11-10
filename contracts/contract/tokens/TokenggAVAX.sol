@@ -131,7 +131,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		return totalAssets_ - reservedAssets - stakingTotalAssets;
 	}
 
-	function depositFromStaking(uint256 baseAmt, uint256 rewardAmt) public payable onlyLatestContract("MinipoolManager", msg.sender) {
+	function depositFromStaking(uint256 baseAmt, uint256 rewardAmt) public payable onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		uint256 totalAmt = msg.value;
 		if (totalAmt != (baseAmt + rewardAmt) || baseAmt > stakingTotalAssets) {
 			revert InvalidStakingDeposit();
@@ -142,7 +142,7 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 		IWAVAX(address(asset)).deposit{value: totalAmt}();
 	}
 
-	function withdrawForStaking(uint256 assets) public onlyLatestContract("MinipoolManager", msg.sender) {
+	function withdrawForStaking(uint256 assets) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		if (assets > amountAvailableForStaking()) {
 			revert WithdrawAmountTooLarge();
 		}

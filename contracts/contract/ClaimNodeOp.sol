@@ -36,7 +36,7 @@ contract ClaimNodeOp is Base {
 	}
 
 	/// @dev Sets the total rewards for the most recent cycle
-	function setRewardsCycleTotal(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
+	function setRewardsCycleTotal(uint256 amount) public onlySpecificRegisteredContract("RewardsPool", msg.sender) {
 		setUint(keccak256("NOPClaim.RewardsCycleTotal"), amount);
 	}
 

@@ -21,23 +21,23 @@ abstract contract BaseAbstract {
 	Storage internal gogoStorage;
 
 	/// @dev Verify caller is a registered GoGoPool contract
-	modifier onlyLatestNetworkContract() {
+	modifier onlyRegisteredNetworkContract() {
 		if (getBool(keccak256(abi.encodePacked("contract.exists", msg.sender))) == false) {
 			revert InvalidOrOutdatedContract();
 		}
 		_;
 	}
 
-	/// @dev Verify caller is latest version of `contractName`
-	modifier onlyLatestContract(string memory contractName, address contractAddress) {
+	/// @dev Verify caller is registered version of `contractName`
+	modifier onlySpecificRegisteredContract(string memory contractName, address contractAddress) {
 		if (contractAddress != getAddress(keccak256(abi.encodePacked("contract.address", contractName)))) {
 			revert InvalidOrOutdatedContract();
 		}
 		_;
 	}
 
-	/// @dev Verify caller is a guardian or latest version of `contractName`
-	modifier guardianOrLatestContract(string memory contractName, address contractAddress) {
+	/// @dev Verify caller is a guardian or registered version of `contractName`
+	modifier guardianOrRegisteredContract(string memory contractName, address contractAddress) {
 		bool isContract = contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		bool isGuardian = msg.sender == gogoStorage.getGuardian();
 

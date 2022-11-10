@@ -83,7 +83,7 @@ contract ProtocolDAO is Base {
 	}
 
 	/// @notice Set the amount of GGP that is in circulation
-	function setTotalGGPCirculatingSupply(uint256 amount) public onlyLatestContract("RewardsPool", msg.sender) {
+	function setTotalGGPCirculatingSupply(uint256 amount) public onlySpecificRegisteredContract("RewardsPool", msg.sender) {
 		return setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), amount);
 	}
 
