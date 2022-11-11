@@ -32,12 +32,17 @@ contract ERC4626StdTest is ERC4626Test {
 	}
 
 	// NOTE: The following test is relaxed to consider only smaller values (of type uint120),
-	// since maxWithdraw() fails with large values (due to overflow).
+	// since maxWithdraw/Redeem() fails with large values (due to overflow).
 	// From https://github.com/daejunpark/solmate/pull/1/files
 
 	function test_maxWithdraw(Init memory init) public override {
 		init = clamp(init, type(uint120).max);
 		super.test_maxWithdraw(init);
+	}
+
+	function test_maxRedeem(Init memory init) public override {
+		init = clamp(init, type(uint120).max);
+		super.test_maxRedeem(init);
 	}
 
 	function clamp(Init memory init, uint256 max) internal pure returns (Init memory) {

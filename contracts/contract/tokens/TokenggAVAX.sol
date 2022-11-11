@@ -62,7 +62,7 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Owna
 		_disableInitializers();
 	}
 
-function initialize(Storage storageAddress, ERC20 asset) public initializer {
+	function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
 		__UUPSUpgradeable_init();
 		__Ownable_init();
@@ -72,7 +72,6 @@ function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		// Ensure it will be evenly divisible by `rewardsCycleLength`.
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
 	}
- 
 
 	/// @notice only accept AVAX via fallback from the WAVAX contract
 	receive() external payable {
@@ -220,12 +219,18 @@ function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		return super.redeem(shares, receiver, _owner);
 	}
 
-	function maxWithdraw(address owner) public view override returns (uint256) {
-		return convertToAssets(balanceOf[owner]);
+	/// @notice Max amount of assets owner would be able to withdraw taking into account liquidity in this contract
+	function maxWithdraw(address _owner) public view override returns (uint256) {
+		uint256 assets = convertToAssets(balanceOf[_owner]);
+		uint256 avail = totalAssets() - stakingTotalAssets;
+		return assets > avail ? avail : assets;
 	}
 
-	function maxRedeem(address owner) public view override returns (uint256) {
-		return balanceOf[owner];
+	/// @notice Max amount of shares owner would be able to withdraw taking into account liquidity in this contract
+	function maxRedeem(address _owner) public view override returns (uint256) {
+		uint256 shares = balanceOf[_owner];
+		uint256 avail = convertToShares(totalAssets() - stakingTotalAssets);
+		return shares > avail ? avail : shares;
 	}
 
 	function beforeWithdraw(

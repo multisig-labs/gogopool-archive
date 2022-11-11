@@ -15,7 +15,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	function setUp() public override {
 		super.setUp();
 		vm.prank(guardian);
-		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.0 ether);
+		store.setUint(keccak256("ProtocolDAO.TargetGGAVAXReserveRate"), 0.1 ether);
 
 		alice = getActorWithTokens("alice", MAX_AMT, MAX_AMT);
 		bob = getActor("bob");
@@ -240,48 +240,77 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 	function testWithdrawForStaking() public {
 		// Deposit liquid staker funds
-		uint256 depositAmount = 1000 ether;
+		uint256 depositAmount = 1200 ether;
+		uint256 nodeAmt = 2000 ether;
+		uint128 ggpStakeAmt = 200 ether;
+
 		vm.deal(bob, depositAmount);
 		vm.prank(bob);
 		ggAVAX.depositAVAX{value: depositAmount}();
 
-		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
+		assertEq(ggAVAX.previewWithdraw(depositAmount), depositAmount);
+		assertEq(ggAVAX.maxWithdraw(bob), depositAmount);
+		assertEq(ggAVAX.previewRedeem(depositAmount), depositAmount);
+		assertEq(ggAVAX.maxRedeem(bob), depositAmount);
 
 		// Create and claim minipool
-		address nodeOp = getActorWithTokens("nodeOp", 1000 ether, 200 ether);
-		uint256 depositAmt = 1000 ether;
-		uint256 avaxAssignmentRequest = 1000 ether;
-		uint128 ggpStakeAmt = 200 ether;
+		address nodeOp = getActorWithTokens("nodeOp", uint128(depositAmount), ggpStakeAmt);
 
 		vm.startPrank(nodeOp);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, avaxAssignmentRequest, duration);
+		MinipoolManager.Minipool memory mp = createMinipool(nodeAmt / 2, nodeAmt / 2, duration);
 		vm.stopPrank();
 
-		vm.prank(rialto);
+		vm.startPrank(rialto);
 		minipoolMgr.claimAndInitiateStaking(mp.nodeID);
+		minipoolMgr.recordStakingStart(mp.nodeID, randHash(), block.timestamp);
+		vm.stopPrank();
 
-		// Verify amount available for staking
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets - depositAmt);
+		assertEq(ggAVAX.previewWithdraw(depositAmount), depositAmount);
+		assertEq(ggAVAX.maxWithdraw(bob), ggAVAX.totalAssets() - ggAVAX.stakingTotalAssets());
+		assertEq(ggAVAX.previewRedeem(depositAmount), depositAmount);
+		assertEq(ggAVAX.maxRedeem(bob), ggAVAX.totalAssets() - ggAVAX.stakingTotalAssets());
+
+		skip(mp.duration);
+
+		uint256 rewardsAmt = nodeAmt.mulDivDown(0.1 ether, 1 ether);
+
+		vm.deal(rialto, rialto.balance + rewardsAmt);
+		vm.prank(rialto);
+		minipoolMgr.recordStakingEnd{value: nodeAmt + rewardsAmt}(mp.nodeID, block.timestamp, rewardsAmt);
+
+		ggAVAX.syncRewards();
+		skip(ggAVAX.rewardsCycleLength());
+
+		// Now that rewards are added, maxRedeem = depositAmt (because shares havent changed), and maxWithdraw > depositAmt
+		assertGt(ggAVAX.maxWithdraw(bob), depositAmount);
+		assertEq(ggAVAX.maxRedeem(bob), depositAmount);
+
+		// If we withdraw same number of assets, we will get less shares since they are worth more now
+		assertLt(ggAVAX.previewWithdraw(depositAmount), depositAmount);
+		// If we redeem all our shares we get more assets
+		assertGt(ggAVAX.previewRedeem(depositAmount), depositAmount);
 	}
 
 	function printState(string memory message) internal view {
+		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
+
 		console.log("");
 		console.log("STEP", message);
 		console.log("---timestamps---");
 		console.log("block timestamp", block.timestamp);
-		console.log("rewards cycle end", ggAVAX.rewardsCycleEnd());
-		console.log("last sync", ggAVAX.lastSync());
+		console.log("rewardsCycleEnd", ggAVAX.rewardsCycleEnd());
+		console.log("lastSync", ggAVAX.lastSync());
 
 		console.log("---assets---");
-		console.log("total assets", ggAVAX.totalAssets());
-		console.log("total float", ggAVAX.amountAvailableForStaking());
-		console.log("staking assets", ggAVAX.stakingTotalAssets());
+		console.log("totalAssets", ggAVAX.totalAssets() / 1 ether);
+		console.log("amountAvailableForStaking", ggAVAX.amountAvailableForStaking() / 1 ether);
+		console.log("reserved", reservedAssets / 1 ether);
+		console.log("stakingTotalAssets", ggAVAX.stakingTotalAssets() / 1 ether);
 
 		console.log("---rewards---");
-		console.log("last rewards amount", ggAVAX.lastRewardsAmt());
+		console.log("lastRewardsAmt", ggAVAX.lastRewardsAmt() / 1 ether);
 	}
 
 	function ggAVAXStateAsserts(
