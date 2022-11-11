@@ -62,7 +62,7 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Owna
 		_disableInitializers();
 	}
 
-	function initialize(Storage storageAddress, ERC20 asset) public initializer {
+function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
 		__UUPSUpgradeable_init();
 		__Ownable_init();
@@ -71,13 +71,14 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Owna
 		rewardsCycleLength = 14 days;
 		rewardsCycleEnd = block.timestamp.safeCastTo32();
 	}
+ 
 
 	/// @notice only accept AVAX via fallback from the WAVAX contract
 	receive() external payable {
 		assert(msg.sender == address(asset));
 	}
 
-	/// @notice Distributes rewards to xERC4626 holders.
+	/// @notice Distributes rewards to TokenggAVAX holders. Public, anyone can call.
 	/// 				All surplus `asset` balance of the contract over the internal balance becomes queued for the next cycle.
 	function syncRewards() public {
 		uint32 timestamp = block.timestamp.safeCastTo32();
@@ -205,17 +206,17 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Owna
 	function withdraw(
 		uint256 assets,
 		address receiver,
-		address owner
+		address _owner
 	) public override whenNotPaused returns (uint256 shares) {
-		return super.withdraw(assets, receiver, owner);
+		return super.withdraw(assets, receiver, _owner);
 	}
 
 	function redeem(
 		uint256 shares,
 		address receiver,
-		address owner
+		address _owner
 	) public override whenNotPaused returns (uint256 assets) {
-		return super.redeem(shares, receiver, owner);
+		return super.redeem(shares, receiver, _owner);
 	}
 
 	function beforeWithdraw(

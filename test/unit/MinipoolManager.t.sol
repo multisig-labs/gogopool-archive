@@ -581,6 +581,7 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(amt, 33333333333333333333);
 
 		// Set 5% annual expected rewards rate
+		vm.prank(rialto);
 		dao.setExpectedAVAXRewardsRate(5e16);
 		amt = minipoolMgr.getExpectedAVAXRewardsAmt(365 days, 1_000 ether);
 		assertEq(amt, 50 ether);

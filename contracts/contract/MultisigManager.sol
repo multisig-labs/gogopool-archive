@@ -16,13 +16,12 @@ import {Storage} from "./Storage.sol";
 /// @title Multisig address creation and management for the protocol
 contract MultisigManager is Base {
 	error MultisigAlreadyRegistered();
-	error MultisigDisabled();
 	error MultisigNotFound();
 	error NoEnabledMultisigFound();
 
-	event DisabledMultisig(address indexed addr);
-	event EnabledMultisig(address indexed addr);
-	event RegisteredMultisig(address indexed addr);
+	event DisabledMultisig(address indexed multisig, address actor);
+	event EnabledMultisig(address indexed multisig, address actor);
+	event RegisteredMultisig(address indexed multisig, address actor);
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
@@ -41,7 +40,7 @@ contract MultisigManager is Base {
 		// The index is stored 1 greater than the actual value. The 1 is subtracted in getIndexOf().
 		setUint(keccak256(abi.encodePacked("multisig.index", addr)), index + 1);
 		addUint(keccak256("multisig.count"), 1);
-		emit RegisteredMultisig(addr);
+		emit RegisteredMultisig(addr, msg.sender);
 	}
 
 	/// @notice Enabling a registered multisig
@@ -52,7 +51,7 @@ contract MultisigManager is Base {
 			revert MultisigNotFound();
 		}
 		setBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")), true);
-		emit EnabledMultisig(addr);
+		emit EnabledMultisig(addr, msg.sender);
 	}
 
 	/// @notice Disabling a registered multisig
@@ -64,7 +63,7 @@ contract MultisigManager is Base {
 			revert MultisigNotFound();
 		}
 		setBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")), false);
-		emit DisabledMultisig(addr);
+		emit DisabledMultisig(addr, msg.sender);
 	}
 
 	/// @notice Gets the next registered and enabled Multisig

@@ -33,6 +33,7 @@ contract Storage {
 	}
 
 	constructor() {
+		emit GuardianChanged(address(0), msg.sender);
 		guardian = msg.sender;
 	}
 
@@ -68,11 +69,11 @@ contract Storage {
 	// GET
 	//
 
-	function getAddress(bytes32 key) external view returns (address r) {
+	function getAddress(bytes32 key) external view returns (address) {
 		return addressStorage[key];
 	}
 
-	function getBool(bytes32 key) external view returns (bool r) {
+	function getBool(bytes32 key) external view returns (bool) {
 		return booleanStorage[key];
 	}
 
@@ -80,11 +81,11 @@ contract Storage {
 		return bytesStorage[key];
 	}
 
-	function getBytes32(bytes32 key) external view returns (bytes32 r) {
+	function getBytes32(bytes32 key) external view returns (bytes32) {
 		return bytes32Storage[key];
 	}
 
-	function getInt(bytes32 key) external view returns (int256 r) {
+	function getInt(bytes32 key) external view returns (int256) {
 		return intStorage[key];
 	}
 
@@ -92,7 +93,7 @@ contract Storage {
 		return stringStorage[key];
 	}
 
-	function getUint(bytes32 key) external view returns (uint256 r) {
+	function getUint(bytes32 key) external view returns (uint256) {
 		return uintStorage[key];
 	}
 

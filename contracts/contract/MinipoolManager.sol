@@ -465,6 +465,14 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		return getUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"));
 	}
 
+	/// @notice Calculates how much GGP should be slashed given an expected avaxRewardAmt
+	/// @param avaxRewardAmt The amount of AVAX that should have been awarded to the validator by Avalanche
+	function calculateGGPSlashAmt(uint256 avaxRewardAmt) public view returns (uint256) {
+		Oracle oracle = Oracle(getContractAddress("Oracle"));
+		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
+		return avaxRewardAmt.divWadDown(ggpPriceInAvax);
+	}
+
 	/// @notice Given a duration and an AVAX amt, calculate how much AVAX should be earned via validation rewards
 	/// @param duration The length of validation in seconds
 	/// @param avaxAmt The amount of AVAX the node staked for their validation period
@@ -595,14 +603,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.slashGGP(owner, slashGGPAmt);
-	}
-
-	/// @notice Calculates how much GGP should be slashed given an expected avaxRewardAmt
-	/// @param avaxRewardAmt The amount of AVAX that should have been awarded to the validator by Avalanche
-	function calculateGGPSlashAmt(uint256 avaxRewardAmt) public view returns (uint256) {
-		Oracle oracle = Oracle(getContractAddress("Oracle"));
-		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
-		return avaxRewardAmt.divWadDown(ggpPriceInAvax);
 	}
 
 	/// @notice Reset all the data for a given minipool

@@ -52,7 +52,7 @@ contract ClaimNodeOp is Base {
 
 	/// @notice Set the share of rewards for a staker as a fraction of 1 ether
 	/// @dev Rialto will call this
-	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external {
+	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external onlyMultisig {
 		Staking staking = Staking(getContractAddress("Staking"));
 		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
 		if (staking.getLastRewardsCycleCompleted(stakerAddr) == rewardsPool.getRewardsCycleCount()) {

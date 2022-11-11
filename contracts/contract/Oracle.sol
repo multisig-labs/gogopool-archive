@@ -18,7 +18,7 @@ contract Oracle is Base {
 	error InvalidGGPPrice();
 	error InvalidTimestamp();
 
-	event GGPPriceUpdated(uint256 indexed price);
+	event GGPPriceUpdated(uint256 indexed price, uint256 timestamp);
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
@@ -64,6 +64,6 @@ contract Oracle is Base {
 		}
 		setUint(keccak256("Oracle.GGPPriceInAVAX"), price);
 		setUint(keccak256("Oracle.GGPTimestamp"), timestamp);
-		emit GGPPriceUpdated(price);
+		emit GGPPriceUpdated(price, timestamp);
 	}
 }

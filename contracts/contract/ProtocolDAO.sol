@@ -54,13 +54,13 @@ contract ProtocolDAO is Base {
 
 	/// @notice Pause a contract
 	/// @param contractName The contract whose actions should be paused
-	function pauseContract(string memory contractName) public {
+	function pauseContract(string memory contractName) public onlySpecificRegisteredContract("Ocyticus", msg.sender) {
 		setBool(keccak256(abi.encodePacked("contract.paused", contractName)), true);
 	}
 
 	/// @notice Unpause a contract
 	/// @param contractName The contract whose actions should be resumed
-	function resumeContract(string memory contractName) public {
+	function resumeContract(string memory contractName) public onlySpecificRegisteredContract("Ocyticus", msg.sender) {
 		setBool(keccak256(abi.encodePacked("contract.paused", contractName)), false);
 	}
 
@@ -143,7 +143,7 @@ contract ProtocolDAO is Base {
 
 	/// @notice Set the rewards rate for validating Avalanche's p-chain
 	/// @dev Used for testing
-	function setExpectedAVAXRewardsRate(uint256 rate) public {
+	function setExpectedAVAXRewardsRate(uint256 rate) public onlyMultisig {
 		setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), rate);
 	}
 
