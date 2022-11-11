@@ -69,7 +69,8 @@ function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		__BaseUpgradeable_init(storageAddress);
 
 		rewardsCycleLength = 14 days;
-		rewardsCycleEnd = block.timestamp.safeCastTo32();
+		// Ensure it will be evenly divisible by `rewardsCycleLength`.
+		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
 	}
  
 
@@ -217,6 +218,14 @@ function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		address _owner
 	) public override whenNotPaused returns (uint256 assets) {
 		return super.redeem(shares, receiver, _owner);
+	}
+
+	function maxWithdraw(address owner) public view override returns (uint256) {
+		return convertToAssets(balanceOf[owner]);
+	}
+
+	function maxRedeem(address owner) public view override returns (uint256) {
+		return balanceOf[owner];
 	}
 
 	function beforeWithdraw(
