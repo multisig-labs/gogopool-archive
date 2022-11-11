@@ -4,8 +4,10 @@ pragma solidity 0.8.17;
 import "./BaseAbstract.sol";
 import {Storage} from "./Storage.sol";
 
-contract BaseUpgradeable is BaseAbstract {
-	function __BaseUpgradeable_init(Storage gogoStorageAddress) internal {
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+contract BaseUpgradeable is Initializable, BaseAbstract {
+	function __BaseUpgradeable_init(Storage gogoStorageAddress) internal onlyInitializing {
 		gogoStorage = Storage(gogoStorageAddress);
 	}
 }

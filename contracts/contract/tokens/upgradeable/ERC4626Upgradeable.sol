@@ -6,8 +6,9 @@ import {ERC20Upgradeable} from "./ERC20Upgradeable.sol";
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-abstract contract ERC4626Upgradeable is ERC20Upgradeable {
+abstract contract ERC4626Upgradeable is Initializable, ERC20Upgradeable {
 	using SafeTransferLib for ERC20;
 	using FixedPointMathLib for uint256;
 
@@ -29,7 +30,7 @@ abstract contract ERC4626Upgradeable is ERC20Upgradeable {
 		ERC20 _asset,
 		string memory _name,
 		string memory _symbol
-	) public {
+	) internal onlyInitializing {
 		__ERC20Upgradeable_init(_name, _symbol, _asset.decimals());
 		asset = _asset;
 	}

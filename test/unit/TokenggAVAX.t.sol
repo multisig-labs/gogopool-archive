@@ -31,6 +31,17 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.stopPrank();
 	}
 
+	function testTokenSetup() public {
+		assertEq(ggAVAX.name(), "GoGoPool Liquid Staking Token");
+		assertEq(ggAVAX.decimals(), uint8(18));
+		assertEq(ggAVAX.symbol(), "ggAVAX");
+	}
+
+	function testReinitialization() public {
+		vm.expectRevert(bytes("Initializable: contract is already initialized"));
+		ggAVAX.initialize(store, wavax);
+	}
+
 	function testSingleDepositWithdrawWAVAX(uint128 amount) public {
 		vm.assume(amount != 0 && amount < MAX_AMT);
 

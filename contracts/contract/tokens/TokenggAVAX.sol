@@ -21,7 +21,7 @@ import {SafeCastLib} from "@rari-capital/solmate/src/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
 /// @dev Local variables and parent contracts must remain in order between contract upgrades
-contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, Initializable, UUPSUpgradeable, OwnableUpgradeable {
+contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, OwnableUpgradeable, BaseUpgradeable {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -64,9 +64,9 @@ contract TokenggAVAX is ERC20Upgradeable, ERC4626Upgradeable, BaseUpgradeable, I
 
 	function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
-		__BaseUpgradeable_init(storageAddress);
-		__Ownable_init();
 		__UUPSUpgradeable_init();
+		__Ownable_init();
+		__BaseUpgradeable_init(storageAddress);
 
 		rewardsCycleLength = 14 days;
 		rewardsCycleEnd = block.timestamp.safeCastTo32();
