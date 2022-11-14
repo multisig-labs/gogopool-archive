@@ -89,6 +89,10 @@ contract Vault is Base, ReentrancyGuard {
 		// Make sure the contracts are valid, will revert if not
 		getContractAddress(fromContractName);
 		getContractAddress(toContractName);
+		// Verify there are enough funds
+		if (avaxBalances[fromContractName] < amount) {
+			revert InsufficientContractBalance();
+		}
 		// Update balances
 		avaxBalances[fromContractName] = avaxBalances[fromContractName] - amount;
 		avaxBalances[toContractName] = avaxBalances[toContractName] + amount;
@@ -173,6 +177,10 @@ contract Vault is Base, ReentrancyGuard {
 		bytes32 contractKeyTo = keccak256(abi.encodePacked(networkContractName, tokenAddress));
 		// emit token transfer event
 		emit TokenTransfer(contractKeyFrom, contractKeyTo, address(tokenAddress), amount);
+		// Verify there are enough funds
+		if (tokenBalances[contractKeyFrom] < amount) {
+			revert InsufficientContractBalance();
+		}
 		// Update Balances
 		tokenBalances[contractKeyFrom] = tokenBalances[contractKeyFrom] - amount;
 		tokenBalances[contractKeyTo] = tokenBalances[contractKeyTo] + amount;
