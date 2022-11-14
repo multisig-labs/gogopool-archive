@@ -68,7 +68,7 @@ contract VaultTest is BaseTest, IWithdrawer {
 		vm.expectRevert(Vault.InvalidAmount.selector);
 		vault.withdrawToken(address(this), ggp, 0 ether);
 
-		vm.expectRevert();
+		vm.expectRevert(Vault.InsufficientContractBalance.selector);
 		vault.withdrawToken(address(this), ggp, 2 ether);
 
 		vault.withdrawToken(address(this), ggp, 1 ether);

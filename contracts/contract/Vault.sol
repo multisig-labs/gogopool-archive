@@ -139,6 +139,10 @@ contract Vault is Base, ReentrancyGuard {
 		bytes32 contractKey = keccak256(abi.encodePacked(getContractName(msg.sender), tokenAddress));
 		// Emit token withdrawn event
 		emit TokenWithdrawn(contractKey, address(tokenAddress), amount);
+		// Verify there are enough funds
+		if (tokenBalances[contractKey] < amount) {
+			revert InsufficientContractBalance();
+		}
 		// Update balances
 		tokenBalances[contractKey] = tokenBalances[contractKey] - amount;
 		// Get the toke ERC20 instance
