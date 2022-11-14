@@ -23,9 +23,9 @@ contract ProtocolDAO is Base {
 		// RewardsPool
 		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
 		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
-		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"), 0.20 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"), 0.70 ether);
-		setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
+		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
 
 		// GGP Inflation
 		setUint(keccak256("ProtocolDAO.InflationIntervalSeconds"), 1 days);

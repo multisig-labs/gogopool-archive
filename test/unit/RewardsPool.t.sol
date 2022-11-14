@@ -117,12 +117,54 @@ contract RewardsPoolTest is BaseTest {
 
 		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
 		assertTrue(rewardsPool.canStartRewardsCycle());
+
 		rewardsPool.startRewardsCycle();
 
+		uint256 rewardsCycleTotal = rewardsPool.getRewardsCycleTotalAmt();
+		uint256 claimProtocolPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"));
+		uint256 claimNodeOpPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"));
+		uint256 multisigPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"));
+
 		assertEq(rewardsPool.getRewardsCycleStartTime(), rewardsCycleStartTime + dao.getRewardsCycleSeconds());
-		assertGt(rewardsPool.getRewardsCycleTotalAmt(), 0);
-		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
-		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
+		assertGt(rewardsCycleTotal, 0);
+		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), rewardsCycleTotal.mulWadDown(claimNodeOpPerc));
+		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), rewardsCycleTotal.mulWadDown(claimProtocolPerc));
+		assertEq(ggp.balanceOf(rialto), rewardsCycleTotal.mulWadDown(multisigPerc));
+
 		assertEq(rewardsPool.getRewardsCycleCount(), 1);
+	}
+
+	function testMulitpleMultisigRewards() public {
+		// create three enabled multisigs (rialto, multisig1, multisig2)
+		// and one disabled (multisig3)
+		address multisig1 = getActor("multisig1");
+		address multisig2 = getActor("multisig2");
+		address multisig3 = getActor("multisig3");
+
+		vm.startPrank(guardian);
+		multisigMgr.registerMultisig(multisig1);
+		multisigMgr.registerMultisig(multisig2);
+		multisigMgr.registerMultisig(multisig3);
+
+		multisigMgr.enableMultisig(multisig1);
+		multisigMgr.enableMultisig(multisig2);
+		vm.stopPrank();
+
+		skip(dao.getRewardsCycleSeconds());
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		startMeasuringGas("testGasCreateMinipool");
+		rewardsPool.startRewardsCycle();
+		stopMeasuringGas();
+
+		uint256 rewardsCycleTotal = rewardsPool.getRewardsCycleTotalAmt();
+		uint256 multisigPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"));
+		uint256 amtPerMultisig = rewardsCycleTotal.mulWadDown(multisigPerc) / 3;
+
+		assertEq(ggp.balanceOf(rialto), amtPerMultisig);
+		assertEq(ggp.balanceOf(multisig1), amtPerMultisig);
+		assertEq(ggp.balanceOf(multisig2), amtPerMultisig);
+		assertEq(ggp.balanceOf(multisig3), 0);
 	}
 }

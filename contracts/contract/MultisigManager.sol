@@ -89,6 +89,7 @@ contract MultisigManager is Base {
 	}
 
 	/// @notice Get the total count of the multisigs in the protocol
+	/// @return Count of all multisigs
 	function getCount() public view returns (uint256) {
 		return getUint(keccak256("multisig.count"));
 	}

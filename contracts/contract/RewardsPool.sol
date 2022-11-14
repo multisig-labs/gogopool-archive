@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "./Base.sol";
 import {ClaimNodeOp} from "./ClaimNodeOp.sol";
+import {MultisigManager} from "./MultisigManager.sol";
 import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
@@ -22,6 +23,7 @@ contract RewardsPool is Base {
 	event NewRewardsCycleStarted(uint256 totalRewardsAmt);
 	event ClaimNodeOpRewardsTransfered(uint256 value);
 	event ProtocolDAORewardsTransfered(uint256 value);
+	event MultisigRewardsTransfered(uint256 value);
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
@@ -155,9 +157,10 @@ contract RewardsPool is Base {
 		// 		since inflation is on a 1 day interval and it needs at least one cycle since last calculation
 		inflate();
 
-		uint256 daoClaimContractAllotment = getClaimingContractDistribution("ClaimProtocolDAO");
+		uint256 multisigClaimContractAllotment = getClaimingContractDistribution("ClaimMultisig");
 		uint256 nopClaimContractAllotment = getClaimingContractDistribution("ClaimNodeOp");
-		if (daoClaimContractAllotment + nopClaimContractAllotment > getRewardsCycleTotalAmt()) {
+		uint256 daoClaimContractAllotment = getClaimingContractDistribution("ClaimProtocolDAO");
+		if (daoClaimContractAllotment + nopClaimContractAllotment + multisigClaimContractAllotment > getRewardsCycleTotalAmt()) {
 			revert IncorrectRewardsDistribution();
 		}
 
@@ -169,11 +172,52 @@ contract RewardsPool is Base {
 			vault.transferToken("ClaimProtocolDAO", ggp, daoClaimContractAllotment);
 		}
 
+		if (multisigClaimContractAllotment > 0) {
+			emit MultisigRewardsTransfered(multisigClaimContractAllotment);
+			distributeMultisigAllotment(multisigClaimContractAllotment, vault, ggp);
+		}
+
 		if (nopClaimContractAllotment > 0) {
 			emit ClaimNodeOpRewardsTransfered(nopClaimContractAllotment);
 			ClaimNodeOp nopClaim = ClaimNodeOp(getContractAddress("ClaimNodeOp"));
 			nopClaim.setRewardsCycleTotal(nopClaimContractAllotment);
 			vault.transferToken("ClaimNodeOp", ggp, nopClaimContractAllotment);
+		}
+	}
+
+	/// @notice Distributes GGP to enabled Multisigs
+	/// @param allotment Total GGP for Multisigs
+	/// @param vault Vault contract
+	/// @param ggp TokenGGP contract
+	function distributeMultisigAllotment(
+		uint256 allotment,
+		Vault vault,
+		TokenGGP ggp
+	) internal {
+		MultisigManager mm = MultisigManager(getContractAddress("MultisigManager"));
+
+		uint256 enabledCount;
+		uint256 count = mm.getCount();
+		address[] memory enabledMultisigs = new address[](count);
+
+		// there should never be more than a few multisigs, so a loop should be fine here
+		for (uint256 i = 0; i < count; i++) {
+			(address addr, bool enabled) = mm.getMultisig(i);
+			if (enabled) {
+				enabledMultisigs[enabledCount] = addr;
+				enabledCount++;
+			}
+		}
+
+		// Dirty hack to cut unused elements off end of return value (from RP)
+		// solhint-disable-next-line no-inline-assembly
+		assembly {
+			mstore(enabledMultisigs, enabledCount)
+		}
+
+		uint256 tokensPerMultisig = allotment / enabledCount;
+		for (uint256 i = 0; i < enabledMultisigs.length; i++) {
+			vault.withdrawToken(enabledMultisigs[i], ggp, tokensPerMultisig);
 		}
 	}
 }

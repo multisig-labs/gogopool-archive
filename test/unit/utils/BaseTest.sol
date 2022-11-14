@@ -6,11 +6,11 @@ import "../../../lib/forge-std/src/Test.sol";
 import {MinipoolManager} from "../../../contracts/contract/MinipoolManager.sol";
 import {MultisigManager} from "../../../contracts/contract/MultisigManager.sol";
 import {Storage} from "../../../contracts/contract/Storage.sol";
+import {ClaimNodeOp} from "../../../contracts/contract/ClaimNodeOp.sol";
 import {ClaimProtocolDAO} from "../../../contracts/contract/ClaimProtocolDAO.sol";
 import {Vault} from "../../../contracts/contract/Vault.sol";
 import {Oracle} from "../../../contracts/contract/Oracle.sol";
 import {ProtocolDAO} from "../../../contracts/contract/ProtocolDAO.sol";
-import {ClaimNodeOp} from "../../../contracts/contract/ClaimNodeOp.sol";
 import {TokenGGP} from "../../../contracts/contract/tokens/TokenGGP.sol";
 import {TokenggAVAX} from "../../../contracts/contract/tokens/TokenggAVAX.sol";
 import {WAVAX} from "../../../contracts/contract/utils/WAVAX.sol";
@@ -48,9 +48,9 @@ abstract contract BaseTest is Test {
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
 	ProtocolDAO public dao;
+	ClaimNodeOp public nopClaim;
 	ClaimProtocolDAO public daoClaim;
 	RewardsPool public rewardsPool;
-	ClaimNodeOp public nopClaim;
 	Staking public staking;
 	Ocyticus public ocyticus;
 
@@ -103,15 +103,15 @@ abstract contract BaseTest is Test {
 		staking = new Staking(store, ggp);
 		registerContract(store, "Staking", address(staking));
 
+		nopClaim = new ClaimNodeOp(store, ggp);
+		registerContract(store, "ClaimNodeOp", address(nopClaim));
+
 		daoClaim = new ClaimProtocolDAO(store);
 		registerContract(store, "ClaimProtocolDAO", address(daoClaim));
 
 		rewardsPool = new RewardsPool(store);
 		registerContract(store, "RewardsPool", address(rewardsPool));
 		rewardsPool.initialize();
-
-		nopClaim = new ClaimNodeOp(store, ggp);
-		registerContract(store, "ClaimNodeOp", address(nopClaim));
 
 		ocyticus = new Ocyticus(store);
 		registerContract(store, "Ocyticus", address(ocyticus));
@@ -134,9 +134,9 @@ abstract contract BaseTest is Test {
 		// RewardsPool
 		store.setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
 		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
-		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"), 0.20 ether);
 		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"), 0.70 ether);
-		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.RialtoClaim"), 0.20 ether);
+		store.setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
 
 		// GGP Inflation settings may change when we finialize tokenomics
 		store.setUint(keccak256("ProtocolDAO.InflationInterval"), 1 days);
