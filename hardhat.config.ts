@@ -8,6 +8,7 @@ import "solidity-coverage";
 import "@atixlabs/hardhat-time-n-mine";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-preprocessor";
+import "hardhat-storage-layout";
 
 dotenv.config();
 

@@ -26,6 +26,10 @@ abstract contract ERC4626Upgradeable is Initializable, ERC20Upgradeable {
 
 	ERC20 public asset;
 
+	constructor() {
+		_disableInitializers();
+	}
+
 	function __ERC4626Upgradeable_init(
 		ERC20 _asset,
 		string memory _name,

@@ -11,8 +11,7 @@ import {ProtocolDAO} from "../ProtocolDAO.sol";
 import {Storage} from "../Storage.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
@@ -21,7 +20,7 @@ import {SafeCastLib} from "@rari-capital/solmate/src/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
 /// @dev Local variables and parent contracts must remain in order between contract upgrades
-contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, OwnableUpgradeable, BaseUpgradeable {
+contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, BaseUpgradeable {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -64,8 +63,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Owna
 
 	function initialize(Storage storageAddress, ERC20 asset) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
-		__UUPSUpgradeable_init();
-		__Ownable_init();
 		__BaseUpgradeable_init(storageAddress);
 
 		rewardsCycleLength = 14 days;
@@ -247,5 +244,5 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Owna
 		totalReleasedAssets += amount;
 	}
 
-	function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+	function _authorizeUpgrade(address newImplementation) internal override onlyGuardian {}
 }

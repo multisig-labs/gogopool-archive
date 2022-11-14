@@ -49,9 +49,10 @@ abstract contract ERC20Upgradeable is Initializable {
 	/*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
+	constructor() {
+		_disableInitializers();
+	}
 
-	// I want this to only be called while we're intializing
-	// and no other time
 	function __ERC20Upgradeable_init(
 		string memory _name,
 		string memory _symbol,
