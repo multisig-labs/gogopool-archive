@@ -49,9 +49,6 @@ abstract contract ERC20Upgradeable is Initializable {
 	/*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-	constructor() {
-		_disableInitializers();
-	}
 
 	function __ERC20Upgradeable_init(
 		string memory _name,
