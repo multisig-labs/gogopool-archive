@@ -66,7 +66,8 @@ contract MultisigManager is Base {
 		emit DisabledMultisig(addr, msg.sender);
 	}
 
-	/// @notice Gets the next registered and enabled Multisig
+	/// @notice Gets the next registered and enabled Multisig, revert if none found
+	/// @dev There will never be more than 10 total multisigs. If we grow beyond that we will redesign this contract.
 	function requireNextActiveMultisig() external view returns (address) {
 		uint256 total = getUint(keccak256("multisig.count"));
 		address addr;
