@@ -314,7 +314,7 @@ contract Staking is Base {
 	/// @param amount The amount of GGP being staked
 	function stakeGGP(uint256 amount) external whenNotPaused {
 		// Transfer GGP tokens from staker to this contract
-		ggp.transferFrom(msg.sender, address(this), amount);
+		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(msg.sender, amount);
 	}
 
@@ -323,7 +323,7 @@ contract Staking is Base {
 	/// @param amount The amount of GGP being staked
 	function restakeGGP(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		// Transfer GGP tokens from the ClaimNodeOp contract to this contract
-		ggp.transferFrom(msg.sender, address(this), amount);
+		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(stakerAddr, amount);
 	}
 

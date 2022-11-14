@@ -7,6 +7,7 @@ import {Storage} from "./Storage.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
+import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
 // !!!WARNING!!! The Vault contract must not be upgraded
 // AVAX and ggAVAX are stored here to prevent contract upgrades from affecting balances
@@ -14,6 +15,9 @@ import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.s
 
 /// @notice Vault and ledger for AVAX and tokens
 contract Vault is Base, ReentrancyGuard {
+	using SafeTransferLib for ERC20;
+	using SafeTransferLib for address;
+
 	error InsufficientContractBalance();
 	error InvalidAmount();
 	error InvalidNetworkContract();
@@ -107,7 +111,7 @@ contract Vault is Base, ReentrancyGuard {
 		string memory networkContractName,
 		ERC20 tokenContract,
 		uint256 amount
-	) external {
+	) external guardianOrRegisteredContracts {
 		// Valid Amount?
 		if (amount == 0) {
 			revert InvalidAmount();
@@ -118,10 +122,8 @@ contract Vault is Base, ReentrancyGuard {
 		bytes32 contractKey = keccak256(abi.encodePacked(networkContractName, address(tokenContract)));
 		// Emit token transfer event
 		emit TokenDeposited(contractKey, address(tokenContract), amount);
-		// Send tokens to this address now
-		if (!tokenContract.transferFrom(msg.sender, address(this), amount)) {
-			revert TokenTransferFailed();
-		}
+		// Send tokens to this address now, safeTransfer will revert if it fails
+		tokenContract.safeTransferFrom(msg.sender, address(this), amount);
 		// Update balances
 		tokenBalances[contractKey] = tokenBalances[contractKey] + amount;
 	}
@@ -151,10 +153,8 @@ contract Vault is Base, ReentrancyGuard {
 		tokenBalances[contractKey] = tokenBalances[contractKey] - amount;
 		// Get the toke ERC20 instance
 		ERC20 tokenContract = ERC20(tokenAddress);
-		// Withdraw to the withdrawal address
-		if (!tokenContract.transfer(withdrawalAddress, amount)) {
-			revert VaultTokenWithdrawalFailed();
-		}
+		// Withdraw to the withdrawal address, , safeTransfer will revert if it fails
+		tokenContract.safeTransfer(withdrawalAddress, amount);
 	}
 
 	/// @notice Transfer token from one contract to another

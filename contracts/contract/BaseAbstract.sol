@@ -20,7 +20,7 @@ abstract contract BaseAbstract {
 
 	Storage internal gogoStorage;
 
-	/// @dev Verify caller is a registered GoGoPool contract
+	/// @dev Verify caller is a registered network contract
 	modifier onlyRegisteredNetworkContract() {
 		if (getBool(keccak256(abi.encodePacked("contract.exists", msg.sender))) == false) {
 			revert InvalidOrOutdatedContract();
@@ -36,8 +36,19 @@ abstract contract BaseAbstract {
 		_;
 	}
 
+	/// @dev Verify caller is a guardian or registered network contract
+	modifier guardianOrRegisteredContracts() {
+		bool isContract = getBool(keccak256(abi.encodePacked("contract.exists", msg.sender)));
+		bool isGuardian = msg.sender == gogoStorage.getGuardian();
+
+		if (!(isGuardian || isContract)) {
+			revert MustBeGuardianOrValidContract();
+		}
+		_;
+	}
+
 	/// @dev Verify caller is a guardian or registered version of `contractName`
-	modifier guardianOrRegisteredContract(string memory contractName, address contractAddress) {
+	modifier guardianOrSpecificRegisteredContract(string memory contractName, address contractAddress) {
 		bool isContract = contractAddress == getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		bool isGuardian = msg.sender == gogoStorage.getGuardian();
 

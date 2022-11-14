@@ -18,6 +18,7 @@ contract RewardsPool is Base {
 	/// @notice Distribution cannot exceed total rewards
 	error IncorrectRewardsDistribution();
 	error UnableToStartRewardsCycle();
+	error ContractHasNotBeenInitialized();
 
 	event GGPInflated(uint256 newTokens);
 	event NewRewardsCycleStarted(uint256 totalRewardsAmt);
@@ -52,6 +53,9 @@ contract RewardsPool is Base {
 	function getInflationIntervalsElapsed() public view returns (uint256) {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 startTime = getInflationIntervalStartTime();
+		if (startTime == 0) {
+			revert ContractHasNotBeenInitialized();
+		}
 		return (block.timestamp - startTime) / dao.getInflationIntervalSeconds();
 	}
 

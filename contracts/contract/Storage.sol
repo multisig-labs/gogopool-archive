@@ -22,7 +22,7 @@ contract Storage {
 
 	// Guardian address
 	address private guardian;
-	address private newGuardian;
+	address public newGuardian;
 
 	/// @dev Only allow access from guardian or the latest version of a contract in the GoGoPool network
 	modifier onlyRegisteredNetworkContract() {

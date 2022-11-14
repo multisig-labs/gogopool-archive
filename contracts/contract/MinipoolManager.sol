@@ -182,7 +182,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	// OWNER FUNCTIONS
 	//
 
-	/// @notice Accept AVAX deposit from node operator to create a Minipool. Node Operator must be staking GGP.
+	/// @notice Accept AVAX deposit from node operator to create a Minipool. Node Operator must be staking GGP. Open to public.
 	/// @param nodeID 20-byte Avalanche node ID
 	/// @param duration Requested validation period in seconds
 	/// @param delegationFee Percentage delegation fee in units of ether (2% is 0.2 ether)
