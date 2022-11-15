@@ -326,9 +326,6 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.prank(address(ocyticus));
 		dao.pauseContract("TokenggAVAX");
 
-		address alice = getActor("alice");
-		vm.deal(alice, 100 ether);
-
 		bytes memory customError = abi.encodeWithSignature("ContractPaused()");
 		vm.expectRevert(customError);
 		ggAVAX.deposit(100 ether, alice);
