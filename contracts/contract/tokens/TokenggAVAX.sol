@@ -54,6 +54,13 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice total amount of avax currently out for staking (not including any rewards)
 	uint256 public stakingTotalAssets;
 
+	modifier whenTokenNotPaused(uint256 amt) {
+		if (amt > 0 && getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			revert ContractPaused();
+		}
+		_;
+	}
+
 	/// @custom:oz-upgrades-unsafe-allow constructor
 	constructor() {
 		// The constructor is exectued only when creating implementation contract
@@ -153,7 +160,7 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		withdrawer.receiveWithdrawalAVAX{value: assets}();
 	}
 
-	function depositAVAX() public payable whenNotPaused returns (uint256 shares) {
+	function depositAVAX() public payable returns (uint256 shares) {
 		uint256 assets = msg.value;
 		// Check for rounding error since we round down in previewDeposit.
 		if ((shares = previewDeposit(assets)) == 0) {
@@ -167,7 +174,7 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		afterDeposit(assets, shares);
 	}
 
-	function withdrawAVAX(uint256 assets) public whenNotPaused returns (uint256 shares) {
+	function withdrawAVAX(uint256 assets) public returns (uint256 shares) {
 		shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
 		beforeWithdraw(assets, shares);
 		_burn(msg.sender, shares);
@@ -178,7 +185,7 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		msg.sender.safeTransferETH(assets);
 	}
 
-	function redeemAVAX(uint256 shares) public whenNotPaused returns (uint256 assets) {
+	function redeemAVAX(uint256 shares) public returns (uint256 assets) {
 		// Check for rounding error since we round down in previewRedeem.
 		if ((assets = previewRedeem(shares)) == 0) {
 			revert ZeroAssets();
@@ -192,32 +199,11 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		msg.sender.safeTransferETH(assets);
 	}
 
-	function deposit(uint256 assets, address receiver) public override whenNotPaused returns (uint256 shares) {
-		return super.deposit(assets, receiver);
-	}
-
-	function mint(uint256 shares, address receiver) public override whenNotPaused returns (uint256 assets) {
-		return super.mint(shares, receiver);
-	}
-
-	function withdraw(
-		uint256 assets,
-		address receiver,
-		address _owner
-	) public override whenNotPaused returns (uint256 shares) {
-		return super.withdraw(assets, receiver, _owner);
-	}
-
-	function redeem(
-		uint256 shares,
-		address receiver,
-		address _owner
-	) public override whenNotPaused returns (uint256 assets) {
-		return super.redeem(shares, receiver, _owner);
-	}
-
 	/// @notice Max amount of assets owner would be able to withdraw taking into account liquidity in this contract
 	function maxWithdraw(address _owner) public view override returns (uint256) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			return 0;
+		}
 		uint256 assets = convertToAssets(balanceOf[_owner]);
 		uint256 avail = totalAssets() - stakingTotalAssets;
 		return assets > avail ? avail : assets;
@@ -225,9 +211,28 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 
 	/// @notice Max amount of shares owner would be able to withdraw taking into account liquidity in this contract
 	function maxRedeem(address _owner) public view override returns (uint256) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			return 0;
+		}
 		uint256 shares = balanceOf[_owner];
 		uint256 avail = convertToShares(totalAssets() - stakingTotalAssets);
 		return shares > avail ? avail : shares;
+	}
+
+	function previewDeposit(uint256 assets) public view override whenTokenNotPaused(assets) returns (uint256) {
+		return super.previewDeposit(assets);
+	}
+
+	function previewMint(uint256 shares) public view override whenTokenNotPaused(shares) returns (uint256) {
+		return super.previewMint(shares);
+	}
+
+	function previewWithdraw(uint256 assets) public view override whenTokenNotPaused(assets) returns (uint256) {
+		return super.previewWithdraw(assets);
+	}
+
+	function previewRedeem(uint256 shares) public view override whenTokenNotPaused(shares) returns (uint256) {
+		return super.previewRedeem(shares);
 	}
 
 	function beforeWithdraw(

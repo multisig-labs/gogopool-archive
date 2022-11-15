@@ -321,4 +321,19 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - stakingWithdrawAmount + rewardsAmount);
 	}
+
+	function testDepositPause() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		address alice = getActor("alice");
+		vm.deal(alice, 100 ether);
+
+		bytes memory customError = abi.encodeWithSignature("ContractPaused()");
+		vm.expectRevert(customError);
+		ggAVAX.deposit(100 ether, alice);
+
+		vm.expectRevert(bytes("ZERO_SHARES"));
+		ggAVAX.deposit(0 ether, alice);
+	}
 }
