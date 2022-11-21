@@ -50,6 +50,7 @@ contract MultisigManager is Base {
 		if (multisigIndex == -1) {
 			revert MultisigNotFound();
 		}
+
 		setBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")), true);
 		emit EnabledMultisig(addr, msg.sender);
 	}
@@ -62,6 +63,7 @@ contract MultisigManager is Base {
 		if (multisigIndex == -1) {
 			revert MultisigNotFound();
 		}
+
 		setBool(keccak256(abi.encodePacked("multisig.item", multisigIndex, ".enabled")), false);
 		emit DisabledMultisig(addr, msg.sender);
 	}

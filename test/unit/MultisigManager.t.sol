@@ -9,26 +9,81 @@ contract MultisigManagerTest is BaseTest {
 		super.setUp();
 	}
 
-	function testAddMultisig() public {
+	function testRegisterMultisigNotGuardian() public {
+		bytes memory customError = abi.encodeWithSignature("MustBeGuardian()");
+		vm.expectRevert(customError);
+		multisigMgr.registerMultisig(rialto);
+	}
+
+	function testRegisterMultisigAlreadyRegistered() public {
+		vm.startPrank(guardian);
+		vm.expectRevert(MultisigManager.MultisigAlreadyRegistered.selector);
+		multisigMgr.registerMultisig(rialto);
+	}
+
+	function testRegisterMultisig() public {
 		uint256 initCount = multisigMgr.getCount();
 		address rialto1 = getActor("rialto1");
 
-		// This isnt working?
-		// vm.expectRevert(MultisigManager.MustBeGuardian.selector);
-		bytes memory customError = abi.encodeWithSignature("MustBeGuardian()");
-		vm.expectRevert(customError);
-		multisigMgr.registerMultisig(rialto1);
-
 		vm.startPrank(guardian);
 		multisigMgr.registerMultisig(rialto1);
-		multisigMgr.enableMultisig(rialto1);
-		vm.stopPrank();
 
 		int256 index = multisigMgr.getIndexOf(rialto1);
 		(address a, bool enabled) = multisigMgr.getMultisig(uint256(index));
 		assertEq(a, rialto1);
-		assert(enabled);
-		assertEq(multisigMgr.getCount(), initCount + 1);
+		assertEq(enabled, false);
+
+		assertEq(initCount + 1, multisigMgr.getCount());
+	}
+
+	function testEnableMultisigNotGuardian() public {
+		bytes memory customError = abi.encodeWithSignature("MustBeGuardian()");
+		vm.expectRevert(customError);
+		multisigMgr.enableMultisig(rialto);
+	}
+
+	function testEnableMultisigNotFound() public {
+		vm.startPrank(guardian);
+		vm.expectRevert(MultisigManager.MultisigNotFound.selector);
+		multisigMgr.enableMultisig(address(123));
+	}
+
+	function testEnableMultisig() public {
+		address rialto1 = getActor("rialto1");
+
+		vm.startPrank(guardian);
+		multisigMgr.registerMultisig(rialto1);
+		multisigMgr.enableMultisig(rialto1);
+
+		int256 index = multisigMgr.getIndexOf(rialto1);
+		(address a, bool enabled) = multisigMgr.getMultisig(uint256(index));
+
+		assertEq(enabled, true);
+	}
+
+	function testDisableMultisigNotFound() public {
+		address rialto1 = getActor("rialto1");
+
+		vm.prank(guardian);
+		vm.expectRevert(MultisigManager.MultisigNotFound.selector);
+		multisigMgr.disableMultisig(rialto1);
+	}
+
+	function testDisableMultisig() public {
+		address rialto1 = getActor("rialto1");
+
+		vm.startPrank(guardian);
+
+		multisigMgr.registerMultisig(rialto1);
+		multisigMgr.enableMultisig(rialto1);
+
+		int256 index = multisigMgr.getIndexOf(rialto1);
+		(, bool enabled) = multisigMgr.getMultisig(uint256(index));
+		assertEq(enabled, true);
+
+		multisigMgr.disableMultisig(rialto1);
+		(, enabled) = multisigMgr.getMultisig(uint256(index));
+		assertEq(enabled, false);
 	}
 
 	function testFindActive() public {
