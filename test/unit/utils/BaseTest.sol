@@ -2,7 +2,8 @@ pragma solidity 0.8.17;
 
 // SPDX-License-Identifier: GPL-3.0-only
 
-import "../../../lib/forge-std/src/Test.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
 import {MinipoolManager} from "../../../contracts/contract/MinipoolManager.sol";
 import {MultisigManager} from "../../../contracts/contract/MultisigManager.sol";
 import {Storage} from "../../../contracts/contract/Storage.sol";
@@ -19,6 +20,7 @@ import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 import {RewardsPool} from "../../../contracts/contract/RewardsPool.sol";
 import {Staking} from "../../../contracts/contract/Staking.sol";
 import {Ocyticus} from "../../../contracts/contract/Ocyticus.sol";
+import {OneInchMock} from "../../../contracts/contract/utils/OneInchMock.sol";
 
 import {format} from "sol-utils/format.sol";
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
@@ -53,6 +55,7 @@ abstract contract BaseTest is Test {
 	RewardsPool public rewardsPool;
 	Staking public staking;
 	Ocyticus public ocyticus;
+	OneInchMock public oneInchMock;
 
 	function setUp() public virtual {
 		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
@@ -115,6 +118,9 @@ abstract contract BaseTest is Test {
 
 		ocyticus = new Ocyticus(store);
 		registerContract(store, "Ocyticus", address(ocyticus));
+
+		oneInchMock = new OneInchMock();
+		registerContract(store, "OneInchMock", address(oneInchMock));
 
 		// Initialize the rewards cycle
 		vm.stopPrank();

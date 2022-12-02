@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
+import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
 
 contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	using FixedPointMathLib for uint256;
@@ -134,8 +135,6 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(alice)), 0);
 		assertEq(wavax.balanceOf(alice), alicePreDepositBal);
 	}
-
-	function receiveWithdrawalAVAX() external payable {}
 
 	function testDepositStakingRewards() public {
 		// Scenario:
@@ -293,6 +292,176 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertGt(ggAVAX.previewRedeem(depositAmount), depositAmount);
 	}
 
+	function testDepositFromStakingInvalid() public {
+		uint256 totalAmt = 100 ether;
+		uint256 baseAmt = 0;
+		uint256 rewardAmt = 0;
+
+		vm.deal(address(minipoolMgr), totalAmt);
+
+		vm.startPrank(address(minipoolMgr));
+		vm.expectRevert(TokenggAVAX.InvalidStakingDeposit.selector);
+		ggAVAX.depositFromStaking{value: totalAmt}(baseAmt, rewardAmt);
+
+		totalAmt = ggAVAX.stakingTotalAssets() + 1;
+		baseAmt = ggAVAX.stakingTotalAssets() + 1;
+		rewardAmt = 0;
+		vm.expectRevert(TokenggAVAX.InvalidStakingDeposit.selector);
+		ggAVAX.depositFromStaking{value: totalAmt}(baseAmt, rewardAmt);
+	}
+
+	function testDepositPause() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		bytes memory customError = abi.encodeWithSignature("ContractPaused()");
+		vm.expectRevert(customError);
+		ggAVAX.deposit(100 ether, alice);
+
+		vm.expectRevert(bytes("ZERO_SHARES"));
+		ggAVAX.deposit(0 ether, alice);
+	}
+
+	function testPreviewDepositPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.previewDeposit(100 ether);
+
+		uint256 shares = ggAVAX.previewDeposit(0 ether);
+		assertEq(shares, 0);
+	}
+
+	function testDepositAVAXPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.depositAVAX{value: 100 ether}();
+
+		vm.expectRevert(TokenggAVAX.ZeroShares.selector);
+		ggAVAX.depositAVAX{value: 0 ether}();
+	}
+
+	function testMintPause() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.mint(100 ether, alice);
+
+		uint256 assets = ggAVAX.mint(0 ether, alice);
+		assertEq(assets, 0);
+	}
+
+	function testPreviewMintPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.previewMint(100 ether);
+
+		uint256 assets = ggAVAX.previewMint(0 ether);
+		assertEq(assets, 0);
+	}
+
+	function testWithdrawPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.withdraw(100 ether, alice, alice);
+
+		uint256 shares = ggAVAX.withdraw(0 ether, alice, alice);
+		assertEq(shares, 0);
+	}
+
+	function testPreviewWithdrawPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.previewWithdraw(100 ether);
+
+		uint256 shares = ggAVAX.previewWithdraw(0 ether);
+		assertEq(shares, 0);
+	}
+
+	function testWithdrawAVAXPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.startPrank(alice);
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.withdrawAVAX(100 ether);
+
+		uint256 shares = ggAVAX.withdrawAVAX(0 ether);
+		assertEq(shares, 0);
+	}
+
+	function testRedeemAVAXPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.redeemAVAX(100 ether);
+
+		vm.expectRevert(TokenggAVAX.ZeroAssets.selector);
+		ggAVAX.redeemAVAX(0 ether);
+	}
+
+	function testRedeemPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.startPrank(alice);
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.redeem(100 ether, alice, alice);
+
+		vm.expectRevert(bytes("ZERO_ASSETS"));
+		ggAVAX.redeem(0 ether, alice, alice);
+	}
+
+	function testPreviewRedeemPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		ggAVAX.previewRedeem(100 ether);
+
+		uint256 assets = ggAVAX.previewRedeem(0 ether);
+		assertEq(assets, 0);
+	}
+
+	function testMaxWithdrawPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.deal(alice, 100 ether);
+		vm.startPrank(alice);
+		wavax.deposit{value: 100 ether}();
+		wavax.approve(address(ggAVAX), 100 ether);
+
+		uint256 assets = ggAVAX.maxWithdraw(alice);
+		assertEq(assets, 0);
+	}
+
+	function testMaxRedeemPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		vm.deal(alice, 100 ether);
+		vm.startPrank(alice);
+		wavax.deposit{value: 100 ether}();
+		wavax.approve(address(ggAVAX), 100 ether);
+
+		uint256 shares = ggAVAX.maxRedeem(alice);
+		assertEq(shares, 0);
+	}
+
+	function receiveWithdrawalAVAX() external payable {}
+
 	function printState(string memory message) internal view {
 		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
 
@@ -311,26 +480,5 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		console.log("---rewards---");
 		console.log("lastRewardsAmt", ggAVAX.lastRewardsAmt() / 1 ether);
-	}
-
-	function ggAVAXStateAsserts(
-		uint256 depositAmount,
-		uint256 stakingWithdrawAmount,
-		uint256 rewardsAmount
-	) internal {
-		assertEq(ggAVAX.totalAssets(), depositAmount);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - stakingWithdrawAmount + rewardsAmount);
-	}
-
-	function testDepositPause() public {
-		vm.prank(address(ocyticus));
-		dao.pauseContract("TokenggAVAX");
-
-		bytes memory customError = abi.encodeWithSignature("ContractPaused()");
-		vm.expectRevert(customError);
-		ggAVAX.deposit(100 ether, alice);
-
-		vm.expectRevert(bytes("ZERO_SHARES"));
-		ggAVAX.deposit(0 ether, alice);
 	}
 }

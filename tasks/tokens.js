@@ -8,6 +8,7 @@ task("ggavax:sync_rewards", "")
 	.setAction(async ({ actor }) => {
 		const signer = (await getNamedAccounts())[actor];
 		const ggAVAX = await get("TokenggAVAX", signer);
+		await ggAVAX.callStatic.syncRewards();
 		tx = await ggAVAX.syncRewards();
 		await logtx(tx);
 	});

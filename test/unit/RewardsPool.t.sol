@@ -84,6 +84,11 @@ contract RewardsPoolTest is BaseTest {
 
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
 		assertEq(newSupply - curSupply, 4813467266486087907130);
+
+		skip(1676 days); // ~4.6 years
+		(curSupply, newSupply) = rewardsPool.getInflationAmt();
+		// we have 4.5 mil ether to give out. So the rewards cycle will be
+		assertEq(newSupply - curSupply, 4526664600019446164419790);
 	}
 
 	function testGetClaimingContractDistribution() public {

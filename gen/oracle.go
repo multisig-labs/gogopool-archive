@@ -30,7 +30,7 @@ var (
 
 // OracleMetaData contains all meta data concerning the Oracle contract.
 var OracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidGGPPrice\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"GGPPriceUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAX\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAXFromOneInch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"setGGPPriceInAVAX\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setOneInch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractStorage\",\"name\":\"storageAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ContractNotFound\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ContractPaused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidGGPPrice\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardianOrValidContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeMultisig\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"GGPPriceUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAX\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGGPPriceInAVAXFromOneInch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"setGGPPriceInAVAX\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setOneInch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // OracleABI is the input ABI used to generate the binding from.
@@ -442,13 +442,14 @@ func (it *OracleGGPPriceUpdatedIterator) Close() error {
 
 // OracleGGPPriceUpdated represents a GGPPriceUpdated event raised by the Oracle contract.
 type OracleGGPPriceUpdated struct {
-	Price *big.Int
-	Raw   types.Log // Blockchain specific contextual infos
+	Price     *big.Int
+	Timestamp *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterGGPPriceUpdated is a free log retrieval operation binding the contract event 0xddde4d882dc95b863fbe6e3dca12cbc84cc8fb59d1323600bf6a18fdfe8d69bd.
+// FilterGGPPriceUpdated is a free log retrieval operation binding the contract event 0x1826f74860bd5ff97bcab2245acae00a635acaa3dbc72e5c68b83ff34b1fac00.
 //
-// Solidity: event GGPPriceUpdated(uint256 indexed price)
+// Solidity: event GGPPriceUpdated(uint256 indexed price, uint256 timestamp)
 func (_Oracle *OracleFilterer) FilterGGPPriceUpdated(opts *bind.FilterOpts, price []*big.Int) (*OracleGGPPriceUpdatedIterator, error) {
 
 	var priceRule []interface{}
@@ -463,9 +464,9 @@ func (_Oracle *OracleFilterer) FilterGGPPriceUpdated(opts *bind.FilterOpts, pric
 	return &OracleGGPPriceUpdatedIterator{contract: _Oracle.contract, event: "GGPPriceUpdated", logs: logs, sub: sub}, nil
 }
 
-// WatchGGPPriceUpdated is a free log subscription operation binding the contract event 0xddde4d882dc95b863fbe6e3dca12cbc84cc8fb59d1323600bf6a18fdfe8d69bd.
+// WatchGGPPriceUpdated is a free log subscription operation binding the contract event 0x1826f74860bd5ff97bcab2245acae00a635acaa3dbc72e5c68b83ff34b1fac00.
 //
-// Solidity: event GGPPriceUpdated(uint256 indexed price)
+// Solidity: event GGPPriceUpdated(uint256 indexed price, uint256 timestamp)
 func (_Oracle *OracleFilterer) WatchGGPPriceUpdated(opts *bind.WatchOpts, sink chan<- *OracleGGPPriceUpdated, price []*big.Int) (event.Subscription, error) {
 
 	var priceRule []interface{}
@@ -505,9 +506,9 @@ func (_Oracle *OracleFilterer) WatchGGPPriceUpdated(opts *bind.WatchOpts, sink c
 	}), nil
 }
 
-// ParseGGPPriceUpdated is a log parse operation binding the contract event 0xddde4d882dc95b863fbe6e3dca12cbc84cc8fb59d1323600bf6a18fdfe8d69bd.
+// ParseGGPPriceUpdated is a log parse operation binding the contract event 0x1826f74860bd5ff97bcab2245acae00a635acaa3dbc72e5c68b83ff34b1fac00.
 //
-// Solidity: event GGPPriceUpdated(uint256 indexed price)
+// Solidity: event GGPPriceUpdated(uint256 indexed price, uint256 timestamp)
 func (_Oracle *OracleFilterer) ParseGGPPriceUpdated(log types.Log) (*OracleGGPPriceUpdated, error) {
 	event := new(OracleGGPPriceUpdated)
 	if err := _Oracle.contract.UnpackLog(event, "GGPPriceUpdated", log); err != nil {

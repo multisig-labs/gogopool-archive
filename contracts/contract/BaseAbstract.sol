@@ -37,7 +37,7 @@ abstract contract BaseAbstract {
 	}
 
 	/// @dev Verify caller is a guardian or registered network contract
-	modifier guardianOrRegisteredContracts() {
+	modifier guardianOrRegisteredContract() {
 		bool isContract = getBool(keccak256(abi.encodePacked("contract.exists", msg.sender)));
 		bool isGuardian = msg.sender == gogoStorage.getGuardian();
 
@@ -87,7 +87,7 @@ abstract contract BaseAbstract {
 	}
 
 	/// @dev Get the address of a network contract by name
-	function getContractAddress(string memory contractName) public view returns (address) {
+	function getContractAddress(string memory contractName) internal view returns (address) {
 		address contractAddress = getAddress(keccak256(abi.encodePacked("contract.address", contractName)));
 		if (contractAddress == address(0x0)) {
 			revert ContractNotFound();

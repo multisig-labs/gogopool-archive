@@ -30,7 +30,7 @@ var (
 
 // StorageMetaData contains all meta data concerning the Storage contract.
 var StorageMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidGuardianConfirmation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldGuardian\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newGuardian\",\"type\":\"address\"}],\"name\":\"GuardianChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"addUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"confirmGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"r\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"r\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGuardian\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getInt\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"r\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"r\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"value\",\"type\":\"address\"}],\"name\":\"setAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"value\",\"type\":\"bool\"}],\"name\":\"setBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"value\",\"type\":\"bytes32\"}],\"name\":\"setBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"setGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"setInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"setString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"subUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidGuardianConfirmation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidOrOutdatedContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MustBeGuardian\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldGuardian\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newGuardian\",\"type\":\"address\"}],\"name\":\"GuardianChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"addUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"confirmGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"deleteUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGuardian\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getInt\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"}],\"name\":\"getUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"newGuardian\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"value\",\"type\":\"address\"}],\"name\":\"setAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"value\",\"type\":\"bool\"}],\"name\":\"setBool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"value\",\"type\":\"bytes32\"}],\"name\":\"setBytes32\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"setGuardian\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"setInt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"setString\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"subUint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // StorageABI is the input ABI used to generate the binding from.
@@ -181,7 +181,7 @@ func (_Storage *StorageTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
 //
-// Solidity: function getAddress(bytes32 key) view returns(address r)
+// Solidity: function getAddress(bytes32 key) view returns(address)
 func (_Storage *StorageCaller) GetAddress(opts *bind.CallOpts, key [32]byte) (common.Address, error) {
 	var out []interface{}
 	err := _Storage.contract.Call(opts, &out, "getAddress", key)
@@ -198,21 +198,21 @@ func (_Storage *StorageCaller) GetAddress(opts *bind.CallOpts, key [32]byte) (co
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
 //
-// Solidity: function getAddress(bytes32 key) view returns(address r)
+// Solidity: function getAddress(bytes32 key) view returns(address)
 func (_Storage *StorageSession) GetAddress(key [32]byte) (common.Address, error) {
 	return _Storage.Contract.GetAddress(&_Storage.CallOpts, key)
 }
 
 // GetAddress is a free data retrieval call binding the contract method 0x21f8a721.
 //
-// Solidity: function getAddress(bytes32 key) view returns(address r)
+// Solidity: function getAddress(bytes32 key) view returns(address)
 func (_Storage *StorageCallerSession) GetAddress(key [32]byte) (common.Address, error) {
 	return _Storage.Contract.GetAddress(&_Storage.CallOpts, key)
 }
 
 // GetBool is a free data retrieval call binding the contract method 0x7ae1cfca.
 //
-// Solidity: function getBool(bytes32 key) view returns(bool r)
+// Solidity: function getBool(bytes32 key) view returns(bool)
 func (_Storage *StorageCaller) GetBool(opts *bind.CallOpts, key [32]byte) (bool, error) {
 	var out []interface{}
 	err := _Storage.contract.Call(opts, &out, "getBool", key)
@@ -229,14 +229,14 @@ func (_Storage *StorageCaller) GetBool(opts *bind.CallOpts, key [32]byte) (bool,
 
 // GetBool is a free data retrieval call binding the contract method 0x7ae1cfca.
 //
-// Solidity: function getBool(bytes32 key) view returns(bool r)
+// Solidity: function getBool(bytes32 key) view returns(bool)
 func (_Storage *StorageSession) GetBool(key [32]byte) (bool, error) {
 	return _Storage.Contract.GetBool(&_Storage.CallOpts, key)
 }
 
 // GetBool is a free data retrieval call binding the contract method 0x7ae1cfca.
 //
-// Solidity: function getBool(bytes32 key) view returns(bool r)
+// Solidity: function getBool(bytes32 key) view returns(bool)
 func (_Storage *StorageCallerSession) GetBool(key [32]byte) (bool, error) {
 	return _Storage.Contract.GetBool(&_Storage.CallOpts, key)
 }
@@ -274,7 +274,7 @@ func (_Storage *StorageCallerSession) GetBytes(key [32]byte) ([]byte, error) {
 
 // GetBytes32 is a free data retrieval call binding the contract method 0xa6ed563e.
 //
-// Solidity: function getBytes32(bytes32 key) view returns(bytes32 r)
+// Solidity: function getBytes32(bytes32 key) view returns(bytes32)
 func (_Storage *StorageCaller) GetBytes32(opts *bind.CallOpts, key [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _Storage.contract.Call(opts, &out, "getBytes32", key)
@@ -291,14 +291,14 @@ func (_Storage *StorageCaller) GetBytes32(opts *bind.CallOpts, key [32]byte) ([3
 
 // GetBytes32 is a free data retrieval call binding the contract method 0xa6ed563e.
 //
-// Solidity: function getBytes32(bytes32 key) view returns(bytes32 r)
+// Solidity: function getBytes32(bytes32 key) view returns(bytes32)
 func (_Storage *StorageSession) GetBytes32(key [32]byte) ([32]byte, error) {
 	return _Storage.Contract.GetBytes32(&_Storage.CallOpts, key)
 }
 
 // GetBytes32 is a free data retrieval call binding the contract method 0xa6ed563e.
 //
-// Solidity: function getBytes32(bytes32 key) view returns(bytes32 r)
+// Solidity: function getBytes32(bytes32 key) view returns(bytes32)
 func (_Storage *StorageCallerSession) GetBytes32(key [32]byte) ([32]byte, error) {
 	return _Storage.Contract.GetBytes32(&_Storage.CallOpts, key)
 }
@@ -336,7 +336,7 @@ func (_Storage *StorageCallerSession) GetGuardian() (common.Address, error) {
 
 // GetInt is a free data retrieval call binding the contract method 0xdc97d962.
 //
-// Solidity: function getInt(bytes32 key) view returns(int256 r)
+// Solidity: function getInt(bytes32 key) view returns(int256)
 func (_Storage *StorageCaller) GetInt(opts *bind.CallOpts, key [32]byte) (*big.Int, error) {
 	var out []interface{}
 	err := _Storage.contract.Call(opts, &out, "getInt", key)
@@ -353,14 +353,14 @@ func (_Storage *StorageCaller) GetInt(opts *bind.CallOpts, key [32]byte) (*big.I
 
 // GetInt is a free data retrieval call binding the contract method 0xdc97d962.
 //
-// Solidity: function getInt(bytes32 key) view returns(int256 r)
+// Solidity: function getInt(bytes32 key) view returns(int256)
 func (_Storage *StorageSession) GetInt(key [32]byte) (*big.Int, error) {
 	return _Storage.Contract.GetInt(&_Storage.CallOpts, key)
 }
 
 // GetInt is a free data retrieval call binding the contract method 0xdc97d962.
 //
-// Solidity: function getInt(bytes32 key) view returns(int256 r)
+// Solidity: function getInt(bytes32 key) view returns(int256)
 func (_Storage *StorageCallerSession) GetInt(key [32]byte) (*big.Int, error) {
 	return _Storage.Contract.GetInt(&_Storage.CallOpts, key)
 }
@@ -398,7 +398,7 @@ func (_Storage *StorageCallerSession) GetString(key [32]byte) (string, error) {
 
 // GetUint is a free data retrieval call binding the contract method 0xbd02d0f5.
 //
-// Solidity: function getUint(bytes32 key) view returns(uint256 r)
+// Solidity: function getUint(bytes32 key) view returns(uint256)
 func (_Storage *StorageCaller) GetUint(opts *bind.CallOpts, key [32]byte) (*big.Int, error) {
 	var out []interface{}
 	err := _Storage.contract.Call(opts, &out, "getUint", key)
@@ -415,16 +415,47 @@ func (_Storage *StorageCaller) GetUint(opts *bind.CallOpts, key [32]byte) (*big.
 
 // GetUint is a free data retrieval call binding the contract method 0xbd02d0f5.
 //
-// Solidity: function getUint(bytes32 key) view returns(uint256 r)
+// Solidity: function getUint(bytes32 key) view returns(uint256)
 func (_Storage *StorageSession) GetUint(key [32]byte) (*big.Int, error) {
 	return _Storage.Contract.GetUint(&_Storage.CallOpts, key)
 }
 
 // GetUint is a free data retrieval call binding the contract method 0xbd02d0f5.
 //
-// Solidity: function getUint(bytes32 key) view returns(uint256 r)
+// Solidity: function getUint(bytes32 key) view returns(uint256)
 func (_Storage *StorageCallerSession) GetUint(key [32]byte) (*big.Int, error) {
 	return _Storage.Contract.GetUint(&_Storage.CallOpts, key)
+}
+
+// NewGuardian is a free data retrieval call binding the contract method 0x19859847.
+//
+// Solidity: function newGuardian() view returns(address)
+func (_Storage *StorageCaller) NewGuardian(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _Storage.contract.Call(opts, &out, "newGuardian")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// NewGuardian is a free data retrieval call binding the contract method 0x19859847.
+//
+// Solidity: function newGuardian() view returns(address)
+func (_Storage *StorageSession) NewGuardian() (common.Address, error) {
+	return _Storage.Contract.NewGuardian(&_Storage.CallOpts)
+}
+
+// NewGuardian is a free data retrieval call binding the contract method 0x19859847.
+//
+// Solidity: function newGuardian() view returns(address)
+func (_Storage *StorageCallerSession) NewGuardian() (common.Address, error) {
+	return _Storage.Contract.NewGuardian(&_Storage.CallOpts)
 }
 
 // AddUint is a paid mutator transaction binding the contract method 0xadb353dc.

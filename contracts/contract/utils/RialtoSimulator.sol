@@ -78,6 +78,8 @@ contract RialtoSimulator {
 
 	//  Every dao.getRewardsCycleSeconds(), this loop runs which distributes GGP rewards to eligible stakers
 	function processGGPRewards() public {
+		bool addrPaid = false;
+		address[2] memory investorAddress = [0x000000000000000000000000000000000005000A, 0x0000000000000000000000000000000000050009];
 		rewardsPool.startRewardsCycle();
 
 		Staking.Staker[] memory allStakers = staking.getStakers(0, 0);
@@ -86,13 +88,29 @@ contract RialtoSimulator {
 		for (uint256 i = 0; i < allStakers.length; i++) {
 			if (nopClaim.isEligible(allStakers[i].stakerAddr)) {
 				uint256 effectiveGGPStaked = staking.getEffectiveGGPStaked(allStakers[i].stakerAddr);
+				for (uint256 p = 0; p < investorAddress.length; p++) {
+					if (allStakers[i].stakerAddr == investorAddress[p]) {
+						// thier staked ggp will be cut in half for the effective ggp staked
+						effectiveGGPStaked = staking.getEffectiveGGPStaked(allStakers[i].stakerAddr) / 2;
+					}
+				}
 				totalEligibleStakedGGP = totalEligibleStakedGGP + effectiveGGPStaked;
 			}
 		}
 
 		for (uint256 i = 0; i < allStakers.length; i++) {
 			if (nopClaim.isEligible(allStakers[i].stakerAddr)) {
-				nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, totalEligibleStakedGGP);
+				for (uint256 p = 0; p < investorAddress.length; p++) {
+					if (allStakers[i].stakerAddr == investorAddress[p]) {
+						// the effective ggp staked will be doubled to make sure they only get half rewards
+						nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, (totalEligibleStakedGGP * 2));
+						addrPaid = true;
+					}
+				}
+				if (!addrPaid) {
+					nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, totalEligibleStakedGGP);
+				}
+				addrPaid = false;
 			}
 		}
 	}

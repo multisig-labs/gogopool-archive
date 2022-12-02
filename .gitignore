@@ -23,6 +23,7 @@ _private
 artifacts-forge
 broadcast
 out
+lcov.info
 
 # IntelliJ
 .idea

@@ -111,7 +111,7 @@ contract Vault is Base, ReentrancyGuard {
 		string memory networkContractName,
 		ERC20 tokenContract,
 		uint256 amount
-	) external guardianOrRegisteredContracts {
+	) external guardianOrRegisteredContract {
 		// Valid Amount?
 		if (amount == 0) {
 			revert InvalidAmount();

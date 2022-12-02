@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 // hardhat ensures hre is always in scope, no need to require
+const { task } = require("hardhat/config");
 const {
 	get,
 	overrides,
@@ -8,10 +9,77 @@ const {
 	nodeID,
 	getNamedAccounts,
 	getMinipoolsFor,
+	hash,
 	logMinipools,
 	parseDelta,
 	now,
+	nodeIDToHex,
 } = require("./lib/utils");
+
+task("minipool:create-all", "")
+	.addParam("actor", "Account used to send tx")
+	.setAction(async ({ actor }) => {
+		const nodeIDs = [
+			"NodeID-KxYN51D4Hb5SoMNGWNW1wGBNH4SrjHpP3",
+			"NodeID-A4YhHAFqWwV4KUE6vE7H642JTcMeMHdc4",
+			"NodeID-BV7J8M1sfd1psdv8HUVXgmV3J5kYKCWwj",
+			"NodeID-9RFwDyrF4ZnPWMYJZvkCpXJJTggdzDnGH",
+			"NodeID-GyAJjJqPmzAAEQ9L45mYNrQaabSz9UjDP",
+			"NodeID-D1nyVPZoC8BZvjhfUq4jGa8sFQrMRXUuZ",
+			"NodeID-KYv4pxV3ojKvb4HjDdozsAMffSkZ388kn",
+			"NodeID-QJ7By6xr6o1KrQqoxFFguncPNNPULDt5Z",
+			"NodeID-BD2Z9YFPZkHu2VDLGCm9fYLahkwvn4kum",
+			"NodeID-54FxTyMmPKCDMEZz3AouCi4LL9yZKyM77",
+			"NodeID-9ZEJWemTBohJZY64E8Xgq85S4rHrZ4sQj",
+		];
+
+		// for (node of nodeIDs) {
+		// 	console.log(nodeIDToHex(node));
+		// }
+		// return;
+
+		const amt = 100_000;
+
+		const signer = (await getNamedAccounts())[actor];
+		const minipoolManager = await get("MinipoolManager", signer);
+		// const staking = await get("Staking", signer);
+		// const ggp = await get("TokenGGP", signer);
+
+		// await hre.run("debug:topup_actor_balance", { actor, amt });
+		// await hre.run("ggp:deal", { recip: actor, amt: amt });
+
+		// let tx = await ggp.approve(
+		// 	staking.address,
+		// 	ethers.utils.parseEther(amt.toString())
+		// );
+		// await tx.wait();
+		// tx = await staking.stakeGGP(ethers.utils.parseEther(amt.toString()));
+		// await tx.wait();
+
+		for (const node of nodeIDs) {
+			console.log(node);
+			try {
+				await minipoolManager.callStatic.createMinipool(
+					nodeID(node),
+					parseDelta("2m"),
+					20_000,
+					hre.ethers.utils.parseEther("1000"),
+					{ ...overrides, value: hre.ethers.utils.parseEther("1000") }
+				);
+				tx = await minipoolManager.createMinipool(
+					nodeID(node),
+					parseDelta("2m"),
+					20_000,
+					hre.ethers.utils.parseEther("1000"),
+					{ ...overrides, value: hre.ethers.utils.parseEther("1000") }
+				);
+				await logtx(tx);
+				log(`Minipool created for node ${node}: ${nodeID(node)}`);
+			} catch (err) {
+				log("ERROR", err);
+			}
+		}
+	});
 
 task("minipool:list", "List all minipools").setAction(async () => {
 	for (let status = 0; status <= 6; status++) {
@@ -186,6 +254,16 @@ task("minipool:getIndexOf", "")
 		console.log("index", i);
 	});
 
+task("minipool:getMinipoolByNodeID", "")
+	.addParam("node", "id of node")
+	.setAction(async ({ node }) => {
+		const minipoolManager = await get("MinipoolManager");
+		const mp = await minipoolManager.getMinipoolByNodeID(nodeID(node));
+		console.log("node id", nodeID(node));
+		console.log("mp", mp);
+		logMinipools([mp]);
+	});
+
 task("minipool:recordStakingEnd", "")
 	.addParam("actor", "Account used to send tx")
 	.addParam("node", "NodeID")
@@ -269,6 +347,20 @@ task("minipool:calculate_slash", "")
 		);
 	});
 
+task("minipool:set_multisig", "switch a node to a specified multisig or EOA")
+	.addParam("node")
+	.addParam("addr")
+	.setAction(async ({ node, addr }) => {
+		const signer = (await getNamedAccounts())["deployer"];
+		const store = await get("Storage", signer);
+		const minipoolManager = await get("MinipoolManager", signer);
+		const i = await minipoolManager.getIndexOf(nodeID(node));
+		const tx = await store.setAddress(
+			hash(["string", "int", "string"], ["minipool.item", i, ".multisigAddr"]),
+			ethers.utils.getAddress(addr)
+		);
+		await logtx(tx);
+	});
 // task("minipool:queue", "List all minipools in the queue").setAction(
 // 	async () => {
 // 		const MINIPOOL_QUEUE_KEY = hash(["string"], ["minipoolQueue"]);
