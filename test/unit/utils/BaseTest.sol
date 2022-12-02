@@ -174,6 +174,16 @@ abstract contract BaseTest is Test {
 		s.setString(keccak256(abi.encodePacked("contract.name", addr)), string(name));
 	}
 
+	function unregisterContract(
+		Storage s,
+		bytes memory name,
+		address addr
+	) internal {
+		s.deleteBool(keccak256(abi.encodePacked("contract.exists", addr)));
+		s.deleteAddress(keccak256(abi.encodePacked("contract.address", name)));
+		s.deleteString(keccak256(abi.encodePacked("contract.name", addr)));
+	}
+
 	function getActor(string memory name) public returns (address) {
 		actorCounter++;
 		address addr = address(uint160(0x50000 + actorCounter));

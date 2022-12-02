@@ -75,24 +75,18 @@ contract Vault is Base, ReentrancyGuard {
 
 	/// @notice Transfer AVAX from one contract to another
 	/// @dev No funds actually move, just bookeeping
-	/// @param fromContractName Name of the contract funds are being transferred from
 	/// @param toContractName Name of the contract fucns are being transferred to
 	/// @param amount How many AVAX to be transferred
-	function transferAVAX(
-		string memory fromContractName,
-		string memory toContractName,
-		uint256 amount
-	) external onlyRegisteredNetworkContract {
+	function transferAVAX(string memory toContractName, uint256 amount) external onlyRegisteredNetworkContract {
 		// Valid Amount?
 		if (amount == 0) {
 			revert InvalidAmount();
 		}
+		// Make sure the contract is valid, will revert if not
+		getContractAddress(toContractName);
+		string memory fromContractName = getContractName(msg.sender);
 		// Emit transfer event
 		emit AVAXTransfer(fromContractName, toContractName, amount);
-
-		// Make sure the contracts are valid, will revert if not
-		getContractAddress(fromContractName);
-		getContractAddress(toContractName);
 		// Verify there are enough funds
 		if (avaxBalances[fromContractName] < amount) {
 			revert InsufficientContractBalance();

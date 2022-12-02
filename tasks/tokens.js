@@ -3,6 +3,24 @@
 const { task } = require("hardhat/config");
 const { overrides, get, getNamedAccounts, logtx } = require("./lib/utils");
 
+task("avax:deal")
+	.addParam("addr", "", "")
+	.addParam("recip", "", "")
+	.addParam("amt", "", 0, types.int)
+	.setAction(async ({ addr, recip, amt }) => {
+		amt = ethers.utils.parseEther(amt.toString());
+		if (addr == "") {
+			addr = (await getNamedAccounts())[recip];
+		}
+
+		const deployer = (await getNamedAccounts()).deployer;
+		const tx = await deployer.sendTransaction({
+			to: addr,
+			value: amt,
+		});
+		await logtx(tx);
+	});
+
 task("ggavax:sync_rewards", "")
 	.addParam("actor", "Account used to send tx")
 	.setAction(async ({ actor }) => {
@@ -91,19 +109,17 @@ task("wavax:balance", "Balance of WAVAX contract").setAction(async () => {
 });
 
 task("ggp:deal")
-	.addParam("recip", "")
+	.addParam("recip", "", "")
+	.addParam("addr", "", "")
 	.addParam("amt", "", 0, types.int)
-	.setAction(async ({ recip, amt }) => {
+	.setAction(async ({ recip, amt, addr }) => {
 		amt = ethers.utils.parseEther(amt.toString());
-		recip = (await getNamedAccounts())[recip];
+		if (addr == "") {
+			addr = (await getNamedAccounts())[recip].address;
+		}
 
 		const ggp = await get("TokenGGP");
-		let tx = await ggp.transfer(recip.address, amt);
-		await logtx(tx);
-
-		const minipoolManager = await get("MinipoolManager");
-		const ggpAsRecip = await get("TokenGGP", recip);
-		tx = await ggpAsRecip.approve(minipoolManager.address, amt);
+		let tx = await ggp.transfer(addr, amt);
 		await logtx(tx);
 	});
 

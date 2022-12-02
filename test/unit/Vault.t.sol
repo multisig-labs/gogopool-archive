@@ -47,11 +47,23 @@ contract VaultTest is BaseTest, IWithdrawer {
 		assertEq(vault.balanceOf("VaultTest"), 1 ether);
 
 		vm.expectRevert(Vault.InvalidAmount.selector);
-		vault.transferAVAX("VaultTest", "MinipoolManager", 0 ether);
+		vault.transferAVAX("MinipoolManager", 0 ether);
 
-		vault.transferAVAX("VaultTest", "MinipoolManager", 1 ether);
+		vault.transferAVAX("MinipoolManager", 1 ether);
 		assertEq(vault.balanceOf("VaultTest"), 0 ether);
 		assertEq(vault.balanceOf("MinipoolManager"), 1 ether);
+	}
+
+	function testTransferAvaxNotRegisteredContract() public {
+		registerContract(store, "VaultTest", address(this));
+		vm.deal(address(this), 1 ether);
+		vault.depositAVAX{value: 1 ether}();
+		assertEq(vault.balanceOf("VaultTest"), 1 ether);
+
+		unregisterContract(store, "VaultTest", address(this));
+
+		vm.expectRevert(BaseAbstract.InvalidOrOutdatedContract.selector);
+		vault.transferAVAX("MinipoolManager", 1 ether);
 	}
 
 	function testDepositTokenFromRegisteredContract() public {
