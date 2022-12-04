@@ -60,7 +60,9 @@ contract VaultTest is BaseTest, IWithdrawer {
 		vault.depositAVAX{value: 1 ether}();
 		assertEq(vault.balanceOf("VaultTest"), 1 ether);
 
+		vm.startPrank(address(dao));
 		unregisterContract(store, "VaultTest", address(this));
+		vm.stopPrank();
 
 		vm.expectRevert(BaseAbstract.InvalidOrOutdatedContract.selector);
 		vault.transferAVAX("MinipoolManager", 1 ether);
