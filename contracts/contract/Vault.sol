@@ -4,6 +4,8 @@ pragma solidity 0.8.17;
 import "./Base.sol";
 import {IWithdrawer} from "../interface/IWithdrawer.sol";
 import {Storage} from "./Storage.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
+import {WAVAX} from "./utils/WAVAX.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
@@ -20,6 +22,7 @@ contract Vault is Base, ReentrancyGuard {
 
 	error InsufficientContractBalance();
 	error InvalidAmount();
+	error InvalidToken();
 	error InvalidNetworkContract();
 	error TokenTransferFailed();
 	error VaultTokenWithdrawalFailed();
@@ -33,6 +36,7 @@ contract Vault is Base, ReentrancyGuard {
 
 	mapping(string => uint256) private avaxBalances;
 	mapping(bytes32 => uint256) private tokenBalances;
+	mapping(address => bool) private allowedTokens;
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
@@ -112,6 +116,10 @@ contract Vault is Base, ReentrancyGuard {
 		}
 		// Make sure the network contract is valid (will revert if not)
 		getContractAddress(networkContractName);
+		// Make sure we accept this token
+		if (!allowedTokens[address(tokenContract)]) {
+			revert InvalidToken();
+		}
 		// Get contract key
 		bytes32 contractKey = keccak256(abi.encodePacked(networkContractName, address(tokenContract)));
 		// Emit token transfer event
@@ -191,5 +199,13 @@ contract Vault is Base, ReentrancyGuard {
 	/// @param tokenAddress address of the ERC20 token
 	function balanceOfToken(string memory networkContractName, ERC20 tokenAddress) external view returns (uint256) {
 		return tokenBalances[keccak256(abi.encodePacked(networkContractName, tokenAddress))];
+	}
+
+	function addAllowedToken(address tokenAddress) external onlyGuardian {
+		allowedTokens[tokenAddress] = true;
+	}
+
+	function removeAllowedToken(address tokenAddress) external onlyGuardian {
+		allowedTokens[tokenAddress] = false;
 	}
 }

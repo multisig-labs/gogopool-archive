@@ -83,6 +83,8 @@ abstract contract BaseTest is Test {
 		ggp = new TokenGGP();
 		registerContract(store, "TokenGGP", address(ggp));
 
+		addAllowedTokens(address(ggp));
+
 		wavax = new WAVAX();
 
 		ggAVAXImpl = new TokenggAVAX();
@@ -161,6 +163,10 @@ abstract contract BaseTest is Test {
 		// Staking
 		store.setUint(keccak256("ProtocolDAO.MaxCollateralizationRatio"), 1.5 ether);
 		store.setUint(keccak256("ProtocolDAO.MinCollateralizationRatio"), 0.1 ether);
+	}
+
+	function addAllowedTokens(address tokenAddress) internal {
+		vault.addAllowedToken(tokenAddress);
 	}
 
 	// Register a contract in Storage

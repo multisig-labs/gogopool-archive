@@ -21,6 +21,7 @@ task(
 	"Run after a local deploy to init necessary configs"
 ).setAction(async () => {
 	const oneinch = await get("OneInchMock");
+	await hre.run("vault:register_allowed_tokens");
 	await hre.run("oracle:set_oneinch", { addr: oneinch.address });
 	await hre.run("debug:topup_actor_balances", { amt: 50000 });
 	await hre.run("ggp:deal", { recip: "nodeOp1", amt: 10000 });

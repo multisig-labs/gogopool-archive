@@ -112,4 +112,30 @@ contract VaultTest is BaseTest, IWithdrawer {
 		vm.expectRevert(BaseAbstract.ContractNotFound.selector);
 		vault.transferToken("MinipoolManager", ggp, 1 ether);
 	}
+
+	function testAllowedTokens() public {
+		vm.startPrank(address(123));
+		vm.expectRevert(BaseAbstract.MustBeGuardianOrValidContract.selector);
+		vault.depositToken("Staking", ggp, 0);
+		vm.stopPrank();
+
+		vm.startPrank(guardian);
+		vault.removeAllowedToken(address(ggp)); //since it is registered upon setup
+
+		vm.expectRevert(Vault.InvalidAmount.selector);
+		vault.depositToken("Staking", ggp, 0);
+
+		vm.expectRevert(Vault.InvalidToken.selector);
+		vault.depositToken("Staking", ggp, 10 ether);
+
+		vault.addAllowedToken(address(ggp));
+
+		ggp.approve(address(vault), 10 ether);
+		vault.depositToken("Staking", ggp, 10 ether);
+
+		vault.removeAllowedToken(address(ggp));
+
+		vm.expectRevert(Vault.InvalidToken.selector);
+		vault.depositToken("Staking", ggp, 10 ether);
+	}
 }
