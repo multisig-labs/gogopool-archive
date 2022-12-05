@@ -38,6 +38,7 @@ contract Ocyticus is Base {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		dao.pauseContract("TokenggAVAX");
 		dao.pauseContract("MinipoolManager");
+		dao.pauseContract("Staking");
 		disableAllMultisigs();
 	}
 
@@ -47,6 +48,7 @@ contract Ocyticus is Base {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		dao.resumeContract("TokenggAVAX");
 		dao.resumeContract("MinipoolManager");
+		dao.resumeContract("Staking");
 	}
 
 	/// @notice Disable every multisig in the protocol
