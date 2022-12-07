@@ -17,11 +17,14 @@ import {Storage} from "./Storage.sol";
 contract MultisigManager is Base {
 	error MultisigAlreadyRegistered();
 	error MultisigNotFound();
+	error MultisigLimitReached();
 	error NoEnabledMultisigFound();
 
 	event DisabledMultisig(address indexed multisig, address actor);
 	event EnabledMultisig(address indexed multisig, address actor);
 	event RegisteredMultisig(address indexed multisig, address actor);
+
+	uint256 public constant MULTISIG_LIMIT = 10;
 
 	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
@@ -35,6 +38,10 @@ contract MultisigManager is Base {
 			revert MultisigAlreadyRegistered();
 		}
 		uint256 index = getUint(keccak256("multisig.count"));
+		if (index >= MULTISIG_LIMIT) {
+			revert MultisigLimitReached();
+		}
+
 		setAddress(keccak256(abi.encodePacked("multisig.item", index, ".address")), addr);
 
 		// The index is stored 1 greater than the actual value. The 1 is subtracted in getIndexOf().

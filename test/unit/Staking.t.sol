@@ -191,11 +191,25 @@ contract StakingTest is BaseTest {
 	function testSetRewardsStartTime() public {
 		vm.prank(nodeOp1);
 		staking.stakeGGP(200 ether);
-		assert(staking.getRewardsStartTime(address(nodeOp1)) == 0);
+		assertEq(staking.getRewardsStartTime(address(nodeOp1)), 0);
+
+		uint256 timestamp = 1666291634;
+		vm.warp(timestamp);
 
 		vm.prank(address(minipoolMgr));
-		staking.setRewardsStartTime(address(nodeOp1), 1666291634);
-		assert(staking.getRewardsStartTime(address(nodeOp1)) == 1666291634);
+		staking.setRewardsStartTime(address(nodeOp1), block.timestamp);
+		assertEq(staking.getRewardsStartTime(address(nodeOp1)), timestamp);
+	}
+
+	function testSetRewardsStartTimeInvalid() public {
+		vm.prank(nodeOp1);
+		staking.stakeGGP(200 ether);
+		assert(staking.getRewardsStartTime(address(nodeOp1)) == 0);
+
+		vm.startPrank(address(minipoolMgr));
+		vm.expectRevert(Staking.InvalidRewardsStartTime.selector);
+		staking.setRewardsStartTime(address(nodeOp1), block.timestamp + 1);
+		vm.stopPrank();
 	}
 
 	function testGetGGPRewards() public {

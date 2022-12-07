@@ -19,6 +19,7 @@ contract RewardsPool is Base {
 	error IncorrectRewardsDistribution();
 	error UnableToStartRewardsCycle();
 	error ContractHasNotBeenInitialized();
+	error MaximumTokensReached();
 
 	event GGPInflated(uint256 newTokens);
 	event NewRewardsCycleStarted(uint256 totalRewardsAmt);
@@ -82,6 +83,12 @@ contract RewardsPool is Base {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationIntervalElapsedSeconds = (block.timestamp - getInflationIntervalStartTime());
 		(uint256 currentTotalSupply, uint256 newTotalSupply) = getInflationAmt();
+
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
+		if (newTotalSupply > ggp.totalSupply()) {
+			revert MaximumTokensReached();
+		}
+
 		uint256 newTokens = newTotalSupply - currentTotalSupply;
 
 		emit GGPInflated(newTokens);

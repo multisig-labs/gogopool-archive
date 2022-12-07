@@ -56,7 +56,7 @@ contract MultisigManagerTest is BaseTest {
 		multisigMgr.enableMultisig(rialto1);
 
 		int256 index = multisigMgr.getIndexOf(rialto1);
-		(address a, bool enabled) = multisigMgr.getMultisig(uint256(index));
+		(, bool enabled) = multisigMgr.getMultisig(uint256(index));
 
 		assertEq(enabled, true);
 	}
@@ -100,5 +100,19 @@ contract MultisigManagerTest is BaseTest {
 		vm.stopPrank();
 		address ms = multisigMgr.requireNextActiveMultisig();
 		assertEq(rialto2, ms);
+	}
+
+	function testMultisigLimit() public {
+		uint256 count = multisigMgr.getCount();
+		uint256 limit = multisigMgr.MULTISIG_LIMIT();
+		vm.startPrank(guardian);
+		for (uint256 i = 0; i < limit - count; i++) {
+			multisigMgr.registerMultisig(randAddress());
+		}
+
+		assertEq(multisigMgr.getCount(), limit);
+
+		vm.expectRevert(MultisigManager.MultisigLimitReached.selector);
+		multisigMgr.registerMultisig(randAddress());
 	}
 }

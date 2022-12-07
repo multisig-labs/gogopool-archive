@@ -91,6 +91,19 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(newSupply - curSupply, 4526664600019446164419790);
 	}
 
+	function testMaxInflation() public {
+		// skip 54 months ahead and start rewards cycle
+		skip(142006867);
+		rewardsPool.startRewardsCycle();
+		uint256 tcs = dao.getTotalGGPCirculatingSupply();
+		assertLt(tcs, 22_500_000 ether);
+
+		// one more month inflates more than 22.5 million tokens
+		skip(2629756);
+		vm.expectRevert(RewardsPool.MaximumTokensReached.selector);
+		rewardsPool.startRewardsCycle();
+	}
+
 	function testGetClaimingContractDistribution() public {
 		assert(rewardsPool.getClaimingContractDistribution("ClaimProtocolDAO") == 0);
 		assert(rewardsPool.getClaimingContractDistribution("ClaimNodeOp") == 0);

@@ -63,6 +63,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	error InsufficientAVAXForMinipoolCreation();
 	error InvalidAmount();
 	error InvalidAVAXAssignmentRequest();
+	error InvalidStartTime();
 	error InvalidEndTime();
 	error InvalidMultisigAddress();
 	error InvalidNodeID();
@@ -345,6 +346,9 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	) external {
 		int256 minipoolIndex = onlyValidMultisig(nodeID);
 		requireValidStateTransition(minipoolIndex, MinipoolStatus.Staking);
+		if (startTime > block.timestamp) {
+			revert InvalidStartTime();
+		}
 
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Staking));
 		setBytes32(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".txID")), txID);
@@ -442,7 +446,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		if (staking.getRewardsStartTime(mp.owner) == 0) {
 			// Edge case where calculateAndDistributeRewards has reset their rewards time even though they are still cycling
-			// So we re-set it here to their initial start time for thiis minipool
+			// So we re-set it here to their initial start time for this minipool
 			staking.setRewardsStartTime(mp.owner, mp.initialStartTime);
 		}
 

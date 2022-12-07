@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
 import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
+import {Staking} from "../../contracts/contract/Staking.sol";
 
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
@@ -13,10 +14,6 @@ contract ClaimNodeOpTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 		distributeInitialSupply();
-
-		skip(dao.getRewardsCycleSeconds());
-		rewardsPool.startRewardsCycle();
-		vm.stopPrank();
 	}
 
 	function distributeInitialSupply() public {
@@ -45,6 +42,8 @@ contract ClaimNodeOpTest is BaseTest {
 	}
 
 	function testGetRewardsCycleTotal() public {
+		skip(dao.getRewardsCycleSeconds());
+		rewardsPool.startRewardsCycle();
 		assertEq(nopClaim.getRewardsCycleTotal(), 47247734062418964737913);
 	}
 
@@ -82,7 +81,33 @@ contract ClaimNodeOpTest is BaseTest {
 		assertTrue(nopClaim.isEligible(nodeOp2));
 	}
 
+	function testCalculateAndDistributeRewardsInvalidStaker() public {
+		address invalidStaker = getActor("invalid actor");
+		vm.startPrank(rialto);
+		vm.expectRevert(Staking.StakerNotFound.selector);
+		nopClaim.calculateAndDistributeRewards(invalidStaker, 200 ether);
+		vm.stopPrank();
+	}
+
+	function testCalculateAndDistributeRewardsZeroCycleCount() public {
+		uint256 ggpAmt = 100 ether;
+		uint256 avaxAmt = 1000 ether;
+		address nodeOp = getActorWithTokens("nodeOp", uint128(avaxAmt), uint128(ggpAmt));
+
+		vm.startPrank(nodeOp);
+		ggp.approve(address(staking), ggpAmt);
+		staking.stakeGGP(ggpAmt);
+		createMinipool(avaxAmt, avaxAmt, 2 weeks);
+		vm.stopPrank();
+
+		vm.startPrank(rialto);
+		vm.expectRevert(ClaimNodeOp.RewardsCycleNotStarted.selector);
+		nopClaim.calculateAndDistributeRewards(nodeOp, ggpAmt);
+	}
+
 	function testCalculateAndDistributeRewards() public {
+		skip(dao.getRewardsCycleSeconds());
+		rewardsPool.startRewardsCycle();
 		address nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), MAX_AMT);
@@ -112,6 +137,8 @@ contract ClaimNodeOpTest is BaseTest {
 	}
 
 	function testClaimAndRestake() public {
+		skip(dao.getRewardsCycleSeconds());
+		rewardsPool.startRewardsCycle();
 		address nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), MAX_AMT);

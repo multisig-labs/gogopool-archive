@@ -34,6 +34,7 @@ contract Staking is Base {
 
 	error CannotWithdrawUnder150CollateralizationRatio();
 	error InsufficientBalance();
+	error InvalidRewardsStartTime();
 	error StakerNotFound();
 
 	event GGPStaked(address indexed from, uint256 amount);
@@ -203,6 +204,10 @@ contract Staking is Base {
 	// TODO cant use onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) since we also call from increaseMinipoolCount. Wat do?
 	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
+		if (time > block.timestamp) {
+			revert InvalidRewardsStartTime();
+		}
+
 		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")), time);
 	}
 

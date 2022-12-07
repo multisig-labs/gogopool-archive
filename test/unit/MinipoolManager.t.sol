@@ -325,6 +325,34 @@ contract MinipoolManagerTest is BaseTest {
 		assertTrue(mp1Updated.startTime != 0);
 	}
 
+	function testRecordStakingStartInvalidStartTime() public {
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = 1000 ether;
+		uint256 avaxAssignmentRequest = 1000 ether;
+		uint128 ggpStakeAmt = 200 ether;
+		uint256 liquidStakerAmt = 1200 ether;
+
+		vm.startPrank(nodeOp);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, avaxAssignmentRequest, duration);
+		vm.stopPrank();
+
+		address liqStaker1 = getActorWithTokens("liqStaker1", uint128(liquidStakerAmt), 0);
+		vm.prank(liqStaker1);
+		ggAVAX.depositAVAX{value: liquidStakerAmt}();
+
+		vm.prank(rialto);
+		minipoolMgr.claimAndInitiateStaking(mp1.nodeID);
+
+		bytes32 txID = keccak256("txid");
+
+		vm.startPrank(rialto);
+		vm.expectRevert(MinipoolManager.InvalidStartTime.selector);
+		minipoolMgr.recordStakingStart(mp1.nodeID, txID, block.timestamp + 1);
+		vm.stopPrank();
+	}
+
 	function testRecordStakingEnd() public {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = 1000 ether;

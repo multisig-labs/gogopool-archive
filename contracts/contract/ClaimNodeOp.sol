@@ -20,6 +20,7 @@ contract ClaimNodeOp is Base {
 	error InvalidAmount();
 	error NoRewardsToClaim();
 	error RewardsAlreadyDistributedToStaker(address);
+	error RewardsCycleNotStarted();
 
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
@@ -54,7 +55,13 @@ contract ClaimNodeOp is Base {
 	/// @dev Rialto will call this
 	function calculateAndDistributeRewards(address stakerAddr, uint256 totalEligibleGGPStaked) external onlyMultisig {
 		Staking staking = Staking(getContractAddress("Staking"));
+		staking.requireValidStaker(stakerAddr);
+
 		RewardsPool rewardsPool = RewardsPool(getContractAddress("RewardsPool"));
+		if (rewardsPool.getRewardsCycleCount() == 0) {
+			revert RewardsCycleNotStarted();
+		}
+
 		if (staking.getLastRewardsCycleCompleted(stakerAddr) == rewardsPool.getRewardsCycleCount()) {
 			revert RewardsAlreadyDistributedToStaker(stakerAddr);
 		}
