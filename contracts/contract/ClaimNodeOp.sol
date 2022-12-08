@@ -96,6 +96,8 @@ contract ClaimNodeOp is Base {
 			revert InvalidAmount();
 		}
 
+		staking.decreaseGGPRewards(msg.sender, ggpRewards);
+
 		Vault vault = Vault(getContractAddress("Vault"));
 		uint256 restakeAmt = ggpRewards - claimAmt;
 		if (restakeAmt > 0) {
@@ -108,7 +110,6 @@ contract ClaimNodeOp is Base {
 			vault.withdrawToken(msg.sender, ggp, claimAmt);
 		}
 
-		staking.decreaseGGPRewards(msg.sender, ggpRewards);
 		emit GGPRewardsClaimed(msg.sender, claimAmt);
 	}
 }
