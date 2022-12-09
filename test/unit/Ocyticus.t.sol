@@ -78,7 +78,7 @@ contract OcyticusTest is BaseTest {
 		multisigMgr.enableMultisig(alice);
 		vm.stopPrank();
 
-		int256 rialtoIndex = multisigMgr.getIndexOf(rialto);
+		int256 rialtoIndex = multisigMgr.getIndexOf(address(rialto));
 		int256 aliceIndex = multisigMgr.getIndexOf(alice);
 		assert(rialtoIndex != -1);
 		assert(aliceIndex != -1);

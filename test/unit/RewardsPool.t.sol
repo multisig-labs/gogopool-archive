@@ -147,7 +147,7 @@ contract RewardsPoolTest is BaseTest {
 		assertGt(rewardsCycleTotal, 0);
 		assertEq(vault.balanceOfToken("ClaimNodeOp", ggp), rewardsCycleTotal.mulWadDown(claimNodeOpPerc));
 		assertEq(vault.balanceOfToken("ClaimProtocolDAO", ggp), rewardsCycleTotal.mulWadDown(claimProtocolPerc));
-		assertEq(ggp.balanceOf(rialto), rewardsCycleTotal.mulWadDown(multisigPerc));
+		assertEq(ggp.balanceOf(address(rialto)), rewardsCycleTotal.mulWadDown(multisigPerc));
 
 		assertEq(rewardsPool.getRewardsCycleCount(), 1);
 	}
@@ -180,7 +180,7 @@ contract RewardsPoolTest is BaseTest {
 		uint256 multisigPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"));
 		uint256 amtPerMultisig = rewardsCycleTotal.mulWadDown(multisigPerc) / 3;
 
-		assertEq(ggp.balanceOf(rialto), amtPerMultisig);
+		assertEq(ggp.balanceOf(address(rialto)), amtPerMultisig);
 		assertEq(ggp.balanceOf(multisig1), amtPerMultisig);
 		assertEq(ggp.balanceOf(multisig2), amtPerMultisig);
 		assertEq(ggp.balanceOf(multisig3), 0);

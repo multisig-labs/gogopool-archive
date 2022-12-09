@@ -6,6 +6,8 @@ import {MinipoolManager} from "../MinipoolManager.sol";
 import {ClaimNodeOp} from "../ClaimNodeOp.sol";
 import {RewardsPool} from "../RewardsPool.sol";
 import {Staking} from "../Staking.sol";
+import {Oracle} from "../Oracle.sol";
+import {TokenggAVAX} from "../tokens/TokenggAVAX.sol";
 
 // import {console} from "forge-std/console.sol";
 
@@ -14,6 +16,8 @@ import {Staking} from "../Staking.sol";
 // C and P chains, and issue validation txs, but by using this contract we can operate the
 // protocol entirely on HardHat and not have to care about the Avalanche-specific aspects.
 
+// This contract address is registered as a valid multisig in the tests
+
 contract RialtoSimulator {
 	error UnableToClaim();
 
@@ -21,20 +25,34 @@ contract RialtoSimulator {
 	ClaimNodeOp internal nopClaim;
 	RewardsPool internal rewardsPool;
 	Staking internal staking;
+	Oracle internal oracle;
+	TokenggAVAX internal ggAVAX;
 
 	constructor(
 		MinipoolManager minipoolMgr_,
 		ClaimNodeOp nopClaim_,
 		RewardsPool rewardsPool_,
-		Staking staking_
+		Staking staking_,
+		Oracle oracle_,
+		TokenggAVAX ggAVAX_
 	) {
 		minipoolMgr = minipoolMgr_;
 		nopClaim = nopClaim_;
 		rewardsPool = rewardsPool_;
 		staking = staking_;
+		oracle = oracle_;
+		ggAVAX = ggAVAX_;
 	}
 
 	receive() external payable {}
+
+	function depositggAVAX(uint256 amount) public {
+		ggAVAX.depositAVAX{value: amount}();
+	}
+
+	function setGGPPriceInAVAX(uint256 price, uint256 timestamp) external {
+		oracle.setGGPPriceInAVAX(price, timestamp);
+	}
 
 	// Claim a minipool and simulate creating a validator node
 	function processMinipoolStart(address nodeID) public returns (MinipoolManager.Minipool memory) {
@@ -78,8 +96,6 @@ contract RialtoSimulator {
 
 	//  Every dao.getRewardsCycleSeconds(), this loop runs which distributes GGP rewards to eligible stakers
 	function processGGPRewards() public {
-		bool addrPaid = false;
-		address[2] memory investorAddress = [0x000000000000000000000000000000000005000A, 0x0000000000000000000000000000000000050009];
 		rewardsPool.startRewardsCycle();
 
 		Staking.Staker[] memory allStakers = staking.getStakers(0, 0);
@@ -88,11 +104,9 @@ contract RialtoSimulator {
 		for (uint256 i = 0; i < allStakers.length; i++) {
 			if (nopClaim.isEligible(allStakers[i].stakerAddr)) {
 				uint256 effectiveGGPStaked = staking.getEffectiveGGPStaked(allStakers[i].stakerAddr);
-				for (uint256 p = 0; p < investorAddress.length; p++) {
-					if (allStakers[i].stakerAddr == investorAddress[p]) {
-						// thier staked ggp will be cut in half for the effective ggp staked
-						effectiveGGPStaked = staking.getEffectiveGGPStaked(allStakers[i].stakerAddr) / 2;
-					}
+				if (isInvestor(allStakers[i].stakerAddr)) {
+					// their staked ggp will be cut in half for the effective ggp staked
+					effectiveGGPStaked = staking.getEffectiveGGPStaked(allStakers[i].stakerAddr) / 2;
 				}
 				totalEligibleStakedGGP = totalEligibleStakedGGP + effectiveGGPStaked;
 			}
@@ -100,18 +114,17 @@ contract RialtoSimulator {
 
 		for (uint256 i = 0; i < allStakers.length; i++) {
 			if (nopClaim.isEligible(allStakers[i].stakerAddr)) {
-				for (uint256 p = 0; p < investorAddress.length; p++) {
-					if (allStakers[i].stakerAddr == investorAddress[p]) {
-						// the effective ggp staked will be doubled to make sure they only get half rewards
-						nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, (totalEligibleStakedGGP * 2));
-						addrPaid = true;
-					}
-				}
-				if (!addrPaid) {
+				if (isInvestor(allStakers[i].stakerAddr)) {
+					// the effective ggp staked will be doubled to make sure they only get half rewards
+					nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, (totalEligibleStakedGGP * 2));
+				} else {
 					nopClaim.calculateAndDistributeRewards(allStakers[i].stakerAddr, totalEligibleStakedGGP);
 				}
-				addrPaid = false;
 			}
 		}
+	}
+
+	function isInvestor(address addr) public pure returns (bool) {
+		return uint160(addr) > uint160(0x60000);
 	}
 }

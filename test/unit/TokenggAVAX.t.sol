@@ -156,7 +156,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 rewardsAmount = 100 ether;
 		uint256 liquidStakerRewards = 50 ether - ((50 ether * 15) / 100);
 
-		uint256 rialtoInitBal = rialto.balance;
+		uint256 rialtoInitBal = address(rialto).balance;
 
 		// 1. Bob mints 1000 shares
 		vm.deal(bob, depositAmount);
@@ -170,17 +170,17 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - depositAmount.mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether));
 
 		// 2. 1000 tokens are withdrawn for staking
-		vm.prank(rialto);
+		vm.prank(address(rialto));
 		minipoolMgr.claimAndInitiateStaking(nodeID);
 
-		assertEq(rialto.balance, rialtoInitBal + totalStakedAmount);
+		assertEq(address(rialto).balance, rialtoInitBal + totalStakedAmount);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.stakingTotalAssets(), stakingWithdrawAmount);
 
 		// 3. 1000 rewards are deposited
 		// None of these rewards should be distributed yet
-		vm.deal(rialto, rialto.balance + rewardsAmount);
-		vm.startPrank(rialto);
+		vm.deal(address(rialto), address(rialto).balance + rewardsAmount);
+		vm.startPrank(address(rialto));
 		bytes32 txID = keccak256("txid");
 		minipoolMgr.recordStakingStart(nodeID, txID, block.timestamp);
 		int256 idx = minipoolMgr.getIndexOf(nodeID);
@@ -191,7 +191,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		minipoolMgr.recordStakingEnd{value: totalStakedAmount + rewardsAmount}(nodeID, endTime, rewardsAmount);
 		vm.stopPrank();
 
-		assertEq(rialto.balance, rialtoInitBal);
+		assertEq(address(rialto).balance, rialtoInitBal);
 		assertEq(ggAVAX.totalAssets(), depositAmount);
 		assertEq(ggAVAX.convertToAssets(ggAVAX.balanceOf(bob)), depositAmount);
 
@@ -261,7 +261,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		MinipoolManager.Minipool memory mp = createMinipool(nodeAmt / 2, nodeAmt / 2, duration);
 		vm.stopPrank();
 
-		vm.startPrank(rialto);
+		vm.startPrank(address(rialto));
 		minipoolMgr.claimAndInitiateStaking(mp.nodeID);
 		minipoolMgr.recordStakingStart(mp.nodeID, randHash(), block.timestamp);
 		vm.stopPrank();
@@ -275,8 +275,8 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		uint256 rewardsAmt = nodeAmt.mulDivDown(0.1 ether, 1 ether);
 
-		vm.deal(rialto, rialto.balance + rewardsAmt);
-		vm.prank(rialto);
+		vm.deal(address(rialto), address(rialto).balance + rewardsAmt);
+		vm.prank(address(rialto));
 		minipoolMgr.recordStakingEnd{value: nodeAmt + rewardsAmt}(mp.nodeID, block.timestamp, rewardsAmt);
 
 		ggAVAX.syncRewards();

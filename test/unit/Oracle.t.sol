@@ -18,7 +18,7 @@ contract OracleTest is BaseTest {
 		vm.prank(guardian);
 		oracle.setOneInch(oneInch);
 
-		vm.startPrank(rialto);
+		vm.startPrank(address(rialto));
 		(uint256 price, uint256 timestamp) = oracle.getGGPPriceInAVAXFromOneInch();
 		assertEq(price, 1 ether);
 		assertEq(timestamp, block.timestamp);
@@ -28,7 +28,7 @@ contract OracleTest is BaseTest {
 		vm.expectRevert(BaseAbstract.MustBeMultisig.selector);
 		oracle.setGGPPriceInAVAX(0, block.timestamp);
 
-		vm.startPrank(rialto);
+		vm.startPrank(address(rialto));
 
 		vm.expectRevert(Oracle.InvalidTimestamp.selector);
 		oracle.setGGPPriceInAVAX(0, block.timestamp - 1);

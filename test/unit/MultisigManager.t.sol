@@ -12,13 +12,13 @@ contract MultisigManagerTest is BaseTest {
 	function testRegisterMultisigNotGuardian() public {
 		bytes memory customError = abi.encodeWithSignature("MustBeGuardian()");
 		vm.expectRevert(customError);
-		multisigMgr.registerMultisig(rialto);
+		multisigMgr.registerMultisig(address(rialto));
 	}
 
 	function testRegisterMultisigAlreadyRegistered() public {
 		vm.startPrank(guardian);
 		vm.expectRevert(MultisigManager.MultisigAlreadyRegistered.selector);
-		multisigMgr.registerMultisig(rialto);
+		multisigMgr.registerMultisig(address(rialto));
 	}
 
 	function testRegisterMultisig() public {
@@ -39,7 +39,7 @@ contract MultisigManagerTest is BaseTest {
 	function testEnableMultisigNotGuardian() public {
 		bytes memory customError = abi.encodeWithSignature("MustBeGuardian()");
 		vm.expectRevert(customError);
-		multisigMgr.enableMultisig(rialto);
+		multisigMgr.enableMultisig(address(rialto));
 	}
 
 	function testEnableMultisigNotFound() public {
@@ -89,7 +89,7 @@ contract MultisigManagerTest is BaseTest {
 	function testFindActive() public {
 		// Disable the global one
 		vm.startPrank(guardian);
-		multisigMgr.disableMultisig(rialto);
+		multisigMgr.disableMultisig(address(rialto));
 		address rialto1 = getActor("rialto1");
 		multisigMgr.registerMultisig(rialto1);
 		multisigMgr.enableMultisig(rialto1);

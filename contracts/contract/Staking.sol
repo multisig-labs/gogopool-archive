@@ -130,21 +130,13 @@ contract Staking is Base {
 
 	/// @notice Increase the amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	/// @dev Also increases .avaxAssignedHighWater amount
 	function increaseAVAXAssigned(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
-
-		uint256 currHighWater = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
-		uint256 currAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
-		if (currAssigned > currHighWater) {
-			setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), currAssigned);
-		}
 	}
 
 	/// @notice Decrease the amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	/// @dev Purposely does *not* decrease .avaxAssignedHighWater amount. That is done during GGP rewards payout
 	function decreaseAVAXAssigned(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
@@ -157,6 +149,13 @@ contract Staking is Base {
 	function getAVAXAssignedHighWater(address stakerAddr) public view returns (uint256) {
 		int256 stakerIndex = getIndexOf(stakerAddr);
 		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
+	}
+
+	/// @notice Increase the AVAXAssignedHighWater
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	function increaseAVAXAssignedHighWater(address stakerAddr, uint256 amount) public onlyRegisteredNetworkContract {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), amount);
 	}
 
 	/// @notice Reset the AVAXAssignedHighWater to what the current AVAXAssigned is for the staker

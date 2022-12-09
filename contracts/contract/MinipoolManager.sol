@@ -218,9 +218,9 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		}
 
 		Staking staking = Staking(getContractAddress("Staking"));
+		staking.increaseMinipoolCount(msg.sender);
 		staking.increaseAVAXStake(msg.sender, msg.value);
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
-		staking.increaseMinipoolCount(msg.sender);
 
 		if (staking.getRewardsStartTime(msg.sender) == 0) {
 			staking.setRewardsStartTime(msg.sender, block.timestamp);
@@ -367,6 +367,13 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 			setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".initialStartTime")), startTime);
 		}
 
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".owner")));
+		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")));
+		Staking staking = Staking(getContractAddress("Staking"));
+		if (staking.getAVAXAssignedHighWater(owner) < staking.getAVAXAssigned(owner)) {
+			staking.increaseAVAXAssignedHighWater(owner, avaxLiquidStakerAmt);
+		}
+
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Staking);
 	}
 
@@ -501,8 +508,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
-		// The AVAX should not count for rewards as it was never used for a validation period
-		staking.resetAVAXAssignedHighWater(owner);
 
 		subUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"), avaxLiquidStakerAmt);
 
@@ -650,8 +655,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
 
-		// The AVAX should not count for rewards as it was never used for a validation period
-		staking.resetAVAXAssignedHighWater(owner);
 		staking.decreaseMinipoolCount(owner);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);

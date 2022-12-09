@@ -83,7 +83,7 @@ contract ClaimNodeOpTest is BaseTest {
 
 	function testCalculateAndDistributeRewardsInvalidStaker() public {
 		address invalidStaker = getActor("invalid actor");
-		vm.startPrank(rialto);
+		vm.startPrank(address(rialto));
 		vm.expectRevert(Staking.StakerNotFound.selector);
 		nopClaim.calculateAndDistributeRewards(invalidStaker, 200 ether);
 		vm.stopPrank();
@@ -100,7 +100,7 @@ contract ClaimNodeOpTest is BaseTest {
 		createMinipool(avaxAmt, avaxAmt, 2 weeks);
 		vm.stopPrank();
 
-		vm.startPrank(rialto);
+		vm.startPrank(address(rialto));
 		vm.expectRevert(ClaimNodeOp.RewardsCycleNotStarted.selector);
 		nopClaim.calculateAndDistributeRewards(nodeOp, ggpAmt);
 	}
@@ -110,23 +110,26 @@ contract ClaimNodeOpTest is BaseTest {
 		rewardsPool.startRewardsCycle();
 		address nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp1);
+		ggAVAX.depositAVAX{value: 2000 ether}();
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		MinipoolManager.Minipool memory mp1 = createMinipool(1000 ether, 1000 ether, 2 weeks);
+		rialto.processMinipoolStart(mp1.nodeID);
 		vm.stopPrank();
 
 		address nodeOp2 = getActorWithTokens("nodeOp2", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp2);
+		ggAVAX.depositAVAX{value: 2000 ether}();
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		MinipoolManager.Minipool memory mp2 = createMinipool(1000 ether, 1000 ether, 2 weeks);
+		rialto.processMinipoolStart(mp2.nodeID);
 		vm.stopPrank();
 
 		vm.expectRevert(BaseAbstract.MustBeMultisig.selector);
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
 
-		vm.startPrank(rialto);
-
+		vm.startPrank(address(rialto));
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
 		assertEq(staking.getGGPRewards(nodeOp1), (nopClaim.getRewardsCycleTotal()) / 2);
 		assertEq(staking.getLastRewardsCycleCompleted(nodeOp1), rewardsPool.getRewardsCycleCount());
@@ -134,6 +137,7 @@ contract ClaimNodeOpTest is BaseTest {
 
 		vm.expectRevert(abi.encodeWithSelector(ClaimNodeOp.RewardsAlreadyDistributedToStaker.selector, address(nodeOp1)));
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
+		vm.stopPrank();
 	}
 
 	function testClaimAndRestake() public {
@@ -141,9 +145,11 @@ contract ClaimNodeOpTest is BaseTest {
 		rewardsPool.startRewardsCycle();
 		address nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp1);
+		ggAVAX.depositAVAX{value: 2000 ether}();
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		MinipoolManager.Minipool memory mp = createMinipool(1000 ether, 1000 ether, 2 weeks);
+		rialto.processMinipoolStart(mp.nodeID);
 
 		uint256 nodeOp1PriorBalanceGGP = ggp.balanceOf(nodeOp1);
 
@@ -152,9 +158,8 @@ contract ClaimNodeOpTest is BaseTest {
 		nopClaim.claimAndRestake(0);
 		vm.stopPrank();
 
-		vm.startPrank(rialto);
+		vm.prank(address(rialto));
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
-		vm.stopPrank();
 
 		vm.startPrank(nodeOp1);
 		uint256 totalRewardsThisCycle = nopClaim.getRewardsCycleTotal();

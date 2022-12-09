@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
-import {RialtoSimulator} from "../../contracts/contract/utils/RialtoSimulator.sol";
 
 contract StakingTest is BaseTest {
 	using FixedPointMathLib for uint256;
@@ -10,19 +9,11 @@ contract StakingTest is BaseTest {
 	address private nodeOp1;
 	address private nodeOp2;
 	address private nodeOp3;
-	RialtoSimulator private rialtoSim;
 
 	uint256 internal constant TOTAL_INITIAL_GGP_SUPPLY = 22_500_000 ether;
 
 	function setUp() public override {
 		super.setUp();
-
-		rialtoSim = new RialtoSimulator(minipoolMgr, nopClaim, rewardsPool, staking);
-		vm.startPrank(guardian);
-		multisigMgr.disableMultisig(address(rialto));
-		multisigMgr.registerMultisig(address(rialtoSim));
-		multisigMgr.enableMultisig(address(rialtoSim));
-		vm.stopPrank();
 
 		nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
 		vm.prank(nodeOp1);
@@ -215,7 +206,7 @@ contract StakingTest is BaseTest {
 	function testGetGGPRewards() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
 		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
 		vm.stopPrank();
 
@@ -231,7 +222,7 @@ contract StakingTest is BaseTest {
 		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
 		assertTrue(rewardsPool.canStartRewardsCycle());
 
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
@@ -263,7 +254,7 @@ contract StakingTest is BaseTest {
 	function testGetLastRewardsCycleCompleted() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
 		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
 		vm.stopPrank();
 
@@ -280,7 +271,7 @@ contract StakingTest is BaseTest {
 		assertTrue(rewardsPool.canStartRewardsCycle());
 		assertEq(staking.getLastRewardsCycleCompleted(address(nodeOp1)), 0);
 
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertGt(vault.balanceOfToken("ClaimNodeOp", ggp), 0);
 		assertGt(vault.balanceOfToken("ClaimProtocolDAO", ggp), 0);
@@ -312,7 +303,8 @@ contract StakingTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(300 ether);
 		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 0 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
+
 		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 300 ether);
 		staking.stakeGGP(1700 ether);
 		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 1500 ether);
@@ -323,13 +315,12 @@ contract StakingTest is BaseTest {
 	}
 
 	function testGetEffectiveGGPStakedWithLowGGPPrice() public {
-		vm.prank(address(rialtoSim));
-		oracle.setGGPPriceInAVAX(0.1 ether, block.timestamp);
+		rialto.setGGPPriceInAVAX(0.1 ether, block.timestamp);
 
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(3000 ether);
 		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 0 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
 		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 3000 ether);
 		staking.stakeGGP(17000 ether);
 		assertEq(staking.getEffectiveGGPStaked(nodeOp1), 15000 ether);
@@ -408,6 +399,7 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
+	// To ensure we are managing getAVAXAssigned and getAVAXAssignedHighWater seperately now
 	function testAVAXHighWaterMark() public {
 		vm.prank(nodeOp1);
 		staking.stakeGGP(100 ether);
@@ -416,14 +408,15 @@ contract StakingTest is BaseTest {
 		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
 		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
 		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
+		staking.increaseAVAXAssignedHighWater(nodeOp1, 1000 ether);
 		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
+
 		staking.decreaseAVAXAssigned(nodeOp1, 1000 ether);
 		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
 		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
-		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
-		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 2000 ether);
-
+		staking.resetAVAXAssignedHighWater(nodeOp1);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
 		vm.stopPrank();
 	}
 }

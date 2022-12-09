@@ -2,15 +2,12 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
-import {RialtoSimulator} from "../../contracts/contract/utils/RialtoSimulator.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 contract ScenariosTest is BaseTest {
 	using FixedPointMathLib for uint256;
 	uint128 internal constant ONE_K = 1_000 ether;
 	uint256 internal constant TOTAL_INITIAL_GGP_SUPPLY = 22_500_000 ether;
-
-	RialtoSimulator private rialtoSim;
 
 	address private nodeOp1;
 	address private nodeOp2;
@@ -25,18 +22,6 @@ contract ScenariosTest is BaseTest {
 	function setUp() public override {
 		super.setUp();
 
-		// Create a simulated Rialto multisig. By registering the contract addr as a
-		// valid multisig, then no matter who calls the contract fns they will work, no prank necessary
-		rialtoSim = new RialtoSimulator(minipoolMgr, nopClaim, rewardsPool, staking);
-		vm.startPrank(guardian);
-		multisigMgr.disableMultisig(address(rialto));
-		multisigMgr.registerMultisig(address(rialtoSim));
-		multisigMgr.enableMultisig(address(rialtoSim));
-		vm.stopPrank();
-
-		// Give Rialto sim some funds to pay simulated validator rewards
-		vm.deal(address(rialtoSim), (ONE_K * 4));
-
 		nodeOp1 = getActorWithTokens("nodeOp1", ONE_K, ONE_K);
 		nodeOp2 = getActorWithTokens("nodeOp2", ONE_K, ONE_K);
 		nodeOp3 = getActorWithTokens("nodeOp3", ONE_K, ONE_K);
@@ -44,8 +29,8 @@ contract ScenariosTest is BaseTest {
 		liqStaker1 = getActorWithTokens("liqStaker1", ONE_K, 0);
 		liqStaker2 = getActorWithTokens("liqStaker2", ONE_K, 0);
 		liqStaker3 = getActorWithTokens("liqStaker3", ONE_K * 7, 0);
-		investor1 = getActorWithTokens("investor1", ONE_K, ONE_K);
-		investor2 = getActorWithTokens("investor2", ONE_K, ONE_K);
+		investor1 = getInvestorWithTokens("investor1", ONE_K, ONE_K);
+		investor2 = getInvestorWithTokens("investor2", ONE_K, ONE_K);
 
 		fundGGPRewardsPool();
 	}
@@ -64,6 +49,7 @@ contract ScenariosTest is BaseTest {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
+
 		// Liq Stakers deposit all their AVAX and get ggAVAX in return
 		vm.prank(liqStaker1);
 		ggAVAX.depositAVAX{value: ONE_K}();
@@ -82,9 +68,10 @@ contract ScenariosTest is BaseTest {
 		vm.prank(nodeOp1);
 		staking.withdrawGGP(ggpStakeAmt);
 
-		mp = rialtoSim.processMinipoolStart(mp.nodeID);
+		mp = rialto.processMinipoolStart(mp.nodeID);
 		skip(mp.duration);
-		mp = rialtoSim.processMinipoolEndWithRewards(mp.nodeID);
+
+		mp = rialto.processMinipoolEndWithRewards(mp.nodeID);
 
 		// test that the node op can withdraw the funds they are due
 		uint256 nodeOp1PriorBalance = nodeOp1.balance;
@@ -95,7 +82,7 @@ contract ScenariosTest is BaseTest {
 		skip(block.timestamp - rewardsPool.getRewardsCycleStartTime());
 		assertTrue(rewardsPool.canStartRewardsCycle());
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertEq(staking.getMinipoolCount(nodeOp1), 0);
 		assertEq(staking.getRewardsStartTime(nodeOp1), 0);
@@ -151,9 +138,10 @@ contract ScenariosTest is BaseTest {
 		vm.prank(nodeOp1);
 		staking.withdrawGGP(ggpStakeAmt);
 
-		mp = rialtoSim.processMinipoolStart(mp.nodeID);
+		mp = rialto.processMinipoolStart(mp.nodeID);
 		skip(mp.duration);
-		mp = rialtoSim.processMinipoolEndWithoutRewards(mp.nodeID);
+
+		mp = rialto.processMinipoolEndWithoutRewards(mp.nodeID);
 
 		// test that the node op can withdraw the funds they are due
 		uint256 priorBalance_nodeOp1 = nodeOp1.balance;
@@ -170,7 +158,7 @@ contract ScenariosTest is BaseTest {
 		assertTrue(rewardsPool.canStartRewardsCycle());
 		// nopeOp1 is still "eligible" even though they were slashed
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		// Not testing if the rewards are "correct", depends on elapsed time too much
 		// So just restake it all
@@ -205,7 +193,7 @@ contract ScenariosTest is BaseTest {
 		ggp.approve(address(staking), 100 ether);
 		staking.stakeGGP(100 ether);
 		skip(dao.getRewardsCycleSeconds());
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
 	}
 
@@ -214,17 +202,11 @@ contract ScenariosTest is BaseTest {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
-		// Liq Stakers deposit all their AVAX and get ggAVAX in return
-		vm.prank(liqStaker1);
-		ggAVAX.depositAVAX{value: ONE_K}();
-
-		vm.prank(liqStaker2);
-		ggAVAX.depositAVAX{value: ONE_K}();
 
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		// Cannot unstake GGP at this point
@@ -232,9 +214,9 @@ contract ScenariosTest is BaseTest {
 		vm.prank(nodeOp1);
 		staking.withdrawGGP(ggpStakeAmt);
 
-		mp = rialtoSim.processMinipoolStart(mp.nodeID);
 		skip(mp.duration);
-		mp = rialtoSim.processMinipoolEndWithRewards(mp.nodeID);
+
+		mp = rialto.processMinipoolEndWithRewards(mp.nodeID);
 
 		// test that the node op can withdraw the funds they are due
 		uint256 nodeOp1PriorBalance = nodeOp1.balance;
@@ -266,15 +248,15 @@ contract ScenariosTest is BaseTest {
 		skip(1 days);
 		assertTrue(rewardsPool.canStartRewardsCycle());
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertEq(staking.getGGPRewards(address(nodeOp1)), nopClaim.getRewardsCycleTotal());
 	}
 
-	// Verifies minipools get properly rewarded for each rewards cycle and high water mark is working correcly
+	// Verifies minipools get properly rewarded for each rewards cycle and high water mark is working correctly
 	function testRewardsManipulation() public {
 		skip(dao.getRewardsCycleSeconds());
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		// half way + 1 day (15th day of the 28 day cycle)
 		skip((dao.getRewardsCycleSeconds() / 2) + 1 days);
@@ -283,31 +265,23 @@ contract ScenariosTest is BaseTest {
 		uint256 duration = dao.getRewardsEligibilityMinSeconds();
 		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
-		// Liq Stakers deposit all their AVAX and get ggAVAX in return
-		vm.prank(liqStaker1);
-		ggAVAX.depositAVAX{value: ONE_K}();
-
-		vm.prank(liqStaker2);
-		ggAVAX.depositAVAX{value: ONE_K}();
 
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp1 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		uint256 rewardsStartTimeMP1 = staking.getRewardsStartTime(address(nodeOp1));
 		vm.stopPrank();
 
-		mp1 = rialtoSim.processMinipoolStart(mp1.nodeID);
-
-		//fwd in time to  the rewards cycle
+		// fwd in time to  the rewards cycle
 		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
 		assertFalse(nopClaim.isEligible(address(nodeOp1)));
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertEq(staking.getGGPRewards(address(nodeOp1)), 0);
 		skip(1 days);
 
-		mp1 = rialtoSim.processMinipoolEndWithRewards(mp1.nodeID);
+		mp1 = rialto.processMinipoolEndWithRewards(mp1.nodeID);
 
 		// test that the node op can withdraw the funds they are due
 		uint256 nodeOp1PriorBalance = nodeOp1.balance;
@@ -315,30 +289,30 @@ contract ScenariosTest is BaseTest {
 		minipoolMgr.withdrawMinipoolFunds(mp1.nodeID);
 		assertEq((nodeOp1.balance - nodeOp1PriorBalance), mp1.avaxNodeOpAmt + mp1.avaxNodeOpRewardAmt);
 
-		//day 15 of second cycle
+		// day 15 of second cycle
 		skip((dao.getRewardsCycleSeconds() / 2));
 		vm.prank(nodeOp1);
 		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
-		mp2 = rialtoSim.processMinipoolStart(mp2.nodeID);
+		mp2 = rialto.processMinipoolStart(mp2.nodeID);
 
-		//fwd in time to  the rewards cycle
+		// fwd in time to  the rewards cycle
 		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
 
-		//they should get rewarded for their first minipool only
+		// they should get rewarded for their first minipool only
 		assertEq(staking.getAVAXAssignedHighWater(address(nodeOp1)), depositAmt);
 		assertEq(staking.getRewardsStartTime(address(nodeOp1)), rewardsStartTimeMP1);
 		assertTrue(nopClaim.isEligible(address(nodeOp1)));
 		assertTrue(rewardsPool.canStartRewardsCycle());
 
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
 
 		skip(1 days);
 
-		mp2 = rialtoSim.processMinipoolEndWithRewards(mp2.nodeID);
+		mp2 = rialto.processMinipoolEndWithRewards(mp2.nodeID);
 
-		// // test that the node op can withdraw the funds they are due
+		// test that the node op can withdraw the funds they are due
 		nodeOp1PriorBalance = nodeOp1.balance;
 		vm.prank(nodeOp1);
 		minipoolMgr.withdrawMinipoolFunds(mp2.nodeID);
@@ -346,14 +320,14 @@ contract ScenariosTest is BaseTest {
 
 		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
 
-		// //they should get rewarded for their second minipool only
+		// they should get rewarded for their second minipool only
 		assertEq(staking.getAVAXAssignedHighWater(address(nodeOp1)), depositAmt);
 		assertTrue(nopClaim.isEligible(address(nodeOp1)));
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		assertGt(staking.getGGPRewards(address(nodeOp1)), 0);
 
-		//test that node op can withdraw all their GGP
+		// test that node op can withdraw all their GGP
 		uint256 nodeOp1PriorBalanceGGP = ggp.balanceOf(nodeOp1);
 		vm.prank(nodeOp1);
 		staking.withdrawGGP(ggpStakeAmt);
@@ -361,57 +335,46 @@ contract ScenariosTest is BaseTest {
 		assertEq(staking.getGGPStake(address(nodeOp1)), 0);
 	}
 
-	//Investors should only get about half rewards on their gpp, this should not effect the other users GGP rewards
+	// Investors should only get about half rewards on their gpp, this should not effect the other users GGP rewards
 	function testHalfRewardsForUnvestedGGPSmallScale() public {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
-		// Liq Stakers deposit all their AVAX and get ggAVAX in return
-		vm.prank(liqStaker1);
-		ggAVAX.depositAVAX{value: (ONE_K)}();
-
-		vm.prank(liqStaker2);
-		ggAVAX.depositAVAX{value: (ONE_K)}();
-
-		vm.prank(liqStaker3);
-		ggAVAX.depositAVAX{value: (ONE_K * 3)}();
 
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp1 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(nodeOp2);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp2 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(investor1);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp3 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp3 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
-		mp1 = rialtoSim.processMinipoolStart(mp1.nodeID);
-		mp2 = rialtoSim.processMinipoolStart(mp2.nodeID);
-		mp3 = rialtoSim.processMinipoolStart(mp3.nodeID);
-		skip(mp1.duration);
+		skip(duration);
+
 		// avax rewards
-		mp1 = rialtoSim.processMinipoolEndWithRewards(mp1.nodeID);
-		mp2 = rialtoSim.processMinipoolEndWithRewards(mp2.nodeID);
-		mp3 = rialtoSim.processMinipoolEndWithRewards(mp3.nodeID);
+		mp1 = rialto.processMinipoolEndWithRewards(mp1.nodeID);
+		mp2 = rialto.processMinipoolEndWithRewards(mp2.nodeID);
+		mp3 = rialto.processMinipoolEndWithRewards(mp3.nodeID);
 
 		skip(block.timestamp - rewardsPool.getRewardsCycleStartTime());
 		assertTrue(rewardsPool.canStartRewardsCycle());
 
-		//investors and regular nodes have the same eligibility requirements
+		// investors and regular nodes have the same eligibility requirements
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
 		assertTrue(nopClaim.isEligible(nodeOp2), "isEligible");
 		assertTrue(nopClaim.isEligible(investor1), "isEligible");
 
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		uint256 totalRewards = nopClaim.getRewardsCycleTotal();
 
@@ -428,60 +391,51 @@ contract ScenariosTest is BaseTest {
 		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
 
-		// Liq Stakers deposit all their AVAX and get ggAVAX in return
-		vm.prank(liqStaker3);
-		ggAVAX.depositAVAX{value: (ONE_K * 7)}();
-
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp1 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(nodeOp2);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp2 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(nodeOp3);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp5 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp5 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(nodeOp4);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp6 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp6 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(investor1);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp3 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp3 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
 		vm.startPrank(investor2);
 		ggp.approve(address(staking), ggpStakeAmt);
 		staking.stakeGGP(ggpStakeAmt);
-		MinipoolManager.Minipool memory mp4 = createMinipool(depositAmt, depositAmt, duration);
+		MinipoolManager.Minipool memory mp4 = createAndStartMinipool(depositAmt, depositAmt, duration);
 		vm.stopPrank();
 
-		mp1 = rialtoSim.processMinipoolStart(mp1.nodeID);
-		mp2 = rialtoSim.processMinipoolStart(mp2.nodeID);
-		mp3 = rialtoSim.processMinipoolStart(mp3.nodeID);
-		mp4 = rialtoSim.processMinipoolStart(mp4.nodeID);
-		mp5 = rialtoSim.processMinipoolStart(mp5.nodeID);
-		mp6 = rialtoSim.processMinipoolStart(mp6.nodeID);
-		skip(mp1.duration);
+		skip(duration);
+
 		// avax rewards
-		mp1 = rialtoSim.processMinipoolEndWithRewards(mp1.nodeID);
-		mp2 = rialtoSim.processMinipoolEndWithRewards(mp2.nodeID);
-		mp3 = rialtoSim.processMinipoolEndWithRewards(mp3.nodeID);
-		mp4 = rialtoSim.processMinipoolEndWithRewards(mp4.nodeID);
-		mp5 = rialtoSim.processMinipoolEndWithRewards(mp5.nodeID);
-		mp6 = rialtoSim.processMinipoolEndWithRewards(mp6.nodeID);
+		mp1 = rialto.processMinipoolEndWithRewards(mp1.nodeID);
+		mp2 = rialto.processMinipoolEndWithRewards(mp2.nodeID);
+		mp3 = rialto.processMinipoolEndWithRewards(mp3.nodeID);
+		mp4 = rialto.processMinipoolEndWithRewards(mp4.nodeID);
+		mp5 = rialto.processMinipoolEndWithRewards(mp5.nodeID);
+		mp6 = rialto.processMinipoolEndWithRewards(mp6.nodeID);
 
 		skip(block.timestamp - rewardsPool.getRewardsCycleStartTime());
 		assertTrue(rewardsPool.canStartRewardsCycle());
@@ -494,7 +448,7 @@ contract ScenariosTest is BaseTest {
 		assertTrue(nopClaim.isEligible(investor1), "isEligible");
 		assertTrue(nopClaim.isEligible(investor2), "isEligible");
 
-		rialtoSim.processGGPRewards();
+		rialto.processGGPRewards();
 
 		uint256 totalRewards = nopClaim.getRewardsCycleTotal();
 
@@ -507,5 +461,48 @@ contract ScenariosTest is BaseTest {
 		assertEq(staking.getGGPRewards(nodeOp4), nodeOpsRewards);
 		assertEq(staking.getGGPRewards(investor1), investorRewards);
 		assertEq(staking.getGGPRewards(investor2), investorRewards);
+	}
+
+	function testAVAXHighWaterMarkCancelledMinipool() public {
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
+		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
+
+		// Liq Stakers deposit all their AVAX and get ggAVAX in return
+		vm.prank(liqStaker3);
+		ggAVAX.depositAVAX{value: (ONE_K * 7)}();
+
+		vm.startPrank(nodeOp1);
+		ggp.approve(address(staking), ggpStakeAmt);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, depositAmt, duration);
+		vm.stopPrank();
+
+		assertEq(staking.getAVAXAssigned(nodeOp1), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0);
+		mp1 = rialto.processMinipoolStart(mp1.nodeID);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
+		skip(mp1.duration);
+		// avax rewards
+		mp1 = rialto.processMinipoolEndWithRewards(mp1.nodeID);
+		vm.prank(nodeOp1);
+		minipoolMgr.withdrawMinipoolFunds(mp1.nodeID);
+
+		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
+		assertEq(staking.getAVAXAssigned(nodeOp1), 0);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
+		assertGt(staking.getEffectiveGGPStaked(nodeOp1), 0);
+
+		vm.startPrank(nodeOp1);
+		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
+		minipoolMgr.cancelMinipool(mp2.nodeID);
+		vm.stopPrank();
+
+		// We canceled mp2, but we should still have a highwater mark of mp1 and be eligible for rewards
+		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
+		assertEq(staking.getAVAXAssigned(nodeOp1), 0);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
+		assertGt(staking.getEffectiveGGPStaked(nodeOp1), 0);
 	}
 }

@@ -21,6 +21,7 @@ import {RewardsPool} from "../../../contracts/contract/RewardsPool.sol";
 import {Staking} from "../../../contracts/contract/Staking.sol";
 import {Ocyticus} from "../../../contracts/contract/Ocyticus.sol";
 import {OneInchMock} from "../../../contracts/contract/utils/OneInchMock.sol";
+import {RialtoSimulator} from "../../../contracts/contract/utils/RialtoSimulator.sol";
 
 import {format} from "sol-utils/format.sol";
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
@@ -29,6 +30,8 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 abstract contract BaseTest is Test {
+	using FixedPointMathLib for uint256;
+
 	address internal constant ZERO_ADDRESS = address(0x00);
 	uint128 internal constant MAX_AMT = 1_000_000 ether;
 
@@ -37,7 +40,6 @@ abstract contract BaseTest is Test {
 
 	// Global Users
 	address public guardian;
-	address public rialto;
 
 	// Contracts
 	Storage public store;
@@ -56,6 +58,7 @@ abstract contract BaseTest is Test {
 	Staking public staking;
 	Ocyticus public ocyticus;
 	OneInchMock public oneInchMock;
+	RialtoSimulator public rialto;
 
 	function setUp() public virtual {
 		guardian = address(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84);
@@ -101,10 +104,6 @@ abstract contract BaseTest is Test {
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
 
-		rialto = getActor("rialto");
-		multisigMgr.registerMultisig(rialto);
-		multisigMgr.enableMultisig(rialto);
-
 		staking = new Staking(store, ggp);
 		registerContract(store, "Staking", address(staking));
 
@@ -124,12 +123,17 @@ abstract contract BaseTest is Test {
 		oneInchMock = new OneInchMock();
 		registerContract(store, "OneInchMock", address(oneInchMock));
 
-		// Initialize the rewards cycle
+		// Create a simulated Rialto multisig. By registering the contract addr as a
+		// valid multisig, then no matter who calls the contract fns they will work, no prank necessary
+		rialto = new RialtoSimulator(minipoolMgr, nopClaim, rewardsPool, staking, oracle, ggAVAX);
+		multisigMgr.registerMultisig(address(rialto));
+		multisigMgr.enableMultisig(address(rialto));
+		rialto.setGGPPriceInAVAX(1 ether, block.timestamp);
+		deal(address(rialto), type(uint128).max);
 		vm.stopPrank();
-		ggAVAX.syncRewards();
 
-		vm.prank(rialto);
-		oracle.setGGPPriceInAVAX(1 ether, block.timestamp);
+		// Initialize the rewards cycle
+		ggAVAX.syncRewards();
 
 		deal(guardian, type(uint128).max);
 	}
@@ -198,6 +202,18 @@ abstract contract BaseTest is Test {
 		return addr;
 	}
 
+	// Distinguish from Actor so we can treat them differently with vesting GGP rewards
+	function getInvestor(string memory name) public returns (address) {
+		actorCounter++;
+		address addr = address(uint160(0x60000 + actorCounter));
+		vm.label(addr, name);
+		return addr;
+	}
+
+	function isInvestor(address addr) public pure returns (bool) {
+		return uint160(addr) > uint160(0x60000);
+	}
+
 	// Return new address with AVAX and WAVAX and GGP
 	function getActorWithTokens(
 		string memory name,
@@ -222,6 +238,30 @@ abstract contract BaseTest is Test {
 		return actor;
 	}
 
+	// Return new address with AVAX and WAVAX and GGP
+	function getInvestorWithTokens(
+		string memory name,
+		uint128 avaxAmt,
+		uint128 ggpAmt
+	) public returns (address) {
+		address investor = getInvestor(name);
+
+		if (ggpAmt > 0) {
+			dealGGP(investor, ggpAmt);
+		}
+
+		if (avaxAmt > 0) {
+			vm.deal(investor, avaxAmt);
+
+			vm.prank(investor);
+			wavax.deposit{value: avaxAmt}();
+
+			vm.deal(investor, avaxAmt);
+		}
+
+		return investor;
+	}
+
 	function dealGGP(address actor, uint256 amount) public {
 		vm.prank(guardian);
 		ggp.transfer(actor, amount);
@@ -235,6 +275,22 @@ abstract contract BaseTest is Test {
 		address nodeID = randAddress();
 		uint256 delegationFee = 0.02 ether;
 		minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee, avaxAssignmentRequest);
+		int256 index = minipoolMgr.getIndexOf(nodeID);
+		return minipoolMgr.getMinipool(index);
+	}
+
+	// Deposit required funds into ggAVAX, create, and then claim a minipool with rialto simulator
+	function createAndStartMinipool(
+		uint256 depositAmt,
+		uint256 avaxAssignmentRequest,
+		uint256 duration
+	) internal returns (MinipoolManager.Minipool memory) {
+		address nodeID = randAddress();
+		uint256 delegationFee = 0.02 ether;
+		minipoolMgr.createMinipool{value: depositAmt}(nodeID, duration, delegationFee, avaxAssignmentRequest);
+		uint256 neededFunds = avaxAssignmentRequest + avaxAssignmentRequest.divWadDown(dao.getTargetGGAVAXReserveRate());
+		rialto.depositggAVAX(neededFunds);
+		rialto.processMinipoolStart(nodeID);
 		int256 index = minipoolMgr.getIndexOf(nodeID);
 		return minipoolMgr.getMinipool(index);
 	}
