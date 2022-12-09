@@ -400,6 +400,7 @@ contract StakingTest is BaseTest {
 		vm.expectRevert(Staking.InsufficientBalance.selector);
 		staking.withdrawGGP(10_000 ether);
 
+		skip(5 seconds); // cancellation moratorium
 		minipoolMgr.cancelMinipool(mp.nodeID);
 
 		staking.withdrawGGP(300 ether);
