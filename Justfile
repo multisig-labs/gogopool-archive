@@ -172,3 +172,6 @@ doctor:
 # Check if there is an http(s) server lisening on [url]
 _ping url:
 	@if ! curl -k --silent --connect-timeout 2 {{url}} >/dev/null 2>&1; then echo 'No server at {{url}}!' && exit 1; fi
+
+cloc:
+    cloc contracts/contract --by-file --exclude-dir=utils
