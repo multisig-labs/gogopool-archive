@@ -129,6 +129,8 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		return totalReleasedAssets_ + unlockedRewards;
 	}
 
+	/// @notice Returns the AVAX amount that is available for staking on minipools
+	/// @return uint256 AVAX available for staking
 	function amountAvailableForStaking() public view returns (uint256) {
 		ProtocolDAO protocolDAO = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 targetCollateralRate = protocolDAO.getTargetGGAVAXReserveRate();
@@ -139,6 +141,9 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		return totalAssets_ - reservedAssets - stakingTotalAssets;
 	}
 
+	/// @notice Accepts AVAX deposit from a minipool. Expects the base amount and rewards earned from staking
+	/// @param baseAmt The amount of liquid staker AVAX used to create a minipool
+	/// @param rewardAmt The rewards amount (in AVAX) earned from staking
 	function depositFromStaking(uint256 baseAmt, uint256 rewardAmt) public payable onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		uint256 totalAmt = msg.value;
 		if (totalAmt != (baseAmt + rewardAmt) || baseAmt > stakingTotalAssets) {
@@ -150,6 +155,8 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		IWAVAX(address(asset)).deposit{value: totalAmt}();
 	}
 
+	/// @notice Allows the MinipoolManager contract to withdraw liquid staker funds to create a minipool
+	/// @param assets The amount of AVAX to withdraw
 	function withdrawForStaking(uint256 assets) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		if (assets > amountAvailableForStaking()) {
 			revert WithdrawAmountTooLarge();
@@ -163,6 +170,8 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		withdrawer.receiveWithdrawalAVAX{value: assets}();
 	}
 
+	/// @notice Allows users to deposit AVAX and recieve ggAVAX
+	/// @return shares The amount of ggAVAX minted
 	function depositAVAX() public payable returns (uint256 shares) {
 		uint256 assets = msg.value;
 		// Check for rounding error since we round down in previewDeposit.
@@ -177,6 +186,9 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		afterDeposit(assets, shares);
 	}
 
+	/// @notice Allows users to specify an amount of AVAX to withdraw from their ggAVAX supply
+	/// @param assets Amount of AVAX to be withdrawn
+	/// @return shares Amount of ggAVAX burned
 	function withdrawAVAX(uint256 assets) public returns (uint256 shares) {
 		shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
 		beforeWithdraw(assets, shares);
@@ -188,6 +200,9 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		msg.sender.safeTransferETH(assets);
 	}
 
+	/// @notice Allows users to specify shares of ggAVAX to redeem for AVAX
+	/// @param shares Amount of ggAVAX to burn
+	/// @return assets Amount of AVAX withdrawn
 	function redeemAVAX(uint256 shares) public returns (uint256 assets) {
 		// Check for rounding error since we round down in previewRedeem.
 		if ((assets = previewRedeem(shares)) == 0) {
@@ -202,7 +217,8 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		msg.sender.safeTransferETH(assets);
 	}
 
-	/// @notice Max amount of assets owner would be able to withdraw taking into account liquidity in this contract
+	/// @notice Max assets an owner can withdraw with consideration to liquidity in this contract
+	/// @param _owner User wallet address
 	function maxWithdraw(address _owner) public view override returns (uint256) {
 		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
 			return 0;
@@ -212,7 +228,8 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		return assets > avail ? avail : assets;
 	}
 
-	/// @notice Max amount of shares owner would be able to withdraw taking into account liquidity in this contract
+	/// @notice Max shares owner can withdraw with consideration to liquidity in this contract
+	/// @param _owner User wallet address
 	function maxRedeem(address _owner) public view override returns (uint256) {
 		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
 			return 0;
@@ -222,22 +239,36 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		return shares > avail ? avail : shares;
 	}
 
+	/// @notice Preview shares minted for AVAX deposit
+	/// @param assets Amount of AVAX to deposit
+	/// @return uint256 Amount of ggAVAX that would be minted
 	function previewDeposit(uint256 assets) public view override whenTokenNotPaused(assets) returns (uint256) {
 		return super.previewDeposit(assets);
 	}
 
+	/// @notice Preview assets required for mint of shares
+	/// @param shares Amount of ggAVAX to mint
+	/// @return uint256 Amount of AVAX required
 	function previewMint(uint256 shares) public view override whenTokenNotPaused(shares) returns (uint256) {
 		return super.previewMint(shares);
 	}
 
+	/// @notice Preview shares burned for AVAX assets
+	/// @param assets Amount of AVAX to withdraw
+	/// @return uint256 Amount of ggAVAX that would be burned
 	function previewWithdraw(uint256 assets) public view override whenTokenNotPaused(assets) returns (uint256) {
 		return super.previewWithdraw(assets);
 	}
 
+	/// @notice Preview AVAX returned for burning shares
+	/// @param shares Amount of ggAVAX to burn
+	/// @return uint256 Amount of AVAX returned
 	function previewRedeem(uint256 shares) public view override whenTokenNotPaused(shares) returns (uint256) {
 		return super.previewRedeem(shares);
 	}
 
+	/// @notice Function prior to a withdraw
+	/// @param amount Amount of AVAX
 	function beforeWithdraw(
 		uint256 amount,
 		uint256 /* shares */
@@ -245,6 +276,8 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		totalReleasedAssets -= amount;
 	}
 
+	/// @notice Function after a deposit
+	/// @param amount Amount of AVAX
 	function afterDeposit(
 		uint256 amount,
 		uint256 /* shares */
@@ -252,5 +285,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		totalReleasedAssets += amount;
 	}
 
+	/// @notice Will revert if msg.sender is not authorized to upgrade the contract
 	function _authorizeUpgrade(address newImplementation) internal override onlyGuardian {}
 }
