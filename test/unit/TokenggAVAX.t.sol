@@ -188,7 +188,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		uint256 endTime = block.timestamp + mp.duration;
 
 		skip(mp.duration);
-		minipoolMgr.recordStakingEnd{value: totalStakedAmount + rewardsAmount}(nodeID, endTime, rewardsAmount);
+		minipoolMgr.recordStakingEndThenMaybeCycle{value: totalStakedAmount + rewardsAmount}(nodeID, endTime, rewardsAmount);
 		vm.stopPrank();
 
 		assertEq(address(rialto).balance, rialtoInitBal);
@@ -277,7 +277,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		vm.deal(address(rialto), address(rialto).balance + rewardsAmt);
 		vm.prank(address(rialto));
-		minipoolMgr.recordStakingEnd{value: nodeAmt + rewardsAmt}(mp.nodeID, block.timestamp, rewardsAmt);
+		minipoolMgr.recordStakingEndThenMaybeCycle{value: nodeAmt + rewardsAmt}(mp.nodeID, block.timestamp, rewardsAmt);
 
 		ggAVAX.syncRewards();
 		skip(ggAVAX.rewardsCycleLength());
