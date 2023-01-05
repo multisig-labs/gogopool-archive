@@ -23,7 +23,8 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	staker.item<index>.ggpStaked = Total amt of GGP staked across all minipools
 	staker.item<index>.avaxStaked = Total amt of AVAX staked across all minipools
 	staker.item<index>.avaxAssigned = Total amt of liquid staker funds assigned across all minipools
-	staker.item<index>.avaxAssignedHighWater = Highest amt of liquid staker funds assigned during a GGP rewards cycle
+	staker.item<index>.avaxValidating = Total amt of liquid staker funds used for validation across all minipools
+	staker.item<index>.avaxValidatingHighWater = Highest amt of liquid staker funds used for validation during a GGP rewards cycle
 */
 
 /// @title GGP staking and staker attributes
@@ -46,7 +47,8 @@ contract Staking is Base {
 		uint256 ggpStaked;
 		uint256 avaxStaked;
 		uint256 avaxAssigned;
-		uint256 avaxAssignedHighWater;
+		uint256 avaxValidating;
+		uint256 avaxValidatingHighWater;
 		uint256 minipoolCount;
 		uint256 rewardsStartTime;
 		uint256 ggpRewards;
@@ -119,7 +121,7 @@ contract Staking is Base {
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")), amount);
 	}
 
-	/* AVAX ASSIGNED */
+	/* AVAX ASSIGNED + REQUESTED */
 
 	/// @notice The amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
@@ -142,28 +144,46 @@ contract Staking is Base {
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
 	}
 
-	/* AVAX ASSIGNED HIGH-WATER */
+	/* AVAX VALIDATING */
+
+	/// @notice The amount of AVAX a given staker has validating
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	function getAVAXValidating(address stakerAddr) public view returns (uint256) {
+		int256 stakerIndex = getIndexOf(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")));
+	}
+
+	/// @notice Increase the amount of AVAX a given staker has validating
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	/// @param amount Amount to increase
+	function increaseAVAXValidating(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")), amount);
+	}
+
+	/// @notice Decrease the amount of AVAX a given staker has validating
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	/// @param amount Amount to decrease
+	function decreaseAVAXValidating(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")), amount);
+	}
+
+	/* AVAX VALIDATING HIGH-WATER */
 
 	/// @notice Largest total AVAX amt assigned to a staker during a rewards period
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function getAVAXAssignedHighWater(address stakerAddr) public view returns (uint256) {
+	function getAVAXValidatingHighWater(address stakerAddr) public view returns (uint256) {
 		int256 stakerIndex = getIndexOf(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidatingHighWater")));
 	}
 
-	/// @notice Increase the AVAXAssignedHighWater
+	/// @notice Set AVAXValidatingHighWater to value passed in
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseAVAXAssignedHighWater(address stakerAddr, uint256 amount) public onlyRegisteredNetworkContract {
+	/// @param amount New value for AVAXValidatingHighWater
+	function setAVAXValidatingHighWater(address stakerAddr, uint256 amount) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), amount);
-	}
-
-	/// @notice Reset the AVAXAssignedHighWater to what the current AVAXAssigned is for the staker
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function resetAVAXAssignedHighWater(address stakerAddr) public onlyRegisteredNetworkContract {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
-		uint256 currAVAXAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
-		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), currAVAXAssigned);
+		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidatingHighWater")), amount);
 	}
 
 	/* MINIPOOL COUNT */
@@ -281,13 +301,15 @@ contract Staking is Base {
 	/// @notice Returns effective collateralization ratio which will be used to pay out rewards
 	///         based on current GGP price and AVAX high water mark. A staker can earn GGP rewards
 	///         on up to 150% collat ratio
+	/// returns collateral ratio of GGP -> avax high water
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @return Ratio is between 0%-150% (0-1.5 ether)
 	function getEffectiveRewardsRatio(address stakerAddr) public view returns (uint256) {
-		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
-		if (avaxAssignedHighWater == 0) {
+		uint256 avaxValidatingHighWater = getAVAXValidatingHighWater(stakerAddr);
+		if (avaxValidatingHighWater == 0) {
 			return 0;
 		}
+
 		if (getCollateralizationRatio(stakerAddr) < TENTH) {
 			return 0;
 		}
@@ -295,7 +317,7 @@ contract Staking is Base {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 		uint256 ggpStakedInAvax = getGGPStake(stakerAddr).mulWadDown(ggpPriceInAvax);
-		uint256 ratio = ggpStakedInAvax.divWadDown(avaxAssignedHighWater);
+		uint256 ratio = ggpStakedInAvax.divWadDown(avaxValidatingHighWater);
 
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 maxRatio = dao.getMaxCollateralizationRatio();
@@ -308,10 +330,11 @@ contract Staking is Base {
 	function getEffectiveGGPStaked(address stakerAddr) external view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
+		uint256 avaxValidatingHighWater = getAVAXValidatingHighWater(stakerAddr);
 
-		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
+		// ratio of ggp to avax high water
 		uint256 ratio = getEffectiveRewardsRatio(stakerAddr);
-		return avaxAssignedHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);
+		return avaxValidatingHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);
 	}
 
 	/// @notice Accept a GGP stake
@@ -406,6 +429,7 @@ contract Staking is Base {
 		staker.ggpStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")));
 		staker.avaxAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
 		staker.avaxStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")));
+		staker.avaxValidating = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")));
 		staker.stakerAddr = getAddress(keccak256(abi.encodePacked("staker.item", stakerIndex, ".stakerAddr")));
 		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));

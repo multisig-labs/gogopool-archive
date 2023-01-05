@@ -420,24 +420,40 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	// To ensure we are managing getAVAXAssigned and getAVAXAssignedHighWater seperately now
-	function testAVAXHighWaterMark() public {
+	// To ensure we are managing getAVAXValidating and getAVAXValidatingHighWater seperately now
+	function testAVAXValidatingHighWaterMark() public {
 		vm.prank(nodeOp1);
 		staking.stakeGGP(100 ether);
 
 		vm.startPrank(address(minipoolMgr));
-		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
-		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
-		staking.increaseAVAXAssignedHighWater(nodeOp1, 1000 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
+		assertEq(staking.getAVAXValidating(nodeOp1), 0 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0 ether);
 
-		staking.decreaseAVAXAssigned(nodeOp1, 1000 ether);
+		staking.increaseAVAXValidating(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0 ether);
+		staking.setAVAXValidatingHighWater(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 1000 ether);
+
+		staking.decreaseAVAXValidating(nodeOp1, 1000 ether);
 		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
-		staking.resetAVAXAssignedHighWater(nodeOp1);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 1000 ether);
+
+		staking.setAVAXValidatingHighWater(nodeOp1, 0 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0 ether);
+		vm.stopPrank();
+	}
+
+	function testAVAXValidating() public {
+		vm.prank(nodeOp1);
+		staking.stakeGGP(100 ether);
+
+		vm.startPrank(address(minipoolMgr));
+		staking.increaseAVAXValidating(nodeOp1, 1000 ether);
+
+		assertEq(staking.getAVAXValidating(nodeOp1), 1000 ether);
+
+		staking.decreaseAVAXValidating(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXValidating(nodeOp1), 0);
 		vm.stopPrank();
 	}
 }
