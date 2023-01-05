@@ -16,31 +16,6 @@ contract ClaimNodeOpTest is BaseTest {
 		distributeInitialSupply();
 	}
 
-	function distributeInitialSupply() public {
-		// note: guardian is minted 100% of the supply
-		vm.startPrank(guardian);
-
-		uint256 companyAllocation = TOTAL_INITIAL_SUPPLY.mulWadDown(.32 ether);
-		uint256 pDaoAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.3233 ether);
-		uint256 seedInvestorAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.1567 ether);
-		uint256 rewardsPoolAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.20 ether); //4.5 million
-
-		// approve vault deposits for all tokens that won't be in company wallet
-		ggp.approve(address(vault), TOTAL_INITIAL_SUPPLY - companyAllocation);
-
-		// 33% to the pDAO wallet
-		vault.depositToken("ProtocolDAO", ggp, pDaoAllo);
-
-		// TODO make an actual vesting contract
-		// 15.67% to vesting smart contract
-		vault.depositToken("ProtocolDAO", ggp, seedInvestorAllo);
-
-		// 20% to staking rewards contract
-		vault.depositToken("RewardsPool", ggp, rewardsPoolAllo);
-
-		vm.stopPrank();
-	}
-
 	function testGetRewardsCycleTotal() public {
 		skip(dao.getRewardsCycleSeconds());
 		rewardsPool.startRewardsCycle();
@@ -133,7 +108,7 @@ contract ClaimNodeOpTest is BaseTest {
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
 		assertEq(staking.getGGPRewards(nodeOp1), (nopClaim.getRewardsCycleTotal()) / 2);
 		assertEq(staking.getLastRewardsCycleCompleted(nodeOp1), rewardsPool.getRewardsCycleCount());
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), staking.getAVAXAssigned(nodeOp1));
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), staking.getAVAXAssigned(nodeOp1));
 
 		vm.expectRevert(abi.encodeWithSelector(ClaimNodeOp.RewardsAlreadyDistributedToStaker.selector, address(nodeOp1)));
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
