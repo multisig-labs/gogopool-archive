@@ -47,7 +47,7 @@ task(
 	"vault:register_allowed_tokens",
 	"register ggp token to be accepted"
 ).setAction(async () => {
-	const signer = (await getNamedAccounts())[guardian];
+	const signer = (await getNamedAccounts())["guardian"];
 
 	const vault = await get("Vault", signer);
 	const ggp = await get("TokenGGP", signer);

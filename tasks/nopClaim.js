@@ -14,7 +14,7 @@ task(
 	"nopClaim:distributeRewards",
 	"Calculate and distribute rewards to the node operators"
 ).setAction(async () => {
-	const rialto = await getNamedAccounts().rialto1;
+	const rialto = (await getNamedAccounts()).rialto1;
 	const nopClaim = await get("ClaimNodeOp", rialto);
 	const stakers = await getStakers();
 

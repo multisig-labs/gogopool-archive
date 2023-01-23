@@ -23,7 +23,7 @@ task("inflation:cycleStatus", "How many rewards cycles have passed").setAction(
 		);
 		log(`RewardsCycleTotalAmt: ${await rewardsPool.getRewardsCycleTotalAmt()}`);
 		log(
-			`InflationIntervalStartTime: ${await dao.getInflationIntervalStartTime()}`
+			`InflationIntervalStartTime: ${await rewardsPool.getInflationIntervalStartTime()}`
 		);
 		log(
 			`InflationAmt (currentSupply, nextSupply): ${await rewardsPool.getInflationAmt()}`
