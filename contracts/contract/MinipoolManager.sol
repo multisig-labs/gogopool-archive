@@ -38,6 +38,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	minipool.item<index>.avaxNodeOpAmt = avax deposited by node operator (for this cycle)
 	minipool.item<index>.avaxNodeOpInitialAmt = avax deposited by node operator for the **first** validation cycle
 	minipool.item<index>.avaxLiquidStakerAmt = avax deposited by users and assigned to this nodeID
+	minipool.item<index>.creationTime = actual time the minipool was created
 
 	// Submitted by the Rialto oracle
 	minipool.item<index>.txID = transaction id of the AddValidatorTx
@@ -95,6 +96,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		uint256 avaxLiquidStakerAmt;
 		// Submitted by the Rialto Oracle
 		bytes32 txID;
+		uint256 creationTime;
 		uint256 initialStartTime;
 		uint256 startTime;
 		uint256 endTime;
@@ -264,6 +266,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpInitialAmt")), msg.value);
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpAmt")), msg.value);
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")), avaxAssignmentRequest);
+		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".creationTime")), block.timestamp);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Prelaunch);
 
@@ -274,12 +277,12 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	/// @notice Owner of a minipool can cancel the (prelaunch) minipool
 	/// @param nodeID 20-byte Avalanche node ID the Owner registered with
 	function cancelMinipool(address nodeID) external nonReentrant {
-		Staking staking = Staking(getContractAddress("Staking"));
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		int256 index = requireValidMinipool(nodeID);
 		onlyOwner(index);
-		// make sure they meet the wait period requirement
-		if (block.timestamp - staking.getRewardsStartTime(msg.sender) < dao.getMinipoolCancelMoratoriumSeconds()) {
+		// make sure the minipool meets the wait period requirement
+		uint256 creationTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".creationTime")));
+		if (block.timestamp - creationTime < dao.getMinipoolCancelMoratoriumSeconds()) {
 			revert CancellationTooEarly();
 		}
 		_cancelMinipoolAndReturnFunds(nodeID, index);
@@ -495,6 +498,12 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		staking.increaseAVAXAssigned(mp.owner, compoundedAvaxNodeOpAmt);
 		staking.increaseMinipoolCount(mp.owner);
 
+		if (staking.getRewardsStartTime(mp.owner) == 0) {
+			// Edge case where calculateAndDistributeRewards has reset their rewards time even though they are still cycling
+			// So we re-set it here to their initial start time for this minipool
+			staking.setRewardsStartTime(mp.owner, mp.initialStartTime);
+		}
+
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 ratio = staking.getCollateralizationRatio(mp.owner);
 		if (ratio < dao.getMinCollateralizationRatio()) {
@@ -610,6 +619,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		mp.avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxNodeOpAmt")));
 		mp.avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")));
 		mp.txID = getBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")));
+		mp.creationTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".creationTime")));
 		mp.initialStartTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".initialStartTime")));
 		mp.startTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
 		mp.endTime = getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")));
@@ -713,6 +723,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	/// @param index Index of the minipool
 	function resetMinipoolData(int256 index) private {
 		setBytes32(keccak256(abi.encodePacked("minipool.item", index, ".txID")), 0);
+		setUint(keccak256(abi.encodePacked("minipool.item", index, ".creationTime")), 0);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")), 0);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime")), 0);
 		setUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxTotalRewardAmt")), 0);

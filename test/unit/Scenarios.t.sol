@@ -496,6 +496,7 @@ contract ScenariosTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
 		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), depositAmt);
+		skip(5 seconds); //cancel min time
 		minipoolMgr.cancelMinipool(mp2.nodeID);
 		vm.stopPrank();
 
