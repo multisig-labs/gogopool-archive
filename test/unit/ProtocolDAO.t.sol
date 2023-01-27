@@ -187,7 +187,7 @@ contract ProtocolDAOTest is BaseTest {
 		vm.stopPrank();
 
 		vm.prank(guardian);
-		dao.registerContract(addr, name);
+		dao.registerContract(name, addr);
 
 		assertEq(store.getBool(keccak256(abi.encodePacked("contract.exists", addr))), true);
 		assertEq(store.getAddress(keccak256(abi.encodePacked("contract.address", name))), addr);
@@ -204,7 +204,21 @@ contract ProtocolDAOTest is BaseTest {
 
 		vm.startPrank(address(123));
 		vm.expectRevert(BaseAbstract.MustBeGuardian.selector);
-		dao.registerContract(addr, name);
+		dao.registerContract(name, addr);
+		vm.stopPrank();
+	}
+
+	function testRegisterContractAlreadyRegistered() public {
+		address addr = randAddress();
+		string memory name = "newContract";
+
+		vm.prank(guardian);
+		dao.registerContract(name, addr);
+
+		address newAddr = randAddress();
+		vm.startPrank(guardian);
+		vm.expectRevert(ProtocolDAO.ContractAlreadyRegistered.selector);
+		dao.registerContract(name, newAddr);
 		vm.stopPrank();
 	}
 
@@ -213,7 +227,7 @@ contract ProtocolDAOTest is BaseTest {
 		string memory name = "TestContract";
 
 		vm.prank(guardian);
-		dao.registerContract(addr, name);
+		dao.registerContract(name, addr);
 
 		assertEq(store.getBool(keccak256(abi.encodePacked("contract.exists", addr))), true);
 		assertEq(store.getAddress(keccak256(abi.encodePacked("contract.address", name))), addr);
@@ -252,7 +266,7 @@ contract ProtocolDAOTest is BaseTest {
 		address newAddr = randAddress();
 
 		vm.prank(guardian);
-		dao.registerContract(addr, name);
+		dao.registerContract(name, addr);
 		assertEq(store.getBool(keccak256(abi.encodePacked("contract.exists", addr))), true);
 		assertEq(store.getAddress(keccak256(abi.encodePacked("contract.address", name))), addr);
 		assertEq(store.getString(keccak256(abi.encodePacked("contract.name", addr))), name);

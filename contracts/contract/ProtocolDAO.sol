@@ -8,6 +8,7 @@ import {Storage} from "./Storage.sol";
 /// @title Settings for the Protocol
 contract ProtocolDAO is Base {
 	error ValueNotWithinRange();
+	error ContractAlreadyRegistered();
 
 	modifier valueNotGreaterThanOne(uint256 setterValue) {
 		if (setterValue > 1 ether) {
@@ -185,12 +186,16 @@ contract ProtocolDAO is Base {
 	//*** Contract Registration ***
 
 	/// @notice Register a new contract with Storage
-	/// @param addr Contract address to register
-	/// @param name Contract name to register
-	function registerContract(address addr, string memory name) public onlyGuardian {
-		setBool(keccak256(abi.encodePacked("contract.exists", addr)), true);
-		setAddress(keccak256(abi.encodePacked("contract.address", name)), addr);
-		setString(keccak256(abi.encodePacked("contract.name", addr)), name);
+	/// @param contractName Contract name to register
+	/// @param contractAddr Contract address to register
+	function registerContract(string memory contractName, address contractAddr) public onlyGuardian {
+		if (getAddress(keccak256(abi.encodePacked("contract.address", contractName))) != address(0)) {
+			revert ContractAlreadyRegistered();
+		}
+
+		setBool(keccak256(abi.encodePacked("contract.exists", contractAddr)), true);
+		setAddress(keccak256(abi.encodePacked("contract.address", contractName)), contractAddr);
+		setString(keccak256(abi.encodePacked("contract.name", contractAddr)), contractName);
 	}
 
 	/// @notice Unregister a contract with Storage
@@ -211,7 +216,9 @@ contract ProtocolDAO is Base {
 		address existingAddr,
 		address newAddr
 	) external onlyGuardian {
-		registerContract(newAddr, contractName);
+		setAddress(keccak256(abi.encodePacked("contract.address", contractName)), newAddr);
+		setString(keccak256(abi.encodePacked("contract.name", newAddr)), contractName);
+		setBool(keccak256(abi.encodePacked("contract.exists", newAddr)), true);
 
 		deleteString(keccak256(abi.encodePacked("contract.name", existingAddr)));
 		deleteBool(keccak256(abi.encodePacked("contract.exists", existingAddr)));
