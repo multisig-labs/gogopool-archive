@@ -194,24 +194,27 @@ contract ProtocolDAO is Base {
 	}
 
 	/// @notice Unregister a contract with Storage
-	/// @param addr Contract address to unregister
-	function unregisterContract(address addr) public onlyGuardian {
-		string memory name = getContractName(addr);
-		deleteBool(keccak256(abi.encodePacked("contract.exists", addr)));
+	/// @param name Name of contract to unregister
+	function unregisterContract(string memory name) public onlyGuardian {
+		address addr = getContractAddress(name);
 		deleteAddress(keccak256(abi.encodePacked("contract.address", name)));
+
+		deleteBool(keccak256(abi.encodePacked("contract.exists", addr)));
 		deleteString(keccak256(abi.encodePacked("contract.name", addr)));
 	}
 
-	/// @notice Upgrade a contract by unregistering the existing address, and registring a new address and name
-	/// @param newAddr Address of the new contract
-	/// @param newName Name of the new contract
+	/// @notice Upgrade a contract by registring a new address and name, and unregistering the existing address
+	/// @param contractName Name of the new contract
 	/// @param existingAddr Address of the existing contract to be deleted
-	function upgradeExistingContract(
-		address newAddr,
-		string memory newName,
-		address existingAddr
+	/// @param newAddr Address of the new contract
+	function upgradeContract(
+		string memory contractName,
+		address existingAddr,
+		address newAddr
 	) external onlyGuardian {
-		registerContract(newAddr, newName);
-		unregisterContract(existingAddr);
+		registerContract(newAddr, contractName);
+
+		deleteBool(keccak256(abi.encodePacked("contract.exists", existingAddr)));
+		deleteString(keccak256(abi.encodePacked("contract.name", existingAddr)));
 	}
 }
