@@ -291,4 +291,27 @@ contract ProtocolDAOTest is BaseTest {
 		dao.upgradeContract(name, addr, existingAddr);
 		vm.stopPrank();
 	}
+
+	function testUpgradeProtocolDAO() public {
+		// set somethingn with the existing dao
+		vm.prank(guardian);
+		dao.setClaimingContractPct("TestContract", 0.2 ether);
+
+		ProtocolDAO newDao = new ProtocolDAO(store);
+
+		// upgrade dao
+		vm.prank(guardian);
+		dao.upgradeContract("ProtocolDAO", address(dao), address(newDao));
+
+		// verify new addresses
+		assertTrue(store.getBool(keccak256(abi.encodePacked("contract.exists", address(newDao)))));
+		assertEq(store.getAddress(keccak256(abi.encodePacked("contract.address", "ProtocolDAO"))), address(newDao));
+		assertEq(store.getString(keccak256(abi.encodePacked("contract.name", address(newDao)))), "ProtocolDAO");
+
+		// verify new dao works
+		assertEq(dao.getClaimingContractPct("TestContract"), 0.2 ether);
+
+		assertFalse(store.getBool(keccak256(abi.encodePacked("contract.exists", address(dao)))));
+		assertEq(store.getString(keccak256(abi.encodePacked("contract.name", address(dao)))), "");
+	}
 }
