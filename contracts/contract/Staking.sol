@@ -355,7 +355,7 @@ contract Staking is Base {
 
 	/// @notice Allows the staker to unstake their GGP if they are over the 150% collateralization ratio
 	/// @param amount The amount of GGP being withdrawn
-	function withdrawGGP(uint256 amount) external whenNotPaused {
+	function withdrawGGP(uint256 amount) external {
 		if (amount > getGGPStake(msg.sender)) {
 			revert InsufficientBalance();
 		}
