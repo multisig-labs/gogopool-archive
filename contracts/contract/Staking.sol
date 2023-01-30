@@ -316,7 +316,7 @@ contract Staking is Base {
 
 	/// @notice Accept a GGP stake
 	/// @param amount The amount of GGP being staked
-	function stakeGGP(uint256 amount) external whenNotPaused {
+	function stakeGGP(uint256 amount) external {
 		// Transfer GGP tokens from staker to this contract
 		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(msg.sender, amount);
@@ -334,7 +334,7 @@ contract Staking is Base {
 	/// @notice Stakes GGP in the protocol
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @param amount The amount of GGP being staked
-	function _stakeGGP(address stakerAddr, uint256 amount) internal {
+	function _stakeGGP(address stakerAddr, uint256 amount) internal whenNotPaused {
 		emit GGPStaked(stakerAddr, amount);
 
 		// Deposit GGP tokens from this contract to vault
