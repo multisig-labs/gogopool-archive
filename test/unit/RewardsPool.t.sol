@@ -185,4 +185,23 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(ggp.balanceOf(multisig2), amtPerMultisig);
 		assertEq(ggp.balanceOf(multisig3), 0);
 	}
+
+	// When syncRewards is delayed, tokens should still inflate when next sync is called
+	function testInflationAmtWithRewardsDelay() public {
+		// skip two cycles before syncing rewards
+		skip(2 * dao.getRewardsCycleSeconds());
+
+		uint256 inflationIntervalsElapsed = 56;
+		uint256 inflationRate = dao.getInflationIntervalRate();
+		uint256 expectedInflationTokens = dao.getTotalGGPCirculatingSupply();
+		for (uint256 i = 0; i < inflationIntervalsElapsed; i++) {
+			expectedInflationTokens = expectedInflationTokens.mulWadDown(inflationRate);
+		}
+
+		// start rewards cycle
+		rewardsPool.startRewardsCycle();
+
+		// verify inflated tokens
+		assertEq(dao.getTotalGGPCirculatingSupply(), expectedInflationTokens);
+	}
 }
