@@ -523,15 +523,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		_cancelMinipoolAndReturnFunds(nodeID, minipoolIndex);
 	}
 
-	/// @notice Multisig can move a minipool from the error state to the finished state, after a human review of the error
-	/// @param nodeID 20-byte Avalanche node ID
-	function finishFailedMinipoolByMultisig(address nodeID) external {
-		int256 minipoolIndex = onlyValidMultisig(nodeID);
-		requireValidStateTransition(minipoolIndex, MinipoolStatus.Finished);
-		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Finished));
-		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Finished);
-	}
-
 	//
 	// VIEW FUNCTIONS
 	//
