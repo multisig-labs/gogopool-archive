@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
+import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
 
 contract StakingTest is BaseTest {
 	using FixedPointMathLib for uint256;
@@ -350,6 +351,16 @@ contract StakingTest is BaseTest {
 		staking.stakeGGP(amt);
 		assert(ggp.balanceOf(nodeOp1) == startingGGPAmt - amt);
 		assert(staking.getGGPStake(nodeOp1) == amt);
+		vm.stopPrank();
+	}
+
+	function testStakeGGPPaused() public {
+		vm.prank(address(ocyticus));
+		dao.pauseContract("Staking");
+
+		vm.startPrank(nodeOp1);
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		staking.stakeGGP(100 ether);
 		vm.stopPrank();
 	}
 
