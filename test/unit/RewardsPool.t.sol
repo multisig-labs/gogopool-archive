@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
+import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 contract RewardsPoolTest is BaseTest {
@@ -203,5 +204,21 @@ contract RewardsPoolTest is BaseTest {
 
 		// verify inflated tokens
 		assertEq(dao.getTotalGGPCirculatingSupply(), expectedInflationTokens);
+	}
+
+	function testStartRewardsCyclePaused() public {
+		skip(dao.getRewardsCycleSeconds());
+
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("RewardsPool");
+
+		assertFalse(rewardsPool.canStartRewardsCycle());
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		rewardsPool.startRewardsCycle();
 	}
 }
