@@ -220,9 +220,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Max assets an owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxWithdraw(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
 		uint256 assets = convertToAssets(balanceOf[_owner]);
 		uint256 avail = totalAssets() - stakingTotalAssets;
 		return assets > avail ? avail : assets;
@@ -231,9 +228,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Max shares owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxRedeem(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
 		uint256 shares = balanceOf[_owner];
 		uint256 avail = convertToShares(totalAssets() - stakingTotalAssets);
 		return shares > avail ? avail : shares;
@@ -256,14 +250,14 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Preview shares burned for AVAX assets
 	/// @param assets Amount of AVAX to withdraw
 	/// @return uint256 Amount of ggAVAX that would be burned
-	function previewWithdraw(uint256 assets) public view override whenTokenNotPaused(assets) returns (uint256) {
+	function previewWithdraw(uint256 assets) public view override returns (uint256) {
 		return super.previewWithdraw(assets);
 	}
 
 	/// @notice Preview AVAX returned for burning shares
 	/// @param shares Amount of ggAVAX to burn
 	/// @return uint256 Amount of AVAX returned
-	function previewRedeem(uint256 shares) public view override whenTokenNotPaused(shares) returns (uint256) {
+	function previewRedeem(uint256 shares) public view override returns (uint256) {
 		return super.previewRedeem(shares);
 	}
 
