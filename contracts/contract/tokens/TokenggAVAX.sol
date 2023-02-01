@@ -138,6 +138,10 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		uint256 totalAssets_ = totalAssets();
 
 		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
+
+		if (reservedAssets + stakingTotalAssets > totalAssets_) {
+			return 0;
+		}
 		return totalAssets_ - reservedAssets - stakingTotalAssets;
 	}
 
