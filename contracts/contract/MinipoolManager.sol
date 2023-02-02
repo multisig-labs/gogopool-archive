@@ -697,9 +697,10 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	function slash(int256 index) private {
 		address nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
-		uint256 duration = block.timestamp - getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
+		uint256 cycleDuration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime"))) -
+			getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
 		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")));
-		uint256 expectedAVAXRewardsAmt = getExpectedAVAXRewardsAmt(duration, avaxLiquidStakerAmt);
+		uint256 expectedAVAXRewardsAmt = getExpectedAVAXRewardsAmt(cycleDuration, avaxLiquidStakerAmt);
 		uint256 slashGGPAmt = calculateGGPSlashAmt(expectedAVAXRewardsAmt);
 
 		Staking staking = Staking(getContractAddress("Staking"));
