@@ -403,7 +403,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.prank(address(ocyticus));
 		dao.pauseContract("TokenggAVAX");
 
-		// verify withdraw still works
+		// verify withdrawAVAX still works
 		vm.prank(liqStaker);
 		ggAVAX.withdrawAVAX(100 ether);
 
@@ -446,7 +446,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.prank(address(ocyticus));
 		dao.pauseContract("TokenggAVAX");
 
-		// verify withdraw still works
+		// verify redeemAVAX still works
 		vm.prank(liqStaker);
 		ggAVAX.redeemAVAX(100 ether);
 
@@ -465,8 +465,8 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		vm.prank(address(ocyticus));
 		dao.pauseContract("TokenggAVAX");
 
-		uint256 shares = ggAVAX.maxWithdraw(liqStaker);
-		assertEq(shares, depositAmt);
+		uint256 assets = ggAVAX.maxWithdraw(liqStaker);
+		assertEq(assets, depositAmt);
 	}
 
 	function testMaxRedeemPaused() public {
