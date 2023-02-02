@@ -49,7 +49,6 @@ contract Staking is Base {
 		uint256 avaxAssigned;
 		uint256 avaxValidating;
 		uint256 avaxValidatingHighWater;
-		uint256 minipoolCount;
 		uint256 rewardsStartTime;
 		uint256 ggpRewards;
 		uint256 lastRewardsCycleCompleted;
@@ -186,29 +185,6 @@ contract Staking is Base {
 		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidatingHighWater")), amount);
 	}
 
-	/* MINIPOOL COUNT */
-
-	/// @notice The number of minipools the given staker has
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function getMinipoolCount(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = getIndexOf(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
-	}
-
-	/// @notice Increase the number of minipools the given staker has
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseMinipoolCount(address stakerAddr) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
-	}
-
-	/// @notice Decrease the number of minipools the given staker has
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function decreaseMinipoolCount(address stakerAddr) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
-	}
-
 	/* REWARDS START TIME */
 
 	/// @notice The timestamp when the staker registered for GGP rewards
@@ -220,7 +196,6 @@ contract Staking is Base {
 
 	/// @notice Set the timestamp when the staker registered for GGP rewards
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	// TODO cant use onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) since we also call from increaseMinipoolCount. Wat do?
 	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		if (time > block.timestamp) {
@@ -431,7 +406,6 @@ contract Staking is Base {
 		staker.avaxStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")));
 		staker.avaxValidating = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")));
 		staker.stakerAddr = getAddress(keccak256(abi.encodePacked("staker.item", stakerIndex, ".stakerAddr")));
-		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
 		staker.ggpRewards = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
 		staker.lastRewardsCycleCompleted = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")));
