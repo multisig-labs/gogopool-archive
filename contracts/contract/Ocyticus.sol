@@ -36,10 +36,9 @@ contract Ocyticus is Base {
 	/// @notice Restrict actions in important contracts
 	function pauseEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		dao.pauseContract("MinipoolManager");
-		dao.pauseContract("RewardsPool");
-		dao.pauseContract("Staking");
 		dao.pauseContract("TokenggAVAX");
+		dao.pauseContract("MinipoolManager");
+		dao.pauseContract("Staking");
 		disableAllMultisigs();
 	}
 
@@ -47,10 +46,9 @@ contract Ocyticus is Base {
 	/// @dev Multisigs will need to be enabled seperately, we dont know which ones to enable
 	function resumeEverything() external onlyDefender {
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		dao.resumeContract("MinipoolManager");
-		dao.resumeContract("RewardsPool");
-		dao.resumeContract("Staking");
 		dao.resumeContract("TokenggAVAX");
+		dao.resumeContract("MinipoolManager");
+		dao.resumeContract("Staking");
 	}
 
 	/// @notice Disable every multisig in the protocol
