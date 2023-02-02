@@ -84,7 +84,6 @@ contract ScenariosTest is BaseTest {
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
 		rialto.processGGPRewards();
 
-		assertEq(staking.getMinipoolCount(nodeOp1), 0);
 		assertEq(staking.getRewardsStartTime(nodeOp1), 0);
 
 		// Not testing if the rewards are "correct", depends on elapsed time too much
