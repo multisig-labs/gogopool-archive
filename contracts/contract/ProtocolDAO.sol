@@ -7,8 +7,10 @@ import {Storage} from "./Storage.sol";
 
 /// @title Settings for the Protocol
 contract ProtocolDAO is Base {
-	error ValueNotWithinRange();
 	error ContractAlreadyRegistered();
+	error ExistingContractNotRegistered();
+	error InvalidContract();
+	error ValueNotWithinRange();
 
 	modifier valueNotGreaterThanOne(uint256 setterValue) {
 		if (setterValue > 1 ether) {
@@ -193,6 +195,10 @@ contract ProtocolDAO is Base {
 			revert ContractAlreadyRegistered();
 		}
 
+		if (bytes(contractName).length == 0 || contractAddr == address(0)) {
+			revert InvalidContract();
+		}
+
 		setBool(keccak256(abi.encodePacked("contract.exists", contractAddr)), true);
 		setAddress(keccak256(abi.encodePacked("contract.address", contractName)), contractAddr);
 		setString(keccak256(abi.encodePacked("contract.name", contractAddr)), contractName);
@@ -216,6 +222,17 @@ contract ProtocolDAO is Base {
 		address existingAddr,
 		address newAddr
 	) external onlyGuardian {
+		if (
+			bytes(getString(keccak256(abi.encodePacked("contract.name", existingAddr)))).length == 0 ||
+			getAddress(keccak256(abi.encodePacked("contract.address", contractName))) == address(0)
+		) {
+			revert ExistingContractNotRegistered();
+		}
+
+		if (newAddr == address(0)) {
+			revert InvalidContract();
+		}
+
 		setAddress(keccak256(abi.encodePacked("contract.address", contractName)), newAddr);
 		setString(keccak256(abi.encodePacked("contract.name", newAddr)), contractName);
 		setBool(keccak256(abi.encodePacked("contract.exists", newAddr)), true);

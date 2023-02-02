@@ -222,6 +222,19 @@ contract ProtocolDAOTest is BaseTest {
 		vm.stopPrank();
 	}
 
+	function testRegisterContractInvalid() public {
+		address addr = randAddress();
+		string memory name = "newContract";
+
+		vm.startPrank(guardian);
+		vm.expectRevert(ProtocolDAO.InvalidContract.selector);
+		dao.registerContract("", addr);
+
+		vm.expectRevert(ProtocolDAO.InvalidContract.selector);
+		dao.registerContract(name, address(0));
+		vm.stopPrank();
+	}
+
 	function testUnregisterContract() public {
 		address addr = randAddress();
 		string memory name = "TestContract";
@@ -259,7 +272,7 @@ contract ProtocolDAOTest is BaseTest {
 		dao.unregisterContract(name);
 	}
 
-	function testUpgradeExistingContract() public {
+	function testUpgradeContract() public {
 		address addr = randAddress();
 		string memory name = "TestContract";
 
@@ -294,7 +307,7 @@ contract ProtocolDAOTest is BaseTest {
 		assertEq(store.getBool(testKey), true);
 	}
 
-	function testUpgradeExistingContractNotGuardian() public {
+	function testUpgradeContractNotGuardian() public {
 		address addr = randAddress();
 		string memory name = "newContract";
 
@@ -304,6 +317,41 @@ contract ProtocolDAOTest is BaseTest {
 		vm.expectRevert(BaseAbstract.MustBeGuardian.selector);
 		dao.upgradeContract(name, addr, existingAddr);
 		vm.stopPrank();
+	}
+
+	function testUpgradeContractExistingNotRegistered() public {
+		// setup existing contract
+		address addr = randAddress();
+		string memory name = "TestContract";
+
+		vm.prank(guardian);
+		dao.registerContract(name, addr);
+
+		address newAddr = randAddress();
+
+		// attempt upgrade with bad name
+		vm.startPrank(guardian);
+		vm.expectRevert(ProtocolDAO.ExistingContractNotRegistered.selector);
+		dao.upgradeContract("BadName", addr, newAddr);
+
+		// attempt upgrade with bad address
+		vm.expectRevert(ProtocolDAO.ExistingContractNotRegistered.selector);
+		dao.upgradeContract(name, randAddress(), newAddr);
+		vm.stopPrank();
+	}
+
+	function testUpgradeContractInvalid() public {
+		// setup existing contract
+		address addr = randAddress();
+		string memory name = "TestContract";
+
+		vm.prank(guardian);
+		dao.registerContract(name, addr);
+
+		// attempt upgrade with invalid new address
+		vm.startPrank(guardian);
+		vm.expectRevert(ProtocolDAO.InvalidContract.selector);
+		dao.upgradeContract(name, addr, address(0));
 	}
 
 	function testUpgradeProtocolDAO() public {
