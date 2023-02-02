@@ -60,6 +60,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	using SafeTransferLib for ERC20;
 
 	error CancellationTooEarly();
+	error DurationOutOfBounds();
+	error DelegationFeeOutOfBounds();
 	error InsufficientGGPCollateralization();
 	error InsufficientAVAXForMinipoolCreation();
 	error InvalidAmount();
@@ -216,6 +218,14 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		if (msg.value + avaxAssignmentRequest < dao.getMinipoolMinAVAXStakingAmt()) {
 			revert InsufficientAVAXForMinipoolCreation();
+		}
+
+		if (duration < 2 weeks || duration > 365 days) {
+			revert DurationOutOfBounds();
+		}
+
+		if (delegationFee < 0.02 ether || delegationFee > 1 ether) {
+			revert DelegationFeeOutOfBounds();
 		}
 
 		Staking staking = Staking(getContractAddress("Staking"));

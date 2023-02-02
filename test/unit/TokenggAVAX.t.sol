@@ -23,7 +23,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		nodeID = randAddress();
 		duration = 2 weeks;
-		delegationFee = 20_000;
+		delegationFee = 0.2 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
 		vm.startPrank(alice);
 		ggp.approve(address(staking), 100 ether);
