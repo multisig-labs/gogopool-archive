@@ -434,6 +434,26 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(assets, 0);
 	}
 
+	function testMaxMint() public {
+		address liqStaker = getActor("liqStaker");
+		assertEq(ggAVAX.maxMint(liqStaker), type(uint256).max);
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		assertEq(ggAVAX.maxMint(liqStaker), 0);
+	}
+
+	function testMaxDeposit() public {
+		address liqStaker = getActor("liqStaker");
+		assertEq(ggAVAX.maxDeposit(liqStaker), type(uint256).max);
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		assertEq(ggAVAX.maxDeposit(liqStaker), 0);
+	}
+
 	function testMaxWithdrawPaused() public {
 		vm.prank(address(ocyticus));
 		dao.pauseContract("TokenggAVAX");
