@@ -354,7 +354,7 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	function testStakeGGPPaused() public {
+	function testStakeAndWithdrawGGPPaused() public {
 		uint256 initialBalance = ggp.balanceOf(nodeOp1);
 		vm.prank(nodeOp1);
 		staking.stakeGGP(100 ether);
