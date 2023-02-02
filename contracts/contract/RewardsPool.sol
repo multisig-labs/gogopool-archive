@@ -150,15 +150,11 @@ contract RewardsPool is Base {
 	/// @notice Checking if enough time has passed since the last rewards cycle
 	/// @dev Rialto calls this to see if at least one cycle has passed
 	function canStartRewardsCycle() public view returns (bool) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "RewardsPool")))) {
-			return false;
-		}
-
 		return getRewardsCyclesElapsed() > 0 && getInflationIntervalsElapsed() > 0;
 	}
 
 	/// @notice Public function that will run a GGP rewards cycle if possible
-	function startRewardsCycle() external whenNotPaused {
+	function startRewardsCycle() external {
 		if (!canStartRewardsCycle()) {
 			revert UnableToStartRewardsCycle();
 		}
