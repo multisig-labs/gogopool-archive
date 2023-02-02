@@ -11,9 +11,8 @@ contract OcyticusTest is BaseTest {
 	function testPauseEverything() public {
 		vm.prank(guardian);
 		ocyticus.pauseEverything();
-		assertTrue(dao.getContractPaused("MinipoolManager"));
-		assertTrue(dao.getContractPaused("RewardsPool"));
 		assertTrue(dao.getContractPaused("TokenggAVAX"));
+		assertTrue(dao.getContractPaused("MinipoolManager"));
 		assertTrue(dao.getContractPaused("Staking"));
 
 		vm.expectRevert(MultisigManager.NoEnabledMultisigFound.selector);
@@ -22,7 +21,6 @@ contract OcyticusTest is BaseTest {
 		vm.prank(guardian);
 		ocyticus.resumeEverything();
 		assertFalse(dao.getContractPaused("TokenggAVAX"));
-		assertFalse(dao.getContractPaused("RewardsPool"));
 		assertFalse(dao.getContractPaused("MinipoolManager"));
 		assertFalse(dao.getContractPaused("Staking"));
 

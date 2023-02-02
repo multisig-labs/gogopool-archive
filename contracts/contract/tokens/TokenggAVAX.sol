@@ -242,6 +242,9 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Max assets an owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxWithdraw(address _owner) public view override returns (uint256) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			return 0;
+		}
 		uint256 assets = convertToAssets(balanceOf[_owner]);
 		uint256 avail = totalAssets() - stakingTotalAssets;
 		return assets > avail ? avail : assets;
@@ -250,6 +253,9 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Max shares owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxRedeem(address _owner) public view override returns (uint256) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			return 0;
+		}
 		uint256 shares = balanceOf[_owner];
 		uint256 avail = convertToShares(totalAssets() - stakingTotalAssets);
 		return shares > avail ? avail : shares;
