@@ -366,6 +366,125 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(assets, 0);
 	}
 
+	function testWithdrawPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+
+		vm.startPrank(liqStaker);
+		wavax.approve(address(ggAVAX), depositAmt);
+		ggAVAX.deposit(depositAmt, liqStaker);
+		vm.stopPrank();
+
+		assertEq(wavax.balanceOf(liqStaker), 0);
+
+		// pause contract
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		// verify withdraw still works
+		vm.prank(liqStaker);
+		ggAVAX.withdraw(100 ether, liqStaker, liqStaker);
+
+		assertEq(wavax.balanceOf(liqStaker), depositAmt);
+	}
+
+	function testWithdrawAVAXPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+
+		vm.prank(liqStaker);
+		ggAVAX.depositAVAX{value: depositAmt}();
+
+		assertEq(liqStaker.balance, 0);
+
+		// pause contract
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		// verify withdraw still works
+		vm.prank(liqStaker);
+		ggAVAX.withdrawAVAX(100 ether);
+
+		assertEq(liqStaker.balance, depositAmt);
+	}
+
+	function testRedeemPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+		vm.startPrank(liqStaker);
+		wavax.approve(address(ggAVAX), depositAmt);
+		ggAVAX.deposit(depositAmt, liqStaker);
+		vm.stopPrank();
+
+		assertEq(wavax.balanceOf(liqStaker), 0);
+
+		// pause contract
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		// verify redeem still works
+		vm.prank(liqStaker);
+		ggAVAX.redeem(100 ether, liqStaker, liqStaker);
+
+		assertEq(wavax.balanceOf(liqStaker), depositAmt);
+	}
+
+	function testRedeemAVAXPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+
+		vm.prank(liqStaker);
+		ggAVAX.depositAVAX{value: depositAmt}();
+
+		assertEq(liqStaker.balance, 0);
+
+		// pause contract
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		// verify withdraw still works
+		vm.prank(liqStaker);
+		ggAVAX.redeemAVAX(100 ether);
+
+		assertEq(liqStaker.balance, depositAmt);
+	}
+
+	function testMaxWithdrawPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+		vm.startPrank(liqStaker);
+		wavax.approve(address(ggAVAX), depositAmt);
+		ggAVAX.deposit(depositAmt, liqStaker);
+		vm.stopPrank();
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		uint256 shares = ggAVAX.maxWithdraw(liqStaker);
+		assertEq(shares, depositAmt);
+	}
+
+	function testMaxRedeemPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+		vm.startPrank(liqStaker);
+		wavax.approve(address(ggAVAX), depositAmt);
+		ggAVAX.deposit(depositAmt, liqStaker);
+		vm.stopPrank();
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		uint256 shares = ggAVAX.maxRedeem(liqStaker);
+		assertEq(shares, depositAmt);
+	}
+
 	function receiveWithdrawalAVAX() external payable {}
 
 	function printState(string memory message) internal view {

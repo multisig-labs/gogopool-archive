@@ -247,20 +247,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		return super.previewMint(shares);
 	}
 
-	/// @notice Preview shares burned for AVAX assets
-	/// @param assets Amount of AVAX to withdraw
-	/// @return uint256 Amount of ggAVAX that would be burned
-	function previewWithdraw(uint256 assets) public view override returns (uint256) {
-		return super.previewWithdraw(assets);
-	}
-
-	/// @notice Preview AVAX returned for burning shares
-	/// @param shares Amount of ggAVAX to burn
-	/// @return uint256 Amount of AVAX returned
-	function previewRedeem(uint256 shares) public view override returns (uint256) {
-		return super.previewRedeem(shares);
-	}
-
 	/// @notice Function prior to a withdraw
 	/// @param amount Amount of AVAX
 	function beforeWithdraw(
