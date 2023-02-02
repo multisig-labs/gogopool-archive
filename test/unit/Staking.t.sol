@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
-import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
 
 contract StakingTest is BaseTest {
 	using FixedPointMathLib for uint256;
