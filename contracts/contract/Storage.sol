@@ -25,7 +25,7 @@ contract Storage {
 	address public newGuardian;
 
 	/// @dev Only allow access from guardian or the latest version of a contract in the GoGoPool network
-	modifier onlyRegisteredNetworkContract() {
+	modifier onlyGuardianOrRegisteredNetworkContract() {
 		if (booleanStorage[keccak256(abi.encodePacked("contract.exists", msg.sender))] == false && msg.sender != guardian) {
 			revert InvalidOrOutdatedContract();
 		}
@@ -101,31 +101,31 @@ contract Storage {
 	// SET
 	//
 
-	function setAddress(bytes32 key, address value) external onlyRegisteredNetworkContract {
+	function setAddress(bytes32 key, address value) external onlyGuardianOrRegisteredNetworkContract {
 		addressStorage[key] = value;
 	}
 
-	function setBool(bytes32 key, bool value) external onlyRegisteredNetworkContract {
+	function setBool(bytes32 key, bool value) external onlyGuardianOrRegisteredNetworkContract {
 		booleanStorage[key] = value;
 	}
 
-	function setBytes(bytes32 key, bytes calldata value) external onlyRegisteredNetworkContract {
+	function setBytes(bytes32 key, bytes calldata value) external onlyGuardianOrRegisteredNetworkContract {
 		bytesStorage[key] = value;
 	}
 
-	function setBytes32(bytes32 key, bytes32 value) external onlyRegisteredNetworkContract {
+	function setBytes32(bytes32 key, bytes32 value) external onlyGuardianOrRegisteredNetworkContract {
 		bytes32Storage[key] = value;
 	}
 
-	function setInt(bytes32 key, int256 value) external onlyRegisteredNetworkContract {
+	function setInt(bytes32 key, int256 value) external onlyGuardianOrRegisteredNetworkContract {
 		intStorage[key] = value;
 	}
 
-	function setString(bytes32 key, string calldata value) external onlyRegisteredNetworkContract {
+	function setString(bytes32 key, string calldata value) external onlyGuardianOrRegisteredNetworkContract {
 		stringStorage[key] = value;
 	}
 
-	function setUint(bytes32 key, uint256 value) external onlyRegisteredNetworkContract {
+	function setUint(bytes32 key, uint256 value) external onlyGuardianOrRegisteredNetworkContract {
 		uintStorage[key] = value;
 	}
 
@@ -133,31 +133,31 @@ contract Storage {
 	// DELETE
 	//
 
-	function deleteAddress(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteAddress(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete addressStorage[key];
 	}
 
-	function deleteBool(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteBool(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete booleanStorage[key];
 	}
 
-	function deleteBytes(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteBytes(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete bytesStorage[key];
 	}
 
-	function deleteBytes32(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteBytes32(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete bytes32Storage[key];
 	}
 
-	function deleteInt(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteInt(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete intStorage[key];
 	}
 
-	function deleteString(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteString(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete stringStorage[key];
 	}
 
-	function deleteUint(bytes32 key) external onlyRegisteredNetworkContract {
+	function deleteUint(bytes32 key) external onlyGuardianOrRegisteredNetworkContract {
 		delete uintStorage[key];
 	}
 
@@ -167,13 +167,13 @@ contract Storage {
 
 	/// @param key The key for the record
 	/// @param amount An amount to add to the record's value
-	function addUint(bytes32 key, uint256 amount) external onlyRegisteredNetworkContract {
+	function addUint(bytes32 key, uint256 amount) external onlyGuardianOrRegisteredNetworkContract {
 		uintStorage[key] = uintStorage[key] + amount;
 	}
 
 	/// @param key The key for the record
 	/// @param amount An amount to subtract from the record's value
-	function subUint(bytes32 key, uint256 amount) external onlyRegisteredNetworkContract {
+	function subUint(bytes32 key, uint256 amount) external onlyGuardianOrRegisteredNetworkContract {
 		uintStorage[key] = uintStorage[key] - amount;
 	}
 }
