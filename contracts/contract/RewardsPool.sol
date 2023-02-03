@@ -90,9 +90,7 @@ contract RewardsPool is Base {
 
 		emit GGPInflated(newTokens);
 
-		console.log("about to mint to", address(this));
-		console.log("about to mint this many", format.parseEther(newTokens));
-		ggp.mint(address(this), newTokens);
+		ggp.mint(newTokens);
 
 		addUint(keccak256("RewardsPool.InflationIntervalStartTime"), inflationIntervalElapsedSeconds);
 		setUint(keccak256("RewardsPool.RewardsCycleTotalAmt"), newTokens);

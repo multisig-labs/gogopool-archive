@@ -22,15 +22,14 @@ contract TokenGGP is ERC20 {
 		_mint(msg.sender, INITIAL_SUPPLY);
 	}
 
-	function mint(address to, uint256 amount) external {
+	function mint(uint256 amount) external {
 		if (msg.sender != gogoStorage.getAddress(keccak256(abi.encodePacked("contract.address", "RewardsPool")))) {
 			revert InvalidOrOutdatedContract();
 		}
 
-		console.log("inside mint");
 		if (totalSupply + amount > MAX_SUPPLY) {
 			revert MaximumTokensReached();
 		}
-		_mint(to, amount);
+		_mint(msg.sender, amount);
 	}
 }

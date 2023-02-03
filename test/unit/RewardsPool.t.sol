@@ -52,7 +52,9 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(newSupply - curSupply, 2406251108043000000000);
 
 		//this happens in inflate()
-		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), totalCirculatingSupply + 2406251108043000000000);
+		vm.startPrank(address(rewardsPool));
+		ggp.mint(newSupply - curSupply);
+		assertEq(newSupply, ggp.totalSupply());
 
 		//2 cycles
 		skip(dao.getInflationIntervalSeconds());
@@ -60,10 +62,14 @@ contract RewardsPoolTest is BaseTest {
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
 		assertEq(newSupply - curSupply, 4813467266486087907130);
 
+		ggp.mint(newSupply - curSupply);
+		assertEq(newSupply, ggp.totalSupply());
+
 		skip(1676 days); // ~4.6 years
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
 		// we have 4.5 mil ether to give out. So the rewards cycle will be
 		assertEq(newSupply - curSupply, 4526664600019446164419790);
+		vm.stopPrank();
 	}
 
 	function testMaxInflation() public {
