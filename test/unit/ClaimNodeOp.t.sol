@@ -37,23 +37,33 @@ contract ClaimNodeOpTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
 		vm.stopPrank();
 
 		address nodeOp2 = getActorWithTokens("nodeOp2", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp2);
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
+		vm.stopPrank();
+
+		address nodeOp3 = getActorWithTokens("nodeOp2", MAX_AMT, MAX_AMT);
+		vm.startPrank(nodeOp2);
+		ggp.approve(address(staking), MAX_AMT);
+		staking.stakeGGP(100 ether);
+		// do not start
 		createMinipool(1000 ether, 1000 ether, 2 weeks);
 		vm.stopPrank();
 
 		assertFalse(nopClaim.isEligible(nodeOp1));
 		assertFalse(nopClaim.isEligible(nodeOp2));
+		assertFalse(nopClaim.isEligible(nodeOp3));
 
 		skip(dao.getRewardsEligibilityMinSeconds());
 
 		assertTrue(nopClaim.isEligible(nodeOp1));
 		assertTrue(nopClaim.isEligible(nodeOp2));
+		assertFalse(nopClaim.isEligible(nodeOp3));
 	}
 
 	function testCalculateAndDistributeRewardsInvalidStaker() public {
