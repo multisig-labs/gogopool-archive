@@ -85,7 +85,7 @@ abstract contract BaseTest is Test {
 		oracle = new Oracle(store);
 		registerContract(store, "Oracle", address(oracle));
 
-		ggp = new TokenGGP();
+		ggp = new TokenGGP(store);
 		registerContract(store, "TokenGGP", address(ggp));
 
 		addAllowedTokens(address(ggp));
