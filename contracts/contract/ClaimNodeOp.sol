@@ -48,7 +48,7 @@ contract ClaimNodeOp is Base {
 		uint256 rewardsStartTime = staking.getRewardsStartTime(stakerAddr);
 		uint256 elapsedSecs = (block.timestamp - rewardsStartTime);
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		return (rewardsStartTime != 0 && elapsedSecs >= dao.getRewardsEligibilityMinSeconds());
+		return (rewardsStartTime != 0 && elapsedSecs >= dao.getRewardsEligibilityMinSeconds() && staking.getAVAXValidatingHighWater(stakerAddr) > 0);
 	}
 
 	/// @notice Set the share of rewards for a staker as a fraction of 1 ether
