@@ -74,6 +74,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	error InvalidStateTransition();
 	error MinipoolNotFound();
 	error MinipoolDurationExceeded();
+	error NagativeCycleDuration();
 	error OnlyOwner();
 
 	event GGPSlashed(address indexed nodeID, uint256 ggp);
@@ -715,10 +716,15 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	function slash(int256 index) private {
 		address nodeID = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".nodeID")));
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", index, ".owner")));
-		uint256 cycleDuration = getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime"))) -
-			getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")));
+		int256 cycleDuration = int256(
+			getUint(keccak256(abi.encodePacked("minipool.item", index, ".endTime"))) -
+				getUint(keccak256(abi.encodePacked("minipool.item", index, ".startTime")))
+		);
+		if (cycleDuration < 0) {
+			revert NagativeCycleDuration();
+		}
 		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", index, ".avaxLiquidStakerAmt")));
-		uint256 expectedAVAXRewardsAmt = getExpectedAVAXRewardsAmt(cycleDuration, avaxLiquidStakerAmt);
+		uint256 expectedAVAXRewardsAmt = getExpectedAVAXRewardsAmt(uint256(cycleDuration), avaxLiquidStakerAmt);
 		uint256 slashGGPAmt = calculateGGPSlashAmt(expectedAVAXRewardsAmt);
 
 		Staking staking = Staking(getContractAddress("Staking"));
