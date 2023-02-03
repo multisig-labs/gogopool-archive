@@ -677,6 +677,11 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		staking.decreaseMinipoolCount(owner);
 
+		// if they are not due rewards this cycle, reset rewards start time.
+		if (staking.getAVAXValidatingHighWater(owner) == 0) {
+			staking.setRewardsStartTime(owner, 0);
+		}
+
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Canceled);
 
 		Vault vault = Vault(getContractAddress("Vault"));
