@@ -219,6 +219,11 @@ contract RewardsPool is Base {
 				enabledCount++;
 			}
 		}
+		// If there are no enabled multisigs then the tokens will just sit under the multisig manager contract
+		if (enabledCount == 0) {
+			vault.transferToken("MultisigManager", ggp, allotment);
+			return;
+		}
 
 		// Dirty hack to cut unused elements off end of return value (from RP)
 		// solhint-disable-next-line no-inline-assembly

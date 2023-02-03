@@ -160,4 +160,63 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(ggp.balanceOf(multisig2), amtPerMultisig);
 		assertEq(ggp.balanceOf(multisig3), 0);
 	}
+
+	// When syncRewards is delayed, tokens should still inflate when next sync is called
+	function testInflationAmtWithRewardsDelay() public {
+		// skip two cycles before syncing rewards
+		skip(2 * dao.getRewardsCycleSeconds());
+
+		uint256 inflationIntervalsElapsed = 56;
+		uint256 inflationRate = dao.getInflationIntervalRate();
+		uint256 expectedInflationTokens = dao.getTotalGGPCirculatingSupply();
+		for (uint256 i = 0; i < inflationIntervalsElapsed; i++) {
+			expectedInflationTokens = expectedInflationTokens.mulWadDown(inflationRate);
+		}
+
+		// start rewards cycle
+		rewardsPool.startRewardsCycle();
+
+		// verify inflated tokens
+		assertEq(dao.getTotalGGPCirculatingSupply(), expectedInflationTokens);
+	}
+
+	function testStartRewardsCyclePaused() public {
+		skip(dao.getRewardsCycleSeconds());
+
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("RewardsPool");
+
+		assertFalse(rewardsPool.canStartRewardsCycle());
+
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		rewardsPool.startRewardsCycle();
+	}
+
+	function testZeroMultisigRewards() public {
+		// Rialto is default enabled
+		vm.prank(guardian);
+
+		//disble all so count will be 0
+		ocyticus.disableAllMultisigs();
+
+		skip(dao.getRewardsCycleSeconds());
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		assertEq(ggp.balanceOf(address(rialto)), 0);
+		assertEq(vault.balanceOfToken("MultisigManager", ggp), 0);
+
+		rewardsPool.startRewardsCycle();
+
+		uint256 rewardsCycleTotal = rewardsPool.getRewardsCycleTotalAmt();
+		uint256 multisigPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"));
+		uint256 amtForMultisig = rewardsCycleTotal.mulWadDown(multisigPerc);
+
+		assertEq(vault.balanceOfToken("MultisigManager", ggp), amtForMultisig);
+		assertEq(ggp.balanceOf(address(rialto)), 0);
+	}
 }
