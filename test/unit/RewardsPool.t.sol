@@ -34,7 +34,7 @@ contract RewardsPoolTest is BaseTest {
 		// Hard-code numbers for this specific test
 		uint256 totalCirculatingSupply = 18000000 ether;
 		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), totalCirculatingSupply);
-		assertEq(dao.getTotalGGPCirculatingSupply(), totalCirculatingSupply);
+		assertEq(ggp.totalSupply(), totalCirculatingSupply);
 
 		uint256 inflationRate = 1000133680617113500;
 		store.setUint(keccak256("ProtocolDAO.InflationIntervalRate"), inflationRate);
@@ -70,7 +70,7 @@ contract RewardsPoolTest is BaseTest {
 		// skip 54 months ahead and start rewards cycle
 		skip(142006867);
 		rewardsPool.startRewardsCycle();
-		uint256 tcs = dao.getTotalGGPCirculatingSupply();
+		uint256 tcs = ggp.totalSupply();
 		assertLt(tcs, 22_500_000 ether);
 
 		// one more month inflates more than 22.5 million tokens

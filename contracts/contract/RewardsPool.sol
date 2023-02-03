@@ -64,10 +64,11 @@ contract RewardsPool is Base {
 	/// @return currentTotalSupply current total supply
 	/// @return newTotalSupply supply after mint
 	function getInflationAmt() public view returns (uint256 currentTotalSupply, uint256 newTotalSupply) {
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationRate = dao.getInflationIntervalRate();
 		uint256 inflationIntervalsElapsed = getInflationIntervalsElapsed();
-		currentTotalSupply = dao.getTotalGGPCirculatingSupply();
+		currentTotalSupply = ggp.totalSupply();
 		newTotalSupply = currentTotalSupply;
 
 		// Compute inflation for total inflation intervals elapsed
@@ -80,20 +81,16 @@ contract RewardsPool is Base {
 	/// @notice Releases more GGP if appropriate
 	/// @dev Mint new tokens if enough time has elapsed since last mint
 	function inflate() internal {
-		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationIntervalElapsedSeconds = (block.timestamp - getInflationIntervalStartTime());
 		(uint256 currentTotalSupply, uint256 newTotalSupply) = getInflationAmt();
 
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
-		if (newTotalSupply > ggp.totalSupply()) {
-			revert MaximumTokensReached();
-		}
 
 		uint256 newTokens = newTotalSupply - currentTotalSupply;
 
 		emit GGPInflated(newTokens);
 
-		dao.setTotalGGPCirculatingSupply(newTotalSupply);
+		ggp.mint(address(this), newTokens);
 
 		addUint(keccak256("RewardsPool.InflationIntervalStartTime"), inflationIntervalElapsedSeconds);
 		setUint(keccak256("RewardsPool.RewardsCycleTotalAmt"), newTokens);

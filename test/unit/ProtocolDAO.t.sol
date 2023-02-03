@@ -50,25 +50,6 @@ contract ProtocolDAOTest is BaseTest {
 		assertEq(dao.getRewardsCycleSeconds(), 28 days);
 	}
 
-	function testGetTotalGGPCirculatingSupply() public {
-		assertEq(dao.getTotalGGPCirculatingSupply(), 18_000_000 ether);
-		vm.startPrank(address(rewardsPool));
-		dao.setTotalGGPCirculatingSupply(20_000_000 ether);
-		assertEq(dao.getTotalGGPCirculatingSupply(), 20_000_000 ether);
-	}
-
-	function testSetTotalGGPCirculatingSupply() public {
-		vm.startPrank(address(ocyticus));
-		vm.expectRevert(BaseAbstract.InvalidOrOutdatedContract.selector);
-		dao.setTotalGGPCirculatingSupply(20_000_000 ether);
-		assert(dao.getTotalGGPCirculatingSupply() != 20_000_000 ether);
-		vm.stopPrank();
-		vm.startPrank(address(rewardsPool));
-		dao.setTotalGGPCirculatingSupply(20_000_000 ether);
-		assertEq(dao.getTotalGGPCirculatingSupply(), 20_000_000 ether);
-		vm.stopPrank();
-	}
-
 	function testGetClaimingContractPct() public {
 		assertEq(dao.getClaimingContractPct("ClaimMultisig"), 0.20 ether);
 		assertEq(dao.getClaimingContractPct("ClaimNodeOp"), 0.70 ether);
