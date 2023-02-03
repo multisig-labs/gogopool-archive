@@ -93,6 +93,7 @@ contract MinipoolManagerTest is BaseTest {
 		Staking.Staker memory staker = staking.getStaker(stakerIndex);
 		assertEq(staker.avaxStaked, avaxAssignmentRequest);
 		assertEq(staker.avaxAssigned, nopAvaxAmount);
+		assertEq(staker.avaxValidating, 0);
 		assertEq(staker.minipoolCount, 1);
 		assertTrue(staker.rewardsStartTime != 0);
 
@@ -168,6 +169,7 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXStake(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
+		assertEq(staking.getAVAXValidating(mp1Updated.owner), 0);
 
 		assertEq(nodeOp.balance - priorBalance, mp1Updated.avaxNodeOpAmt);
 	}
@@ -326,12 +328,17 @@ contract MinipoolManagerTest is BaseTest {
 		minipoolMgr.recordStakingStart(mp1.nodeID, txID, block.timestamp);
 		store.setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Launched));
 
+		uint256 initialAVAXAssigned = staking.getAVAXAssigned(nodeOp);
+
 		vm.prank(address(rialto));
 		minipoolMgr.recordStakingStart(mp1.nodeID, txID, block.timestamp);
 		MinipoolManager.Minipool memory mp1Updated = minipoolMgr.getMinipool(minipoolIndex);
 		assertEq(mp1Updated.status, uint256(MinipoolStatus.Staking));
 		assertEq(mp1Updated.txID, txID);
 		assertTrue(mp1Updated.startTime != 0);
+		assertEq(staking.getAVAXValidating(nodeOp), avaxAssignmentRequest);
+		assertEq(staking.getAVAXAssigned(nodeOp), initialAVAXAssigned);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp), avaxAssignmentRequest);
 	}
 
 	function testRecordStakingStartInvalidStartTime() public {
@@ -430,7 +437,9 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), 0);
 
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
+		assertEq(staking.getAVAXValidating(mp1Updated.owner), 0);
 		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
+		assertEq(staking.getAVAXValidatingHighWater(mp1Updated.owner), avaxAssignmentRequest);
 	}
 
 	function testRecordStakingEndWithSlash() public {
@@ -522,10 +531,6 @@ contract MinipoolManagerTest is BaseTest {
 		vm.prank(address(rialto));
 		minipoolMgr.claimAndInitiateStaking(mp1.nodeID);
 
-		bytes32 txID = keccak256("txid");
-		vm.prank(address(rialto));
-		minipoolMgr.recordStakingStart(mp1.nodeID, txID, block.timestamp);
-
 		bytes32 errorCode = "INVALID_NODEID";
 
 		//will fail
@@ -561,8 +566,8 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), 0);
 
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
-		// The highwater doesnt get reset in this case
-		assertEq(staking.getAVAXAssignedHighWater(mp1Updated.owner), depositAmt);
+		assertEq(staking.getAVAXValidating(mp1Updated.owner), 0);
+		assertEq(staking.getAVAXValidatingHighWater(mp1Updated.owner), 0);
 
 		// withdraw funds to move minipool to finished state
 		uint256 nodeOpStartingBalance = nodeOp.balance;
