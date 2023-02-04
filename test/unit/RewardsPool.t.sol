@@ -174,7 +174,7 @@ contract RewardsPoolTest is BaseTest {
 
 		uint256 inflationIntervalsElapsed = 56;
 		uint256 inflationRate = dao.getInflationIntervalRate();
-		uint256 expectedInflationTokens = dao.getTotalGGPCirculatingSupply();
+		uint256 expectedInflationTokens = ggp.totalSupply();
 		for (uint256 i = 0; i < inflationIntervalsElapsed; i++) {
 			expectedInflationTokens = expectedInflationTokens.mulWadDown(inflationRate);
 		}
@@ -183,7 +183,7 @@ contract RewardsPoolTest is BaseTest {
 		rewardsPool.startRewardsCycle();
 
 		// verify inflated tokens
-		assertEq(dao.getTotalGGPCirculatingSupply(), expectedInflationTokens);
+		assertEq(ggp.totalSupply(), expectedInflationTokens);
 	}
 
 	function testStartRewardsCyclePaused() public {
