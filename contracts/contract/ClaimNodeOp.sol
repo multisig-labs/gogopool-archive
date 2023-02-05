@@ -74,8 +74,7 @@ contract ClaimNodeOp is Base {
 			revert InvalidAmount();
 		}
 
-		uint256 currAVAXValidating = staking.getAVAXValidating(stakerAddr);
-		staking.setAVAXValidatingHighWater(stakerAddr, currAVAXValidating);
+		staking.resetAVAXAssignedHighWater(stakerAddr);
 		staking.increaseGGPRewards(stakerAddr, rewardsAmt);
 
 		// check if their rewards time should be reset

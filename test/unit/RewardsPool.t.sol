@@ -15,6 +15,31 @@ contract RewardsPoolTest is BaseTest {
 		distributeInitialSupply();
 	}
 
+	function distributeInitialSupply() public {
+		// note: guardian is minted 100% of the supply
+		vm.startPrank(guardian);
+
+		uint256 companyAllocation = TOTAL_INITIAL_SUPPLY.mulWadDown(.32 ether);
+		uint256 pDaoAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.3233 ether);
+		uint256 seedInvestorAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.1567 ether);
+		uint256 rewardsPoolAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.20 ether); //4.5 million
+
+		// approve vault deposits for all tokens that won't be in company wallet
+		ggp.approve(address(vault), TOTAL_INITIAL_SUPPLY - companyAllocation);
+
+		// 33% to the pDAO wallet
+		vault.depositToken("ProtocolDAO", ggp, pDaoAllo);
+
+		// TODO make an actual vesting contract
+		// 15.67% to vesting smart contract
+		vault.depositToken("ProtocolDAO", ggp, seedInvestorAllo);
+
+		// 20% to staking rewards contract
+		vault.depositToken("RewardsPool", ggp, rewardsPoolAllo);
+
+		vm.stopPrank();
+	}
+
 	function testInitialization() public {
 		assertTrue(store.getBool(keccak256("RewardsPool.initialized")));
 		assertGt(rewardsPool.getInflationIntervalStartTime(), 0);
