@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import {Storage} from "../Storage.sol";
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
-import {console} from "forge-std/console.sol";
 
 // GGP Governance and Utility Token
 // Inflationary with rate determined by DAO

@@ -89,11 +89,11 @@ contract RewardsPool is Base {
 
 		uint256 newTokens = newTotalSupply - currentTotalSupply;
 
-		emit GGPInflated(newTokens);
-
 		if (newTotalSupply > maxGGPTokenSupply) {
 			newTokens = maxGGPTokenSupply - currentTotalSupply;
 		}
+
+		emit GGPInflated(newTokens);
 
 		ggp.mint(newTokens);
 

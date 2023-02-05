@@ -49,7 +49,7 @@ contract RewardsPoolTest is BaseTest {
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
 		//total tokens
 		assertEq(newSupply, 18002406251108043000000000);
-		// tokens released
+		// tokens released for one inflation cycle
 		assertEq(newSupply - curSupply, 2406251108043000000000);
 
 		//this happens in inflate()
@@ -64,7 +64,7 @@ contract RewardsPoolTest is BaseTest {
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
 		//total tokens
 		assertEq(newSupply, 18007219718374529087907130);
-		// tokens released
+		// tokens released for second inflation cycle
 		assertEq(newSupply - curSupply, 4813467266486087907130);
 
 		ggp.mint(newSupply - curSupply);
