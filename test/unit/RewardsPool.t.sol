@@ -55,6 +55,8 @@ contract RewardsPoolTest is BaseTest {
 		vm.startPrank(address(rewardsPool));
 		ggp.mint(newSupply - curSupply);
 		assertEq(newSupply, ggp.totalSupply());
+		assertEq(ggp.totalSupply(), totalCirculatingSupply + 2406251108043000000000);
+		assertEq(totalCirculatingSupply + 2406251108043000000000, newSupply);
 
 		//2 cycles
 		skip(dao.getInflationIntervalSeconds());
