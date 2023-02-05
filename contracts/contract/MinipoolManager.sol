@@ -59,6 +59,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	using SafeTransferLib for address;
 	using SafeTransferLib for ERC20;
 
+	error CancellationTooEarly();
 	error InsufficientGGPCollateralization();
 	error InsufficientAVAXForMinipoolCreation();
 	error InvalidAmount();
@@ -69,8 +70,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	error InvalidNodeID();
 	error InvalidStateTransition();
 	error MinipoolNotFound();
+	error MinipoolDurationExceeded();
 	error OnlyOwner();
-	error CancellationTooEarly();
 
 	event GGPSlashed(address indexed nodeID, uint256 ggp);
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
@@ -161,7 +162,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		} else if (currentStatus == MinipoolStatus.Staking) {
 			isValid = (to == MinipoolStatus.Withdrawable || to == MinipoolStatus.Error);
 		} else if (currentStatus == MinipoolStatus.Withdrawable || currentStatus == MinipoolStatus.Error) {
-			isValid = (to == MinipoolStatus.Finished || to == MinipoolStatus.Prelaunch);
+			isValid = (to == MinipoolStatus.Finished);
 		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
 			// Once a node is finished/canceled, if they re-validate they go back to beginning state
 			isValid = (to == MinipoolStatus.Prelaunch);
@@ -321,7 +322,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	/// @notice Removes the AVAX associated with a minipool from the protocol to stake it on Avalanche and register the node as a validator
 	/// @param nodeID 20-byte Avalanche node ID
 	/// @dev Rialto calls this to initiate registering a minipool for staking and validation of the P-chain.
-	function claimAndInitiateStaking(address nodeID) external {
+	function claimAndInitiateStaking(address nodeID) public {
 		int256 minipoolIndex = onlyValidMultisig(nodeID);
 		requireValidStateTransition(minipoolIndex, MinipoolStatus.Launched);
 
@@ -386,7 +387,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		address nodeID,
 		uint256 endTime,
 		uint256 avaxTotalRewardAmt
-	) external payable {
+	) public payable {
 		int256 minipoolIndex = onlyValidMultisig(nodeID);
 		requireValidStateTransition(minipoolIndex, MinipoolStatus.Withdrawable);
 
@@ -439,12 +440,41 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}
 
+	/// @notice Records the nodeID's validation period end
+	/// @param nodeID 20-byte Avalanche node ID
+	/// @param endTime The time the node ID stopped validating Avalanche
+	/// @param avaxTotalRewardAmt The rewards the node recieved from Avalanche for being a validator
+	/// @dev Rialto will xfer back all staked avax + avax rewards. Also handles the slashing of node ops GGP bond.
+	/// @dev We call recordStakingEnd,recreateMinipool,claimAndInitiateStaking in one tx to prevent liq staker funds from being sniped
+	function recordStakingEndThenMaybeCycle(
+		address nodeID,
+		uint256 endTime,
+		uint256 avaxTotalRewardAmt
+	) external payable whenNotPaused {
+		int256 minipoolIndex = onlyValidMultisig(nodeID);
+
+		uint256 initialStartTime = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".initialStartTime")));
+		uint256 duration = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".duration")));
+
+		recordStakingEnd(nodeID, endTime, avaxTotalRewardAmt);
+
+		if (initialStartTime + duration > block.timestamp) {
+			recreateMinipool(nodeID);
+			claimAndInitiateStaking(nodeID);
+		}
+	}
+
 	/// @notice Re-stake a minipool, compounding all rewards recvd
 	/// @param nodeID 20-byte Avalanche node ID
-	function recreateMinipool(address nodeID) external whenNotPaused {
+	function recreateMinipool(address nodeID) internal whenNotPaused {
 		int256 minipoolIndex = onlyValidMultisig(nodeID);
-		requireValidStateTransition(minipoolIndex, MinipoolStatus.Prelaunch);
 		Minipool memory mp = getMinipool(minipoolIndex);
+		MinipoolStatus currentStatus = MinipoolStatus(mp.status);
+
+		if (currentStatus != MinipoolStatus.Withdrawable) {
+			revert InvalidStateTransition();
+		}
+
 		// Compound the avax plus rewards
 		// NOTE Assumes a 1:1 nodeOp:liqStaker funds ratio
 		uint256 compoundedAvaxNodeOpAmt = mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt;
@@ -457,12 +487,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		staking.increaseAVAXStake(mp.owner, mp.avaxNodeOpRewardAmt);
 		staking.increaseAVAXAssigned(mp.owner, compoundedAvaxNodeOpAmt);
 		staking.increaseMinipoolCount(mp.owner);
-
-		if (staking.getRewardsStartTime(mp.owner) == 0) {
-			// Edge case where calculateAndDistributeRewards has reset their rewards time even though they are still cycling
-			// So we re-set it here to their initial start time for this minipool
-			staking.setRewardsStartTime(mp.owner, mp.initialStartTime);
-		}
 
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 ratio = staking.getCollateralizationRatio(mp.owner);
