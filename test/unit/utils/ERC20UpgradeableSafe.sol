@@ -7,7 +7,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC20.sol)
 /// @author Modified from Uniswap (https://github.com/Uniswap/uniswap-v2-core/blob/master/contracts/UniswapV2ERC20.sol)
 /// @dev Do not manually set balances without updating totalSupply, as the sum of all user balances must not exceed it.
-abstract contract ERC20Upgradeable is Initializable {
+abstract contract ERC20UpgradeableSafe is Initializable {
 	/*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -46,6 +46,9 @@ abstract contract ERC20Upgradeable is Initializable {
 
 	mapping(address => uint256) public nonces;
 
+	// New storage variable that we DO account for in the gap
+	uint256 public dangerousVariable;
+
 	/*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -58,6 +61,7 @@ abstract contract ERC20Upgradeable is Initializable {
 		name = _name;
 		symbol = _symbol;
 		decimals = _decimals;
+		// dangerousVariable = 1234;
 
 		INITIAL_CHAIN_ID = block.chainid;
 		INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
@@ -208,5 +212,5 @@ abstract contract ERC20Upgradeable is Initializable {
 
 	/// @dev This empty reserved space is put in place to allow future versions to add new
 	/// variables without shifting down storage in the inheritance chain.
-	uint256[50] private __gap;
+	uint256[49] private __gap;
 }

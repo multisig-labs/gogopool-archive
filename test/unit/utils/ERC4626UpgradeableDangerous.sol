@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import {ERC20Upgradeable} from "./ERC20Upgradeable.sol";
+import {ERC20UpgradeableDangerous} from "./ERC20UpgradeableDangerous.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-abstract contract ERC4626Upgradeable is Initializable, ERC20Upgradeable {
+abstract contract ERC4626UpgradeableDangerous is Initializable, ERC20UpgradeableDangerous {
 	using SafeTransferLib for ERC20;
 	using FixedPointMathLib for uint256;
 
