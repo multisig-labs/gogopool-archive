@@ -222,14 +222,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 			revert InsufficientAVAXForMinipoolCreation();
 		}
 
-		if (duration < 2 weeks || duration > 365 days) {
-			revert DurationOutOfBounds();
-		}
-
-		if (delegationFee < 0.02 ether || delegationFee > 1 ether) {
-			revert DelegationFeeOutOfBounds();
-		}
-
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.increaseMinipoolCount(msg.sender);
 		staking.increaseAVAXStake(msg.sender, msg.value);
