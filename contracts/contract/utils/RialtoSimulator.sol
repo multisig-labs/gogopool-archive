@@ -79,7 +79,7 @@ contract RialtoSimulator {
 		// Rialto queries Avalanche node to verify that validation period was successful
 		uint256 rewards = minipoolMgr.getExpectedAVAXRewardsAmt(mp.duration, totalAvax);
 		// Send the funds plus rewards back to MinipoolManager
-		minipoolMgr.recordStakingEndThenMaybeCycle{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
+		minipoolMgr.recordStakingEnd{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
 		mp = minipoolMgr.getMinipoolByNodeID(mp.nodeID);
 		return mp;
 	}
@@ -89,7 +89,7 @@ contract RialtoSimulator {
 		uint256 totalAvax = mp.avaxNodeOpAmt + mp.avaxLiquidStakerAmt;
 		uint256 rewards = 0;
 		// Send the funds plus NO rewards back to MinipoolManager
-		minipoolMgr.recordStakingEndThenMaybeCycle{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
+		minipoolMgr.recordStakingEnd{value: totalAvax + rewards}(mp.nodeID, block.timestamp, rewards);
 		mp = minipoolMgr.getMinipoolByNodeID(mp.nodeID);
 		return mp;
 	}
