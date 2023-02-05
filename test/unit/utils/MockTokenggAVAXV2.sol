@@ -3,14 +3,14 @@
 // Rewards logic inspired by xERC20 (https://github.com/ZeframLou/playpen/blob/main/src/xERC20.sol)
 pragma solidity 0.8.17;
 
-import "../BaseUpgradeable.sol";
-import {ERC20Upgradeable} from "./upgradeable/ERC20Upgradeable.sol";
-import {ERC4626Upgradeable} from "./upgradeable/ERC4626Upgradeable.sol";
-import {ProtocolDAO} from "../ProtocolDAO.sol";
-import {Storage} from "../Storage.sol";
+import "../../../contracts/contract/BaseUpgradeable.sol";
+import {ERC20Upgradeable} from "../../../contracts/contract/tokens/upgradeable/ERC20Upgradeable.sol";
+import {ERC4626Upgradeable} from "../../../contracts/contract/tokens/upgradeable/ERC4626Upgradeable.sol";
+import {ProtocolDAO} from "../../../contracts/contract/ProtocolDAO.sol";
+import {Storage} from "../../../contracts/contract/Storage.sol";
 
-import {IWithdrawer} from "../../interface/IWithdrawer.sol";
-import {IWAVAX} from "../../interface/IWAVAX.sol";
+import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
+import {IWAVAX} from "../../../contracts/interface/IWAVAX.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -21,7 +21,7 @@ import {SafeCastLib} from "@rari-capital/solmate/src/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
 /// @dev Local variables and parent contracts must remain in order between contract upgrades
-contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, BaseUpgradeable {
+contract MockTokenggAVAXV2 is Initializable, ERC4626Upgradeable, UUPSUpgradeable, BaseUpgradeable {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -69,11 +69,14 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		_disableInitializers();
 	}
 
-	function initialize(Storage storageAddress, ERC20 asset) public initializer {
-		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
+	function initialize(Storage storageAddress, ERC20 asset) public reinitializer(2) {
+		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAXv2");
 		__BaseUpgradeable_init(storageAddress);
 
-		version = 1;
+		// set base contract version
+		// should be same as version passed to reinitializer
+		version = 2;
+
 		rewardsCycleLength = 14 days;
 		// Ensure it will be evenly divisible by `rewardsCycleLength`.
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;
@@ -139,10 +142,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		uint256 totalAssets_ = totalAssets();
 
 		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
-
-		if (reservedAssets + stakingTotalAssets > totalAssets_) {
-			return 0;
-		}
 		return totalAssets_ - reservedAssets - stakingTotalAssets;
 	}
 
@@ -222,30 +221,9 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		msg.sender.safeTransferETH(assets);
 	}
 
-	/// @notice Max assets an owner can deposit
-	/// @param _owner User wallet address
-	function maxDeposit(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
-		return super.maxDeposit(_owner);
-	}
-
-	/// @notice Max shares owner can mint
-	/// @param _owner User wallet address
-	function maxMint(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
-		return super.maxMint(_owner);
-	}
-
 	/// @notice Max assets an owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxWithdraw(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
 		uint256 assets = convertToAssets(balanceOf[_owner]);
 		uint256 avail = totalAssets() - stakingTotalAssets;
 		return assets > avail ? avail : assets;
@@ -254,9 +232,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Max shares owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxRedeem(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
 		uint256 shares = balanceOf[_owner];
 		uint256 avail = convertToShares(totalAssets() - stakingTotalAssets);
 		return shares > avail ? avail : shares;
@@ -297,8 +272,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 	/// @notice Will revert if msg.sender is not authorized to upgrade the contract
 	function _authorizeUpgrade(address newImplementation) internal override onlyGuardian {}
 
-	/// @notice Override of ERC20Upgradeable to set the contract version for EIP-2612
-	/// @return hash of this contracts version
 	function versionHash() internal view override returns (bytes32) {
 		return keccak256(abi.encodePacked(version));
 	}
