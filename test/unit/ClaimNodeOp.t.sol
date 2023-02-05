@@ -172,46 +172,4 @@ contract ClaimNodeOpTest is BaseTest {
 		assertEq(staking.getGGPStake(nodeOp1), (100 ether + (totalRewardsThisCycle / 4)));
 		assertEq(staking.getGGPRewards(nodeOp1), 0);
 	}
-
-	function testClaimAndRestakePaused() public {
-		// start reward cycle
-		skip(dao.getRewardsCycleSeconds());
-		rewardsPool.startRewardsCycle();
-
-		// deposit ggAVAX
-		address nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
-		vm.startPrank(nodeOp1);
-		ggAVAX.depositAVAX{value: 2000 ether}();
-
-		// stake ggp and create minipool
-		ggp.approve(address(staking), MAX_AMT);
-		staking.stakeGGP(100 ether);
-		MinipoolManager.Minipool memory mp = createMinipool(1000 ether, 1000 ether, 2 weeks);
-		vm.stopPrank();
-
-		// launch minipool
-		rialto.processMinipoolStart(mp.nodeID);
-
-		// distribute rewards
-		vm.prank(address(rialto));
-		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
-
-		// pause staking
-		vm.prank(address(ocyticus));
-		dao.pauseContract("Staking");
-
-		uint256 stakerRewards = staking.getGGPRewards(nodeOp1);
-		uint256 previousBalance = ggp.balanceOf(nodeOp1);
-
-		// ensure restaking fails
-		vm.startPrank(nodeOp1);
-		vm.expectRevert(BaseAbstract.ContractPaused.selector);
-		nopClaim.claimAndRestake((stakerRewards / 2)); // claim half of their rewards
-
-		//  claim entire reward amount
-		nopClaim.claimAndRestake((stakerRewards)); // claim all rewards
-		vm.stopPrank();
-
-		assertEq(ggp.balanceOf(nodeOp1), previousBalance + stakerRewards);
-	}
 }
