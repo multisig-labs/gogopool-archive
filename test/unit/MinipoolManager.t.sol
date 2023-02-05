@@ -497,6 +497,41 @@ contract MinipoolManagerTest is BaseTest {
 		MinipoolManager.Minipool memory mp1Updated = minipoolMgr.getMinipool(minipoolIndex);
 		assertEq(mp1Updated.status, uint256(MinipoolStatus.Withdrawable));
 		assertEq(mp1Updated.avaxTotalRewardAmt, 0);
+
+		assertGt(mp1Updated.ggpSlashAmt, 0);
+		assertLt(staking.getGGPStake(mp1Updated.owner), ggpStakeAmt);
+	}
+
+	function testRecordStakingEndWithSlashingMoreThanTheyStaked() public {
+		uint256 duration = 2 weeks;
+		uint256 depositAmt = 1000 ether;
+		uint256 avaxAssignmentRequest = 1000 ether;
+		uint256 validationAmt = depositAmt + avaxAssignmentRequest;
+		uint128 ggpStakeAmt = 200 ether;
+
+		vm.startPrank(nodeOp);
+		ggp.approve(address(staking), MAX_AMT);
+		staking.stakeGGP(ggpStakeAmt);
+		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, avaxAssignmentRequest, duration);
+		vm.stopPrank();
+
+		//Manually set their GGP stake to 1, to ensure that the GGP slash amount will be more than the GGP staked.
+		int256 stakerIndex = staking.getIndexOf(address(nodeOp));
+		store.subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")), ggpStakeAmt - 1);
+
+		address liqStaker1 = getActorWithTokens("liqStaker1", MAX_AMT, MAX_AMT);
+		vm.prank(liqStaker1);
+		ggAVAX.depositAVAX{value: MAX_AMT}();
+
+		rialto.processMinipoolStart(mp1.nodeID);
+
+		skip(duration);
+
+		MinipoolManager.Minipool memory mp1Updated = rialto.processMinipoolEndWithoutRewards(mp1.nodeID);
+
+		assertEq(vault.balanceOf("MinipoolManager"), depositAmt);
+
+		assertEq(mp1Updated.avaxTotalRewardAmt, 0);
 		assertTrue(mp1Updated.endTime != 0);
 
 		assertEq(mp1Updated.avaxNodeOpRewardAmt, 0);
@@ -507,8 +542,11 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
 		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 
-		assertGt(mp1Updated.ggpSlashAmt, 0);
-		assertLt(staking.getGGPStake(mp1Updated.owner), ggpStakeAmt);
+		// if the slash amt is more than what they had staked, it gets set to what the amt they had staked
+		assertEq(mp1Updated.ggpSlashAmt, 1);
+
+		// all of their ggp was slashed
+		assertEq(staking.getGGPStake(mp1Updated.owner), 0);
 	}
 
 	function testRecordStakingError() public {
