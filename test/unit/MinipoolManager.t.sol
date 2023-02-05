@@ -564,17 +564,16 @@ contract MinipoolManagerTest is BaseTest {
 		// The highwater doesnt get reset in this case
 		assertEq(staking.getAVAXAssignedHighWater(mp1Updated.owner), depositAmt);
 
-		// Test that multisig can move status to Finished after some kind of human review of error
+		// withdraw funds to move minipool to finished state
+		uint256 nodeOpStartingBalance = nodeOp.balance;
 
-		// will fail
-		vm.expectRevert(MinipoolManager.InvalidMultisigAddress.selector);
-		minipoolMgr.finishFailedMinipoolByMultisig(mp1Updated.nodeID);
+		vm.prank(nodeOp);
+		minipoolMgr.withdrawMinipoolFunds(mp1.nodeID);
 
-		vm.prank(address(rialto));
-		minipoolMgr.finishFailedMinipoolByMultisig(mp1Updated.nodeID);
-		MinipoolManager.Minipool memory mp1finished = minipoolMgr.getMinipool(minipoolIndex);
+		assertEq(nodeOp.balance, nodeOpStartingBalance + depositAmt);
 
-		assertEq(mp1finished.status, uint256(MinipoolStatus.Finished));
+		mp1Updated = minipoolMgr.getMinipool(minipoolIndex);
+		assertEq(mp1Updated.status, uint256(MinipoolStatus.Finished));
 	}
 
 	function testCancelMinipoolByMultisig() public {
