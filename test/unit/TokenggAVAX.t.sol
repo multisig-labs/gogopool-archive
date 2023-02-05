@@ -223,8 +223,9 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	}
 
 	function testAmountAvailableForStaking() public {
-		uint256 depositAmount = 1000 ether;
+		uint256 depositAmount = 10_000 ether;
 
+		// deposit avax
 		vm.deal(bob, depositAmount);
 		vm.prank(bob);
 		ggAVAX.depositAVAX{value: depositAmount}();
@@ -233,8 +234,22 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(wavax.balanceOf(address(ggAVAX)), depositAmount);
 		assertEq(ggAVAX.balanceOf(bob), depositAmount);
 		assertEq(ggAVAX.convertToShares(ggAVAX.balanceOf(bob)), depositAmount);
-		uint256 reservedAssets = ggAVAX.totalAssets().mulDivDown(dao.getTargetGGAVAXReserveRate(), 1 ether);
-		assertEq(ggAVAX.amountAvailableForStaking(), depositAmount - reservedAssets);
+
+		// verify amountAvailableForStaking
+		uint256 reservedAssets = ggAVAX.totalAssets().mulWadDown(dao.getTargetGGAVAXReserveRate());
+		uint256 amountAvailableForStaking = ggAVAX.amountAvailableForStaking();
+		assertEq(amountAvailableForStaking, depositAmount - reservedAssets);
+
+		// withdraw max for staking
+		vm.prank(address(minipoolMgr));
+		ggAVAX.withdrawForStaking(amountAvailableForStaking);
+
+		// withdraw avax from reserve
+		vm.prank(bob);
+		ggAVAX.withdraw(1000 ether, bob, bob);
+
+		// verify no underflow
+		assertEq(ggAVAX.amountAvailableForStaking(), 0);
 	}
 
 	function testWithdrawForStaking() public {
