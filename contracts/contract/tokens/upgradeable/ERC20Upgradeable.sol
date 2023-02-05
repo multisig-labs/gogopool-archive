@@ -169,12 +169,14 @@ abstract contract ERC20Upgradeable is Initializable {
 				abi.encode(
 					keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
 					keccak256(bytes(name)),
-					keccak256("1"),
+					versionHash(),
 					block.chainid,
 					address(this)
 				)
 			);
 	}
+
+	function versionHash() internal view virtual returns (bytes32);
 
 	/*//////////////////////////////////////////////////////////////
                         INTERNAL MINT/BURN LOGIC
