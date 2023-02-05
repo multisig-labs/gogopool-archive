@@ -369,14 +369,10 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		}
 
 		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".owner")));
-
-		Staking staking = Staking(getContractAddress("Staking"));
 		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")));
-
-		staking.increaseAVAXValidating(owner, avaxLiquidStakerAmt);
-
-		if (staking.getAVAXValidatingHighWater(owner) < staking.getAVAXValidating(owner)) {
-			staking.setAVAXValidatingHighWater(owner, staking.getAVAXValidating(owner));
+		Staking staking = Staking(getContractAddress("Staking"));
+		if (staking.getAVAXAssignedHighWater(owner) < staking.getAVAXAssigned(owner)) {
+			staking.increaseAVAXAssignedHighWater(owner, avaxLiquidStakerAmt);
 		}
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Staking);
@@ -407,6 +403,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 			revert InvalidAmount();
 		}
 
+		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".owner")));
+
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Withdrawable));
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".endTime")), endTime);
 		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxTotalRewardAmt")), avaxTotalRewardAmt);
@@ -435,11 +433,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt + avaxLiquidStakerRewardAmt}(avaxLiquidStakerAmt, avaxLiquidStakerRewardAmt);
 		subUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"), avaxLiquidStakerAmt);
 
-		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".owner")));
-
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
-		staking.decreaseAVAXValidating(owner, avaxLiquidStakerAmt);
 		staking.decreaseMinipoolCount(owner);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);

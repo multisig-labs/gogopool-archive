@@ -35,8 +35,6 @@ abstract contract BaseTest is Test {
 	address internal constant ZERO_ADDRESS = address(0x00);
 	uint128 internal constant MAX_AMT = 1_000_000 ether;
 
-	uint256 private constant TOTAL_INITIAL_SUPPLY = 22500000 ether;
-
 	uint256 private randNonce = 0;
 	uint160 private actorCounter = 0;
 
@@ -344,30 +342,5 @@ abstract contract BaseTest is Test {
 		bytes memory data;
 		TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(address(impl), deployer, data);
 		return payable(uups);
-	}
-
-	function distributeInitialSupply() public {
-		// note: guardian is minted 100% of the supply
-		vm.startPrank(guardian);
-
-		uint256 companyAllocation = TOTAL_INITIAL_SUPPLY.mulWadDown(.32 ether);
-		uint256 pDaoAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.3233 ether);
-		uint256 seedInvestorAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.1567 ether);
-		uint256 rewardsPoolAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.20 ether); //4.5 million
-
-		// approve vault deposits for all tokens that won't be in company wallet
-		ggp.approve(address(vault), TOTAL_INITIAL_SUPPLY - companyAllocation);
-
-		// 33% to the pDAO wallet
-		vault.depositToken("ProtocolDAO", ggp, pDaoAllo);
-
-		// TODO make an actual vesting contract
-		// 15.67% to vesting smart contract
-		vault.depositToken("ProtocolDAO", ggp, seedInvestorAllo);
-
-		// 20% to staking rewards contract
-		vault.depositToken("RewardsPool", ggp, rewardsPoolAllo);
-
-		vm.stopPrank();
 	}
 }

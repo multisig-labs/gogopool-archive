@@ -236,7 +236,7 @@ contract ScenariosTest is BaseTest {
 
 		//stake at max collat
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
-		uint256 highwater = staking.getAVAXValidatingHighWater(address(nodeOp1));
+		uint256 highwater = staking.getAVAXAssignedHighWater(address(nodeOp1));
 		uint256 ggp150pct = highwater.divWadDown(ggpPriceInAvax);
 		uint256 ggpMaxCollat = ggp150pct.mulWadDown(dao.getMaxCollateralizationRatio());
 		dealGGP(nodeOp1, ggpMaxCollat);
@@ -299,7 +299,7 @@ contract ScenariosTest is BaseTest {
 		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
 
 		// they should get rewarded for their first minipool only
-		assertEq(staking.getAVAXValidatingHighWater(address(nodeOp1)), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(address(nodeOp1)), depositAmt);
 		assertEq(staking.getRewardsStartTime(address(nodeOp1)), rewardsStartTimeMP1);
 		assertTrue(nopClaim.isEligible(address(nodeOp1)));
 		assertTrue(rewardsPool.canStartRewardsCycle());
@@ -321,7 +321,7 @@ contract ScenariosTest is BaseTest {
 		skip(dao.getRewardsCycleSeconds() - (block.timestamp - rewardsPool.getRewardsCycleStartTime()));
 
 		// they should get rewarded for their second minipool only
-		assertEq(staking.getAVAXValidatingHighWater(address(nodeOp1)), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(address(nodeOp1)), depositAmt);
 		assertTrue(nopClaim.isEligible(address(nodeOp1)));
 		rialto.processGGPRewards();
 
@@ -463,7 +463,7 @@ contract ScenariosTest is BaseTest {
 		assertEq(staking.getGGPRewards(investor2), investorRewards);
 	}
 
-	function testAVAXValidatingHighWaterMarkCancelledMinipool() public {
+	function testAVAXHighWaterMarkCancelledMinipool() public {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = dao.getMinipoolMinAVAXAssignment();
 		uint256 ggpStakeAmt = depositAmt.mulWadDown(dao.getMinCollateralizationRatio());
@@ -479,9 +479,9 @@ contract ScenariosTest is BaseTest {
 		vm.stopPrank();
 
 		assertEq(staking.getAVAXAssigned(nodeOp1), depositAmt);
-		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0);
 		mp1 = rialto.processMinipoolStart(mp1.nodeID);
-		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
 		skip(mp1.duration);
 		// avax rewards
 		mp1 = rialto.processMinipoolEndWithRewards(mp1.nodeID);
@@ -490,19 +490,19 @@ contract ScenariosTest is BaseTest {
 
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
 		assertEq(staking.getAVAXAssigned(nodeOp1), 0);
-		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
 		assertGt(staking.getEffectiveGGPStaked(nodeOp1), 0);
 
 		vm.startPrank(nodeOp1);
 		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, depositAmt, duration);
-		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
 		minipoolMgr.cancelMinipool(mp2.nodeID);
 		vm.stopPrank();
 
 		// We canceled mp2, but we should still have a highwater mark of mp1 and be eligible for rewards
 		assertTrue(nopClaim.isEligible(nodeOp1), "isEligible");
 		assertEq(staking.getAVAXAssigned(nodeOp1), 0);
-		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), depositAmt);
+		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), depositAmt);
 		assertGt(staking.getEffectiveGGPStaked(nodeOp1), 0);
 	}
 }
