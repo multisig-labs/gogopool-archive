@@ -510,6 +510,12 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 			staking.setRewardsStartTime(mp.owner, mp.initialStartTime);
 		}
 
+		if (staking.getRewardsStartTime(mp.owner) == 0) {
+			// Edge case where calculateAndDistributeRewards has reset their rewards time even though they are still cycling
+			// So we re-set it here to their initial start time for this minipool
+			staking.setRewardsStartTime(mp.owner, mp.initialStartTime);
+		}
+
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 ratio = staking.getCollateralizationRatio(mp.owner);
 		if (ratio < dao.getMinCollateralizationRatio()) {
