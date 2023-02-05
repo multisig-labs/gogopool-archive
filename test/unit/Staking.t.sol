@@ -137,40 +137,6 @@ contract StakingTest is BaseTest {
 		assert(staking.getAVAXAssigned(address(nodeOp1)) == 990 ether);
 	}
 
-	function testGetMinipoolCount() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(200 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 2);
-		vm.stopPrank();
-	}
-
-	function testIncreaseMinipoolCount() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
-		vm.stopPrank();
-
-		vm.prank(address(minipoolMgr));
-		staking.increaseMinipoolCount(address(nodeOp1));
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 2);
-	}
-
-	function testDecreaseMinipoolCount() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
-		vm.stopPrank();
-
-		vm.prank(address(minipoolMgr));
-		staking.decreaseMinipoolCount(address(nodeOp1));
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 0);
-	}
-
 	function testGetRewardsStartTime() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(200 ether);
@@ -208,7 +174,6 @@ contract StakingTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
 		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
 		vm.stopPrank();
 
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
@@ -256,7 +221,6 @@ contract StakingTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
 		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
 		vm.stopPrank();
 
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
