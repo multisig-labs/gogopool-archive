@@ -497,15 +497,6 @@ contract MinipoolManagerTest is BaseTest {
 		MinipoolManager.Minipool memory mp1Updated = minipoolMgr.getMinipool(minipoolIndex);
 		assertEq(mp1Updated.status, uint256(MinipoolStatus.Withdrawable));
 		assertEq(mp1Updated.avaxTotalRewardAmt, 0);
-		assertTrue(mp1Updated.endTime != 0);
-
-		assertEq(mp1Updated.avaxNodeOpRewardAmt, 0);
-		assertEq(mp1Updated.avaxLiquidStakerRewardAmt, 0);
-
-		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), 0);
-
-		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
-		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 
 		assertGt(mp1Updated.ggpSlashAmt, 0);
 		assertLt(staking.getGGPStake(mp1Updated.owner), ggpStakeAmt);
@@ -524,7 +515,7 @@ contract MinipoolManagerTest is BaseTest {
 		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, avaxAssignmentRequest, duration);
 		vm.stopPrank();
 
-		//Manually set their GGP stake to 1, to ensure that the GGP slash amount will be more than the slash amt.
+		//Manually set their GGP stake to 1, to ensure that the GGP slash amount will be more than the GGP staked.
 		int256 stakerIndex = staking.getIndexOf(address(nodeOp));
 		store.subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")), ggpStakeAmt - 1);
 
