@@ -160,7 +160,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		} else if (currentStatus == MinipoolStatus.Launched) {
 			isValid = (to == MinipoolStatus.Staking || to == MinipoolStatus.Error);
 		} else if (currentStatus == MinipoolStatus.Staking) {
-			isValid = (to == MinipoolStatus.Withdrawable || to == MinipoolStatus.Error);
+			isValid = (to == MinipoolStatus.Withdrawable);
 		} else if (currentStatus == MinipoolStatus.Withdrawable || currentStatus == MinipoolStatus.Error) {
 			isValid = (to == MinipoolStatus.Finished);
 		} else if (currentStatus == MinipoolStatus.Finished || currentStatus == MinipoolStatus.Canceled) {
