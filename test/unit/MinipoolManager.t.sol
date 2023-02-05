@@ -52,7 +52,7 @@ contract MinipoolManagerTest is BaseTest {
 	function testCreateMinipool() public {
 		address nodeID = address(1);
 		uint256 duration = 2 weeks;
-		uint256 delegationFee = 20;
+		uint256 delegationFee = 0.02 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
 		uint256 nopAvaxAmount = 1000 ether;
 
@@ -645,7 +645,7 @@ contract MinipoolManagerTest is BaseTest {
 	function testGetMinipool() public {
 		address nodeID = address(1);
 		uint256 duration = 2 weeks;
-		uint256 delegationFee = 20;
+		uint256 delegationFee = 0.02 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
 		uint256 nopAvaxAmount = 1000 ether;
 
@@ -677,7 +677,7 @@ contract MinipoolManagerTest is BaseTest {
 			nodeID = randAddress();
 			ggp.approve(address(staking), ggpStakeAmt);
 			staking.stakeGGP(ggpStakeAmt);
-			minipoolMgr.createMinipool{value: depositAmt}(nodeID, 0, 0, avaxAssignmentRequest);
+			minipoolMgr.createMinipool{value: depositAmt}(nodeID, 14 days, 0.02 ether, avaxAssignmentRequest);
 		}
 		vm.stopPrank();
 
@@ -706,7 +706,7 @@ contract MinipoolManagerTest is BaseTest {
 			nodeID = randAddress();
 			ggp.approve(address(staking), ggpStakeAmt);
 			staking.stakeGGP(ggpStakeAmt);
-			minipoolMgr.createMinipool{value: depositAmt}(nodeID, 0, 0, avaxAssignmentRequest);
+			minipoolMgr.createMinipool{value: depositAmt}(nodeID, 14 days, 0.02 ether, avaxAssignmentRequest);
 		}
 		vm.stopPrank();
 		assertEq(minipoolMgr.getMinipoolCount(), 10);
@@ -979,7 +979,7 @@ contract MinipoolManagerTest is BaseTest {
 		uint256 avaxAssignmentRequest = 1000 ether;
 
 		vm.expectRevert(Staking.StakerNotFound.selector); //no ggp will be staked under the address, so it will fail upon lookup
-		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, 0, 0, avaxAssignmentRequest);
+		minipoolMgr.createMinipool{value: 1000 ether}(nodeID, 14 days, 0, avaxAssignmentRequest);
 		vm.stopPrank();
 	}
 
@@ -1034,7 +1034,7 @@ contract MinipoolManagerTest is BaseTest {
 			vm.startPrank(nodeOp);
 			ggp.approve(address(staking), 100 ether);
 			staking.stakeGGP(100 ether);
-			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, 0, 0, avaxAssignmentRequest);
+			minipoolMgr.createMinipool{value: 1000 ether}(nodeID, 14 days, 0.02 ether, avaxAssignmentRequest);
 			vm.stopPrank();
 		}
 		index = minipoolMgr.getIndexOf(nodeID);
