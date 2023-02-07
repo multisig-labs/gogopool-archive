@@ -494,15 +494,15 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		// Compound the avax plus rewards
 		// NOTE Assumes a 1:1 nodeOp:liqStaker funds ratio
-		uint256 compoundedAvaxNodeOpAmt = mp.avaxNodeOpAmt + mp.avaxNodeOpRewardAmt;
-		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpAmt")), compoundedAvaxNodeOpAmt);
-		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")), compoundedAvaxNodeOpAmt);
+		uint256 compoundedAvaxAmt = mp.avaxNodeOpAmt + mp.avaxLiquidStakerRewardAmt;
+		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpAmt")), compoundedAvaxAmt);
+		setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")), compoundedAvaxAmt);
 
 		Staking staking = Staking(getContractAddress("Staking"));
 		// Only increase AVAX stake by rewards amount we are compounding
 		// since AVAX stake is only decreased by withdrawMinipool()
-		staking.increaseAVAXStake(mp.owner, mp.avaxNodeOpRewardAmt);
-		staking.increaseAVAXAssigned(mp.owner, compoundedAvaxNodeOpAmt);
+		staking.increaseAVAXStake(mp.owner, mp.avaxLiquidStakerRewardAmt);
+		staking.increaseAVAXAssigned(mp.owner, compoundedAvaxAmt);
 
 		if (staking.getRewardsStartTime(mp.owner) == 0) {
 			// Edge case where calculateAndDistributeRewards has reset their rewards time even though they are still cycling
