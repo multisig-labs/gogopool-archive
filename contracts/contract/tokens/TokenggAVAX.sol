@@ -69,11 +69,21 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		_disableInitializers();
 	}
 
-	function initialize(Storage storageAddress, ERC20 asset) public initializer {
+	function initialize(
+		Storage storageAddress,
+		ERC20 asset,
+		uint256 initialDeposit
+	) public initializer {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
 		__BaseUpgradeable_init(storageAddress);
 
 		version = 1;
+
+		// sacrifice initial seed of shares to prevent front-running early deposits
+		if (initialDeposit > 0) {
+			deposit(initialDeposit, address(this));
+		}
+
 		rewardsCycleLength = 14 days;
 		// Ensure it will be evenly divisible by `rewardsCycleLength`.
 		rewardsCycleEnd = (block.timestamp.safeCastTo32() / rewardsCycleLength) * rewardsCycleLength;

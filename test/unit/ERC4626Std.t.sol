@@ -22,7 +22,7 @@ contract ERC4626StdTest is ERC4626Test {
 		TokenggAVAX ggAVAX = TokenggAVAX(deployProxy(address(ggAVAXImpl), address(1)));
 		registerContract(store, "TokenggAVAX", address(ggAVAX));
 
-		ggAVAX.initialize(store, wavax);
+		ggAVAX.initialize(store, wavax, 0);
 		ggAVAX.syncRewards();
 
 		_vault_ = address(ggAVAX);
