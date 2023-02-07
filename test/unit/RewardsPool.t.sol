@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
+import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 contract RewardsPoolTest is BaseTest {
