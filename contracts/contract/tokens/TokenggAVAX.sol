@@ -217,6 +217,24 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, UUPSUpgradeable, Base
 		msg.sender.safeTransferETH(assets);
 	}
 
+	/// @notice Max assets an owner can deposit
+	/// @param _owner User wallet address
+	function maxDeposit(address _owner) public view override returns (uint256) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			return 0;
+		}
+		return super.maxDeposit(_owner);
+	}
+
+	/// @notice Max shares owner can mint
+	/// @param _owner User wallet address
+	function maxMint(address _owner) public view override returns (uint256) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
+			return 0;
+		}
+		return super.maxMint(_owner);
+	}
+
 	/// @notice Max assets an owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxWithdraw(address _owner) public view override returns (uint256) {
