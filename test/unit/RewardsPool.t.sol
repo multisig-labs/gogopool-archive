@@ -196,4 +196,28 @@ contract RewardsPoolTest is BaseTest {
 		vm.expectRevert(BaseAbstract.ContractPaused.selector);
 		rewardsPool.startRewardsCycle();
 	}
+
+	function testZeroMultisigRewards() public {
+		// Rialto is default enabled
+		vm.prank(guardian);
+
+		//disble all so count will be 0
+		ocyticus.disableAllMultisigs();
+
+		skip(dao.getRewardsCycleSeconds());
+		assertEq(rewardsPool.getRewardsCyclesElapsed(), 1);
+		assertTrue(rewardsPool.canStartRewardsCycle());
+
+		assertEq(ggp.balanceOf(address(rialto)), 0);
+		assertEq(vault.balanceOfToken("MultisigManager", ggp), 0);
+
+		rewardsPool.startRewardsCycle();
+
+		uint256 rewardsCycleTotal = rewardsPool.getRewardsCycleTotalAmt();
+		uint256 multisigPerc = store.getUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"));
+		uint256 amtForMultisig = rewardsCycleTotal.mulWadDown(multisigPerc);
+
+		assertEq(vault.balanceOfToken("MultisigManager", ggp), amtForMultisig);
+		assertEq(ggp.balanceOf(address(rialto)), 0);
+	}
 }
