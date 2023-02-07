@@ -20,4 +20,8 @@ contract MockERC20Upgradeable is Initializable, ERC20Upgradeable {
 	function burn(address from, uint256 value) public virtual {
 		_burn(from, value);
 	}
+
+	function versionHash() internal view override returns (bytes32) {
+		return keccak256(abi.encodePacked(uint256(2)));
+	}
 }
