@@ -545,7 +545,7 @@ contract MinipoolManagerTest is BaseTest {
 		vm.expectRevert(MinipoolManager.InvalidStateTransition.selector);
 		minipoolMgr.recordStakingError{value: validationAmt}(mp1.nodeID, errorCode);
 
-		store.setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Staking));
+		store.setUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".status")), uint256(MinipoolStatus.Launched));
 
 		vm.prank(address(rialto));
 		vm.expectRevert(MinipoolManager.InvalidAmount.selector);
