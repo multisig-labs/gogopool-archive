@@ -79,8 +79,7 @@ contract ClaimNodeOp is Base {
 		staking.increaseGGPRewards(stakerAddr, rewardsAmt);
 
 		// check if their rewards time should be reset
-		uint256 minipoolCount = staking.getMinipoolCount(stakerAddr);
-		if (minipoolCount == 0) {
+		if (staking.getAVAXAssigned(stakerAddr) == 0) {
 			staking.setRewardsStartTime(stakerAddr, 0);
 		}
 	}

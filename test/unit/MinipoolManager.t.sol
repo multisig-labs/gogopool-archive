@@ -58,8 +58,6 @@ contract MinipoolManagerTest is BaseTest {
 
 		uint256 vaultOriginalBalance = vault.balanceOf("MinipoolManager");
 
-		assertEq(minipoolMgr.getMinipoolCount(), 0);
-
 		//fail
 		vm.startPrank(nodeOp);
 		vm.expectRevert(MinipoolManager.InvalidNodeID.selector);
@@ -94,7 +92,6 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(staker.avaxStaked, avaxAssignmentRequest);
 		assertEq(staker.avaxAssigned, nopAvaxAmount);
 		assertEq(staker.avaxValidating, 0);
-		assertEq(staker.minipoolCount, 1);
 		assertTrue(staker.rewardsStartTime != 0);
 
 		int256 minipoolIndex = minipoolMgr.getIndexOf(nodeID);
@@ -166,7 +163,6 @@ contract MinipoolManagerTest is BaseTest {
 		MinipoolManager.Minipool memory mp1Updated = minipoolMgr.getMinipool(minipoolIndex);
 
 		assertEq(mp1Updated.status, uint256(MinipoolStatus.Canceled));
-		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXStake(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXValidating(mp1Updated.owner), 0);
@@ -438,7 +434,6 @@ contract MinipoolManagerTest is BaseTest {
 
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXValidating(mp1Updated.owner), 0);
-		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXValidatingHighWater(mp1Updated.owner), avaxAssignmentRequest);
 	}
 
@@ -540,7 +535,6 @@ contract MinipoolManagerTest is BaseTest {
 		assertEq(minipoolMgr.getTotalAVAXLiquidStakerAmt(), 0);
 
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
-		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 
 		// if the slash amt is more than what they had staked, it gets set to what the amt they had staked
 		assertEq(mp1Updated.ggpSlashAmt, 1);
@@ -658,7 +652,6 @@ contract MinipoolManagerTest is BaseTest {
 
 		assertEq(staking.getAVAXAssigned(mp1Updated.owner), 0);
 		assertEq(staking.getAVAXStake(mp1Updated.owner), 0);
-		assertEq(staking.getMinipoolCount(mp1Updated.owner), 0);
 
 		assertEq(nodeOp.balance - priorBalance, depositAmt);
 	}
@@ -1006,7 +999,6 @@ contract MinipoolManagerTest is BaseTest {
 		assertGt(mpCompounded.avaxLiquidStakerAmt, mp.avaxLiquidStakerAmt);
 		assertEq(staking.getAVAXStake(mp.owner), mpCompounded.avaxNodeOpAmt);
 		assertEq(staking.getAVAXAssigned(mp.owner), mpCompounded.avaxLiquidStakerAmt);
-		assertEq(staking.getMinipoolCount(mp.owner), 1);
 		assertEq(mpCompounded.startTime, 0);
 		assertGt(mpCompounded.initialStartTime, 0);
 	}

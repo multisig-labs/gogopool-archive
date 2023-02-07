@@ -232,7 +232,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		}
 
 		Staking staking = Staking(getContractAddress("Staking"));
-		staking.increaseMinipoolCount(msg.sender);
 		staking.increaseAVAXStake(msg.sender, msg.value);
 		staking.increaseAVAXAssigned(msg.sender, avaxAssignmentRequest);
 
@@ -454,7 +453,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
 		staking.decreaseAVAXValidating(owner, avaxLiquidStakerAmt);
-		staking.decreaseMinipoolCount(owner);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}
@@ -505,7 +503,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		// since AVAX stake is only decreased by withdrawMinipool()
 		staking.increaseAVAXStake(mp.owner, mp.avaxNodeOpRewardAmt);
 		staking.increaseAVAXAssigned(mp.owner, compoundedAvaxNodeOpAmt);
-		staking.increaseMinipoolCount(mp.owner);
 
 		if (staking.getRewardsStartTime(mp.owner) == 0) {
 			// Edge case where calculateAndDistributeRewards has reset their rewards time even though they are still cycling
@@ -695,8 +692,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		Staking staking = Staking(getContractAddress("Staking"));
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
-
-		staking.decreaseMinipoolCount(owner);
 
 		// if they are not due rewards this cycle, reset rewards start time.
 		if (staking.getAVAXValidatingHighWater(owner) == 0) {
