@@ -89,8 +89,6 @@ contract RewardsPoolTest is BaseTest {
 		// No inflation expected
 		assertEq(newSupply, totalCirculatingSupply);
 
-		vm.startPrank(address(rewardsPool));
-
 		while (ggp.totalSupply() < maxTotalSupply) {
 			skip(28 days);
 			totalDays = totalDays + 28 days;
@@ -99,6 +97,15 @@ contract RewardsPoolTest is BaseTest {
 		uint256 leftOvers = 22_500_000 ether - ggp.totalSupply();
 		assertEq(leftOvers, 0);
 		assertEq(totalDays, 1680 days); // ~ 4.60 years
+
+		skip(28 days);
+		rewardsPool.startRewardsCycle();
+		assertEq(ggp.totalSupply(), 22_500_000 ether);
+
+		vm.startPrank(address(rewardsPool));
+		vm.expectRevert(TokenGGP.MaximumTokensReached.selector);
+		ggp.mint(1);
+		vm.stopPrank();
 	}
 
 	function testGetClaimingContractDistribution() public {

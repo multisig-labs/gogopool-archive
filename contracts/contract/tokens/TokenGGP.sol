@@ -9,7 +9,7 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 contract TokenGGP is ERC20 {
 	uint256 private constant INITIAL_SUPPLY = 18_000_000 ether;
-	uint256 private constant MAX_SUPPLY = 22_500_000 ether;
+	uint256 public constant MAX_SUPPLY = 22_500_000 ether;
 
 	error MaximumTokensReached();
 	error InvalidOrOutdatedContract();

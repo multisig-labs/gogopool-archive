@@ -81,7 +81,6 @@ contract RewardsPool is Base {
 	/// @notice Releases more GGP if appropriate
 	/// @dev Mint new tokens if enough time has elapsed since last mint
 	function inflate() internal {
-		uint256 maxGGPTokenSupply = 22_500_000 ether;
 		uint256 inflationIntervalElapsedSeconds = (block.timestamp - getInflationIntervalStartTime());
 		(uint256 currentTotalSupply, uint256 newTotalSupply) = getInflationAmt();
 
@@ -89,8 +88,8 @@ contract RewardsPool is Base {
 
 		uint256 newTokens = newTotalSupply - currentTotalSupply;
 
-		if (newTotalSupply > maxGGPTokenSupply) {
-			newTokens = maxGGPTokenSupply - currentTotalSupply;
+		if (newTotalSupply > ggp.MAX_SUPPLY()) {
+			newTokens = ggp.MAX_SUPPLY() - currentTotalSupply;
 		}
 
 		emit GGPInflated(newTokens);
