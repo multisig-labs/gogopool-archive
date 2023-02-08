@@ -345,25 +345,4 @@ abstract contract BaseTest is Test {
 		TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(address(impl), deployer, data);
 		return payable(uups);
 	}
-
-	function distributeInitialSupply() public {
-		// note: guardian is minted 18_000_000 of the supply
-		vm.startPrank(guardian);
-
-		uint256 companyAllocation = TOTAL_INITIAL_SUPPLY.mulWadDown(.32 ether);
-		uint256 pDaoAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.3233 ether);
-		uint256 seedInvestorAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.1567 ether);
-
-		// approve vault deposits for all tokens that won't be in company wallet
-		ggp.approve(address(vault), TOTAL_INITIAL_SUPPLY - companyAllocation);
-
-		// 33% to the pDAO wallet
-		vault.depositToken("ProtocolDAO", ggp, pDaoAllo);
-
-		// TODO make an actual vesting contract
-		// 15.67% to vesting smart contract
-		vault.depositToken("ProtocolDAO", ggp, seedInvestorAllo);
-
-		vm.stopPrank();
-	}
 }

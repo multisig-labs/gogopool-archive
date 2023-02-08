@@ -13,7 +13,6 @@ contract ClaimNodeOpTest is BaseTest {
 
 	function setUp() public override {
 		super.setUp();
-		distributeInitialSupply();
 	}
 
 	function testGetRewardsCycleTotal() public {
