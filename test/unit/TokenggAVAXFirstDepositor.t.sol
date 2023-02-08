@@ -91,7 +91,7 @@ contract TokenggAVAXTestFirstDepositor is BaseTest, IWithdrawer {
 		token.initialize(store, wavax, 1 ether);
 
 		address attacker = getActorWithTokens("attacker", 1 ether + 1, 0);
-		address victim = getActorWithTokens("victim", 2 ether, 0);
+		address victim = getActorWithTokens("victim", 1 ether, 0);
 
 		// deposit 1 wei to mint 1 wei of shares
 		vm.startPrank(attacker);
