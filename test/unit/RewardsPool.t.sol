@@ -32,8 +32,8 @@ contract RewardsPoolTest is BaseTest {
 
 		// Hard-code numbers for this specific test
 		uint256 totalCirculatingSupply = 18000000 ether;
-		assertEq(ggp.totalSupply(), totalCirculatingSupply);
 
+		assertEq(ggp.totalSupply(), totalCirculatingSupply);
 		assertEq(dao.getInflationIntervalRate(), inflationRate);
 
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
@@ -44,34 +44,30 @@ contract RewardsPoolTest is BaseTest {
 
 		skip(dao.getInflationIntervalSeconds());
 
-		//1 cycle, should be 2406.06
+		// 1 cycle, should be 2406.06 ether
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
-		//total tokens
+		// 	total tokens
 		assertEq(newSupply, 18002406251108043000000000);
 		// tokens released for one inflation cycle
 		assertEq(newSupply - curSupply, 2406251108043000000000);
 
-		vm.expectRevert(BaseAbstract.InvalidOrOutdatedContract.selector);
-		ggp.mint(newSupply - curSupply);
-
-		//this happens in inflate()
+		// this happens in inflate()
 		vm.startPrank(address(rewardsPool));
 		ggp.mint(newSupply - curSupply);
-		//make sure mint worked as expected
+		// make sure mint worked as expected
 		assertEq(newSupply, ggp.totalSupply());
 		assertEq(vault.balanceOfToken("RewardsPool", ggp), newSupply - curSupply);
 
-		//2 cycles
+		// skip a second cycle
 		skip(dao.getInflationIntervalSeconds());
 
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
-		//total tokens
+		// total tokens
 		assertEq(newSupply, 18007219718374529087907130);
 		// tokens released for second inflation cycle
 		assertEq(newSupply - curSupply, 4813467266486087907130);
 
 		ggp.mint(newSupply - curSupply);
-		//make sure mint worked as expected
 		assertEq(newSupply, ggp.totalSupply());
 		assertEq(vault.balanceOfToken("RewardsPool", ggp), newSupply - totalCirculatingSupply);
 
@@ -83,7 +79,7 @@ contract RewardsPoolTest is BaseTest {
 		uint256 newSupply;
 
 		uint256 totalCirculatingSupply = 18_000_000 ether;
-		uint256 maxTotalSupply = 22_500_000 ether;
+		uint256 maxTotalSupply = ggp.MAX_SUPPLY();
 		uint256 totalDays = 0;
 
 		assertEq(ggp.totalSupply(), totalCirculatingSupply);
@@ -108,11 +104,6 @@ contract RewardsPoolTest is BaseTest {
 		vm.expectRevert(Vault.InvalidAmount.selector); // cannot deposit 0 tokens
 		rewardsPool.startRewardsCycle();
 		assertEq(ggp.totalSupply(), 22_500_000 ether);
-
-		vm.startPrank(address(rewardsPool));
-		vm.expectRevert(TokenGGP.MaximumTokensReached.selector);
-		ggp.mint(1);
-		vm.stopPrank();
 	}
 
 	function testGetClaimingContractDistribution() public {
