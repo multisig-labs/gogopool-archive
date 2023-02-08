@@ -42,6 +42,7 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(curSupply, totalCirculatingSupply);
 		// No inflation expected
 		assertEq(newSupply, totalCirculatingSupply);
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), 0);
 
 		skip(dao.getInflationIntervalSeconds());
 
@@ -52,11 +53,15 @@ contract RewardsPoolTest is BaseTest {
 		// tokens released for one inflation cycle
 		assertEq(newSupply - curSupply, 2406251108043000000000);
 
+		vm.expectRevert(BaseAbstract.InvalidOrOutdatedContract.selector);
+		ggp.mint(newSupply - curSupply);
+
 		//this happens in inflate()
 		vm.startPrank(address(rewardsPool));
 		ggp.mint(newSupply - curSupply);
 		//make sure mint worked as expected
 		assertEq(newSupply, ggp.totalSupply());
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), newSupply - curSupply);
 
 		//2 cycles
 		skip(dao.getInflationIntervalSeconds());
@@ -70,6 +75,8 @@ contract RewardsPoolTest is BaseTest {
 		ggp.mint(newSupply - curSupply);
 		//make sure mint worked as expected
 		assertEq(newSupply, ggp.totalSupply());
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), newSupply - totalCirculatingSupply);
+
 		vm.stopPrank();
 	}
 
@@ -88,6 +95,7 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(curSupply, totalCirculatingSupply);
 		// No inflation expected
 		assertEq(newSupply, totalCirculatingSupply);
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), 0);
 
 		while (ggp.totalSupply() < maxTotalSupply) {
 			skip(28 days);
