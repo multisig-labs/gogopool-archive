@@ -41,7 +41,7 @@ contract TokenUpgradeTests is BaseTest {
 		TokenggAVAX impl = new TokenggAVAX();
 		TokenggAVAX proxy = TokenggAVAX(deployProxy(address(impl), guardian));
 
-		proxy.initialize(store, wavax);
+		proxy.initialize(store, wavax, 0);
 
 		proxy.syncRewards();
 		vm.warp(ggAVAX.rewardsCycleEnd());
@@ -59,7 +59,7 @@ contract TokenUpgradeTests is BaseTest {
 		MockTokenggAVAXV2Dangerous impl2 = new MockTokenggAVAXV2Dangerous();
 		vm.prank(guardian);
 		proxy.upgradeTo(address(impl2));
-		proxy.initialize(store, wavax);
+		proxy.initialize(store, wavax, 0);
 
 		// now lastSync is reading four bytes of lastRewardsAmt
 		assertFalse(proxy.lastSync() == oldLastSync);
@@ -73,7 +73,7 @@ contract TokenUpgradeTests is BaseTest {
 		TokenggAVAX impl = new TokenggAVAX();
 		TokenggAVAX proxy = TokenggAVAX(deployProxy(address(impl), guardian));
 
-		proxy.initialize(store, wavax);
+		proxy.initialize(store, wavax, 0);
 
 		proxy.syncRewards();
 		uint256 oldLastSync = proxy.lastSync();
@@ -83,7 +83,7 @@ contract TokenUpgradeTests is BaseTest {
 		MockTokenggAVAXV2Safe impl2 = new MockTokenggAVAXV2Safe();
 		vm.prank(guardian);
 		proxy.upgradeTo(address(impl2));
-		proxy.initialize(store, wavax);
+		proxy.initialize(store, wavax, 0);
 
 		// verify that lastSync is not overwritten during upgrade
 		assertEq(proxy.lastSync(), oldLastSync);
