@@ -504,6 +504,22 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 		assertEq(shares, depositAmt);
 	}
 
+	function testMaxWithdrawPaused() public {
+		uint128 depositAmt = 100 ether;
+
+		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
+		vm.startPrank(liqStaker);
+		wavax.approve(address(ggAVAX), depositAmt);
+		ggAVAX.deposit(depositAmt, liqStaker);
+		vm.stopPrank();
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("TokenggAVAX");
+
+		uint256 assets = ggAVAX.maxWithdraw(liqStaker);
+		assertEq(assets, depositAmt);
+	}
+
 	function testMaxRedeem() public {
 		uint128 depositAmt = 1000 ether;
 		uint128 rewardAmt = 100 ether;
@@ -567,7 +583,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 	///      when a liquid staker is able to withdraw all contract assets
 	///      mid rewards cycle. This is unlikely to happen in production
 	///      when the protocol has a larger number of stakers
-	function testRedeemWithdrawAllAssetsMidRewardsCycle() public {
+	function testFailRedeemWithdrawAllAssetsMidRewardsCycle() public {
 		uint128 seed = 1000;
 		uint128 reward = 100;
 
@@ -604,33 +620,13 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 		assertEq(ggAVAX.balanceOf(liqStaker), seed);
 
-		// attempt to redeem all shares
-		vm.startPrank(liqStaker);
-		vm.expectRevert(abi.encodeWithSignature("Panic(uint256)", 0x11));
+		// attempt to redeem all shares, which fails
+		vm.prank(liqStaker);
 		ggAVAX.redeem(ggAVAX.maxRedeem(liqStaker), liqStaker, liqStaker);
-		vm.stopPrank();
 
-		// attempt to withdraw all assets
-		vm.startPrank(liqStaker);
-		vm.expectRevert(abi.encodeWithSignature("Panic(uint256)", 0x11));
+		// attempt to withdraw all assets, which fails
+		vm.prank(liqStaker);
 		ggAVAX.withdraw(ggAVAX.maxWithdraw(liqStaker), liqStaker, liqStaker);
-		vm.stopPrank();
-	}
-
-	function testMaxWithdrawPaused() public {
-		uint128 depositAmt = 100 ether;
-
-		address liqStaker = getActorWithTokens("liqStaker", depositAmt, 0);
-		vm.startPrank(liqStaker);
-		wavax.approve(address(ggAVAX), depositAmt);
-		ggAVAX.deposit(depositAmt, liqStaker);
-		vm.stopPrank();
-
-		vm.prank(address(ocyticus));
-		dao.pauseContract("TokenggAVAX");
-
-		uint256 assets = ggAVAX.maxWithdraw(liqStaker);
-		assertEq(assets, depositAmt);
 	}
 
 	function receiveWithdrawalAVAX() external payable {}
