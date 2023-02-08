@@ -681,8 +681,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		staking.decreaseAVAXStake(owner, avaxNodeOpAmt);
 		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
 
-		// if they are not due rewards this cycle, reset rewards start time.
-		if (staking.getAVAXValidatingHighWater(owner) == 0) {
+		// if they are not due rewards this cycle and do not have any other minipools in queue, reset rewards start time.
+		if (staking.getAVAXValidatingHighWater(owner) == 0 && staking.getAVAXAssigned(owner) == 0) {
 			staking.setRewardsStartTime(owner, 0);
 		}
 
