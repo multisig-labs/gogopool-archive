@@ -10,10 +10,7 @@ import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Staking} from "./Staking.sol";
 import {Storage} from "./Storage.sol";
 import {TokenggAVAX} from "./tokens/TokenggAVAX.sol";
-import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {Vault} from "./Vault.sol";
-
-import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
@@ -58,7 +55,6 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 	using FixedPointMathLib for uint256;
 	using SafeTransferLib for address;
-	using SafeTransferLib for ERC20;
 
 	error CancellationTooEarly();
 	error DurationOutOfBounds();
@@ -79,9 +75,6 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 	event GGPSlashed(address indexed nodeID, uint256 ggp);
 	event MinipoolStatusChanged(address indexed nodeID, MinipoolStatus indexed status);
-
-	ERC20 public immutable ggp;
-	TokenggAVAX public immutable ggAVAX;
 
 	/// @dev Not used for storage, just for returning data from view functions
 	struct Minipool {
@@ -180,14 +173,8 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		}
 	}
 
-	constructor(
-		Storage storageAddress,
-		ERC20 ggp_,
-		TokenggAVAX ggAVAX_
-	) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		ggp = ggp_;
-		ggAVAX = ggAVAX_;
 	}
 
 	//
@@ -328,6 +315,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		int256 minipoolIndex = onlyValidMultisig(nodeID);
 		requireValidStateTransition(minipoolIndex, MinipoolStatus.Launched);
 
+		TokenggAVAX ggAVAX = TokenggAVAX(payable(getContractAddress("TokenggAVAX")));
 		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")));
 		return avaxLiquidStakerAmt <= ggAVAX.amountAvailableForStaking();
 	}
@@ -343,6 +331,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")));
 
 		// Transfer funds to this contract and then send to multisig
+		TokenggAVAX ggAVAX = TokenggAVAX(payable(getContractAddress("TokenggAVAX")));
 		ggAVAX.withdrawForStaking(avaxLiquidStakerAmt);
 		addUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"), avaxLiquidStakerAmt);
 
@@ -408,14 +397,12 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		int256 minipoolIndex = onlyValidMultisig(nodeID);
 		requireValidStateTransition(minipoolIndex, MinipoolStatus.Withdrawable);
 
-		uint256 startTime = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".startTime")));
-		if (endTime <= startTime || endTime > block.timestamp) {
+		Minipool memory mp = getMinipool(minipoolIndex);
+		if (endTime <= mp.startTime || endTime > block.timestamp) {
 			revert InvalidEndTime();
 		}
 
-		uint256 avaxNodeOpAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxNodeOpAmt")));
-		uint256 avaxLiquidStakerAmt = getUint(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".avaxLiquidStakerAmt")));
-		uint256 totalAvaxAmt = avaxNodeOpAmt + avaxLiquidStakerAmt;
+		uint256 totalAvaxAmt = mp.avaxNodeOpAmt + mp.avaxLiquidStakerAmt;
 		if (msg.value != totalAvaxAmt + avaxTotalRewardAmt) {
 			revert InvalidAmount();
 		}
@@ -443,16 +430,15 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 
 		// Send the nodeOps AVAX + rewards to vault so they can claim later
 		Vault vault = Vault(getContractAddress("Vault"));
-		vault.depositAVAX{value: avaxNodeOpAmt + avaxNodeOpRewardAmt}();
+		vault.depositAVAX{value: mp.avaxNodeOpAmt + avaxNodeOpRewardAmt}();
 		// Return Liq stakers funds + rewards
-		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt + avaxLiquidStakerRewardAmt}(avaxLiquidStakerAmt, avaxLiquidStakerRewardAmt);
-		subUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"), avaxLiquidStakerAmt);
-
-		address owner = getAddress(keccak256(abi.encodePacked("minipool.item", minipoolIndex, ".owner")));
+		TokenggAVAX ggAVAX = TokenggAVAX(payable(getContractAddress("TokenggAVAX")));
+		ggAVAX.depositFromStaking{value: mp.avaxLiquidStakerAmt + avaxLiquidStakerRewardAmt}(mp.avaxLiquidStakerAmt, avaxLiquidStakerRewardAmt);
+		subUint(keccak256("MinipoolManager.TotalAVAXLiquidStakerAmt"), mp.avaxLiquidStakerAmt);
 
 		Staking staking = Staking(getContractAddress("Staking"));
-		staking.decreaseAVAXAssigned(owner, avaxLiquidStakerAmt);
-		staking.decreaseAVAXValidating(owner, avaxLiquidStakerAmt);
+		staking.decreaseAVAXAssigned(mp.owner, mp.avaxLiquidStakerAmt);
+		staking.decreaseAVAXValidating(mp.owner, mp.avaxLiquidStakerAmt);
 
 		emit MinipoolStatusChanged(nodeID, MinipoolStatus.Withdrawable);
 	}
@@ -544,6 +530,7 @@ contract MinipoolManager is Base, ReentrancyGuard, IWithdrawer {
 		vault.depositAVAX{value: avaxNodeOpAmt}();
 
 		// Return Liq stakers funds
+		TokenggAVAX ggAVAX = TokenggAVAX(payable(getContractAddress("TokenggAVAX")));
 		ggAVAX.depositFromStaking{value: avaxLiquidStakerAmt}(avaxLiquidStakerAmt, 0);
 
 		Staking staking = Staking(getContractAddress("Staking"));

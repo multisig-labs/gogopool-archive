@@ -7,8 +7,8 @@ import {Oracle} from "./Oracle.sol";
 import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
 
-import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
@@ -29,7 +29,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 
 /// @title GGP staking and staker attributes
 contract Staking is Base {
-	using SafeTransferLib for ERC20;
+	using SafeTransferLib for TokenGGP;
 	using SafeTransferLib for address;
 	using FixedPointMathLib for uint256;
 
@@ -56,16 +56,14 @@ contract Staking is Base {
 
 	uint256 internal constant TENTH = 0.1 ether;
 
-	ERC20 public immutable ggp;
-
-	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		ggp = ggp_;
 	}
 
 	/// @notice Total GGP (stored in vault) assigned to this contract
 	function getTotalGGPStake() public view returns (uint256) {
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		return vault.balanceOfToken("Staking", ggp);
 	}
 
@@ -316,6 +314,7 @@ contract Staking is Base {
 	/// @param amount The amount of GGP being staked
 	function stakeGGP(uint256 amount) external {
 		// Transfer GGP tokens from staker to this contract
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(msg.sender, amount);
 	}
@@ -325,6 +324,7 @@ contract Staking is Base {
 	/// @param amount The amount of GGP being staked
 	function restakeGGP(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		// Transfer GGP tokens from the ClaimNodeOp contract to this contract
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(stakerAddr, amount);
 	}
@@ -337,6 +337,7 @@ contract Staking is Base {
 
 		// Deposit GGP tokens from this contract to vault
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ggp.approve(address(vault), amount);
 		vault.depositToken("Staking", ggp, amount);
 
@@ -368,6 +369,7 @@ contract Staking is Base {
 		}
 
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		vault.withdrawToken(msg.sender, ggp, amount);
 	}
 
@@ -376,6 +378,7 @@ contract Staking is Base {
 	/// @param ggpAmt The amount of GGP being slashed
 	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		decreaseGGPStake(stakerAddr, ggpAmt);
 		vault.transferToken("ProtocolDAO", ggp, ggpAmt);
 	}

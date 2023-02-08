@@ -100,16 +100,16 @@ abstract contract BaseTest is Test {
 		ggAVAX.initialize(store, wavax, 0 ether);
 		vm.startPrank(guardian);
 
-		minipoolMgr = new MinipoolManager(store, ggp, ggAVAX);
+		minipoolMgr = new MinipoolManager(store);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
 
-		staking = new Staking(store, ggp);
+		staking = new Staking(store);
 		registerContract(store, "Staking", address(staking));
 
-		nopClaim = new ClaimNodeOp(store, ggp);
+		nopClaim = new ClaimNodeOp(store);
 		registerContract(store, "ClaimNodeOp", address(nopClaim));
 
 		daoClaim = new ClaimProtocolDAO(store);

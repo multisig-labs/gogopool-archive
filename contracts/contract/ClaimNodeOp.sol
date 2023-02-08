@@ -10,7 +10,6 @@ import {Storage} from "./Storage.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {Vault} from "./Vault.sol";
 
-import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 /// @title Node Operators claiming GGP Rewards
@@ -24,11 +23,8 @@ contract ClaimNodeOp is Base {
 
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
-	ERC20 public immutable ggp;
-
-	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		ggp = ggp_;
 	}
 
 	/// @notice Get the total rewards for the most recent cycle
@@ -99,6 +95,7 @@ contract ClaimNodeOp is Base {
 		staking.decreaseGGPRewards(msg.sender, ggpRewards);
 
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		uint256 restakeAmt = ggpRewards - claimAmt;
 		if (restakeAmt > 0) {
 			vault.withdrawToken(address(this), ggp, restakeAmt);
