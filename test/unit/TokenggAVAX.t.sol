@@ -40,7 +40,7 @@ contract TokenggAVAXTest is BaseTest, IWithdrawer {
 
 	function testReinitialization() public {
 		vm.expectRevert(bytes("Initializable: contract is already initialized"));
-		ggAVAX.initialize(store, wavax);
+		ggAVAX.initialize(store, wavax, 0);
 	}
 
 	function testSingleDepositWithdrawWAVAX(uint128 amount) public {

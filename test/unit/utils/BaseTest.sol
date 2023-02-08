@@ -97,7 +97,7 @@ abstract contract BaseTest is Test {
 		registerContract(store, "TokenggAVAX", address(ggAVAX));
 
 		vm.stopPrank();
-		ggAVAX.initialize(store, wavax);
+		ggAVAX.initialize(store, wavax, 0 ether);
 		vm.startPrank(guardian);
 
 		minipoolMgr = new MinipoolManager(store, ggp, ggAVAX);
