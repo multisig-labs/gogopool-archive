@@ -34,7 +34,6 @@ contract ProtocolDAO is Base {
 
 		// RewardsPool
 		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
-		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"), 0.20 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"), 0.70 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
@@ -49,7 +48,7 @@ contract ProtocolDAO is Base {
 		// Minipool
 		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmt"), 2_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
-		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 1_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);
 		setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), 0.1 ether); // Annual rate as pct of 1 avax
 		setUint(keccak256("ProtocolDAO.MinipoolCancelMoratoriumSeconds"), 5 days);
@@ -88,16 +87,6 @@ contract ProtocolDAO is Base {
 	/// @notice Get how many seconds in a rewards cycle
 	function getRewardsCycleSeconds() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.RewardsCycleSeconds"));
-	}
-
-	/// @notice The total amount of GGP that is in circulation
-	function getTotalGGPCirculatingSupply() public view returns (uint256) {
-		return getUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"));
-	}
-
-	/// @notice Set the amount of GGP that is in circulation
-	function setTotalGGPCirculatingSupply(uint256 amount) public onlySpecificRegisteredContract("RewardsPool", msg.sender) {
-		return setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), amount);
 	}
 
 	/// @notice The percentage a contract is owed for a rewards cycle
