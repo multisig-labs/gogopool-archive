@@ -501,7 +501,6 @@ contract MinipoolManagerTest is BaseTest {
 		uint256 duration = 2 weeks;
 		uint256 depositAmt = 1000 ether;
 		uint256 avaxAssignmentRequest = 1000 ether;
-		uint256 validationAmt = depositAmt + avaxAssignmentRequest;
 		uint128 ggpStakeAmt = 200 ether;
 
 		vm.startPrank(nodeOp);
