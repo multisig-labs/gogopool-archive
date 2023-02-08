@@ -12,7 +12,6 @@ contract RewardsPoolTest is BaseTest {
 
 	function setUp() public override {
 		super.setUp();
-		distributeInitialSupply();
 	}
 
 	function testInitialization() public {
@@ -27,57 +26,85 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(rewardsPool.getInflationIntervalsElapsed(), 1);
 	}
 
-	//TODO test this full 5 years
 	function testInflationCalculate() public {
 		uint256 curSupply;
 		uint256 newSupply;
+		uint256 inflationRate = 1000133680617113500;
 
 		// Hard-code numbers for this specific test
 		uint256 totalCirculatingSupply = 18000000 ether;
-		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), totalCirculatingSupply);
-		assertEq(dao.getTotalGGPCirculatingSupply(), totalCirculatingSupply);
 
-		uint256 inflationRate = 1000133680617113500;
-		store.setUint(keccak256("ProtocolDAO.InflationIntervalRate"), inflationRate);
+		assertEq(ggp.totalSupply(), totalCirculatingSupply);
 		assertEq(dao.getInflationIntervalRate(), inflationRate);
 
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
 		assertEq(curSupply, totalCirculatingSupply);
 		// No inflation expected
 		assertEq(newSupply, totalCirculatingSupply);
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), 0);
 
 		skip(dao.getInflationIntervalSeconds());
 
-		//1 cycle, should be 2406.06
+		// 1 cycle, should be 2406.06 ether
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
+		// 	total tokens
+		assertEq(newSupply, 18002406251108043000000000);
+		// tokens released for one inflation cycle
 		assertEq(newSupply - curSupply, 2406251108043000000000);
 
-		//this happens in inflate()
-		store.setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), totalCirculatingSupply + 2406251108043000000000);
+		// this happens in inflate()
+		vm.startPrank(address(rewardsPool));
+		ggp.mint(newSupply - curSupply);
+		// make sure mint worked as expected
+		assertEq(newSupply, ggp.totalSupply());
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), newSupply - curSupply);
 
-		//2 cycles
+		// skip a second cycle
 		skip(dao.getInflationIntervalSeconds());
 
 		(curSupply, newSupply) = rewardsPool.getInflationAmt();
+		// total tokens
+		assertEq(newSupply, 18007219718374529087907130);
+		// tokens released for second inflation cycle
 		assertEq(newSupply - curSupply, 4813467266486087907130);
 
-		skip(1676 days); // ~4.6 years
-		(curSupply, newSupply) = rewardsPool.getInflationAmt();
-		// we have 4.5 mil ether to give out. So the rewards cycle will be
-		assertEq(newSupply - curSupply, 4526664600019446164419790);
+		ggp.mint(newSupply - curSupply);
+		assertEq(newSupply, ggp.totalSupply());
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), newSupply - totalCirculatingSupply);
+
+		vm.stopPrank();
 	}
 
 	function testMaxInflation() public {
-		// skip 54 months ahead and start rewards cycle
-		skip(142006867);
-		rewardsPool.startRewardsCycle();
-		uint256 tcs = dao.getTotalGGPCirculatingSupply();
-		assertLt(tcs, 22_500_000 ether);
+		uint256 curSupply;
+		uint256 newSupply;
 
-		// one more month inflates more than 22.5 million tokens
-		skip(2629756);
-		vm.expectRevert(RewardsPool.MaximumTokensReached.selector);
+		uint256 totalCirculatingSupply = 18_000_000 ether;
+		uint256 maxTotalSupply = ggp.MAX_SUPPLY();
+		uint256 totalDays = 0;
+
+		assertEq(ggp.totalSupply(), totalCirculatingSupply);
+		assertEq(dao.getInflationIntervalRate(), 1000133680617113500);
+
+		(curSupply, newSupply) = rewardsPool.getInflationAmt();
+		assertEq(curSupply, totalCirculatingSupply);
+		// No inflation expected
+		assertEq(newSupply, totalCirculatingSupply);
+		assertEq(vault.balanceOfToken("RewardsPool", ggp), 0);
+
+		while (ggp.totalSupply() < maxTotalSupply) {
+			skip(28 days);
+			totalDays = totalDays + 28 days;
+			rewardsPool.startRewardsCycle();
+		}
+		uint256 leftOvers = 22_500_000 ether - ggp.totalSupply();
+		assertEq(leftOvers, 0);
+		assertEq(totalDays, 1680 days); // ~ 4.60 years
+
+		skip(28 days);
+		vm.expectRevert(Vault.InvalidAmount.selector); // cannot deposit 0 tokens
 		rewardsPool.startRewardsCycle();
+		assertEq(ggp.totalSupply(), 22_500_000 ether);
 	}
 
 	function testGetClaimingContractDistribution() public {
@@ -169,7 +196,7 @@ contract RewardsPoolTest is BaseTest {
 
 		uint256 inflationIntervalsElapsed = 56;
 		uint256 inflationRate = dao.getInflationIntervalRate();
-		uint256 expectedInflationTokens = dao.getTotalGGPCirculatingSupply();
+		uint256 expectedInflationTokens = ggp.totalSupply();
 		for (uint256 i = 0; i < inflationIntervalsElapsed; i++) {
 			expectedInflationTokens = expectedInflationTokens.mulWadDown(inflationRate);
 		}
@@ -178,7 +205,7 @@ contract RewardsPoolTest is BaseTest {
 		rewardsPool.startRewardsCycle();
 
 		// verify inflated tokens
-		assertEq(dao.getTotalGGPCirculatingSupply(), expectedInflationTokens);
+		assertEq(ggp.totalSupply(), expectedInflationTokens);
 	}
 
 	function testStartRewardsCyclePaused() public {

@@ -202,7 +202,6 @@ contract AVAXStateVariableTest is BaseTest {
 		vm.stopPrank();
 
 		// make sure to distribute ggp before processing first rewards
-		distributeInitialSupply();
 		rialto.processGGPRewards();
 
 		// with no validating minipool nodeOp's high water should be 0
