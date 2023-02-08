@@ -79,7 +79,7 @@ contract RewardsPool is Base {
 	}
 
 	/// @notice Releases more GGP if appropriate
-	/// @dev Mint new tokens if enough time has elapsed since last mint
+	/// @dev Mint new tokens if enough time has elapsed since last mint. Also, minting 0 tokens will revert.
 	function inflate() internal {
 		uint256 inflationIntervalElapsedSeconds = (block.timestamp - getInflationIntervalStartTime());
 		(uint256 currentTotalSupply, uint256 newTotalSupply) = getInflationAmt();

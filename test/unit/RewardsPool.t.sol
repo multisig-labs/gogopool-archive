@@ -11,7 +11,6 @@ contract RewardsPoolTest is BaseTest {
 
 	function setUp() public override {
 		super.setUp();
-		distributeInitialSupply();
 	}
 
 	function testInitialization() public {
@@ -26,7 +25,6 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(rewardsPool.getInflationIntervalsElapsed(), 1);
 	}
 
-	//TODO test this full 5 years
 	function testInflationCalculate() public {
 		uint256 curSupply;
 		uint256 newSupply;
@@ -107,6 +105,7 @@ contract RewardsPoolTest is BaseTest {
 		assertEq(totalDays, 1680 days); // ~ 4.60 years
 
 		skip(28 days);
+		vm.expectRevert(Vault.InvalidAmount.selector); // cannot deposit 0 tokens
 		rewardsPool.startRewardsCycle();
 		assertEq(ggp.totalSupply(), 22_500_000 ether);
 
