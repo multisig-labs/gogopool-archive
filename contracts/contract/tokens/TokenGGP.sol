@@ -19,11 +19,7 @@ contract TokenGGP is ERC20, Base {
 		_mint(msg.sender, INITIAL_SUPPLY);
 	}
 
-	function mint(uint256 amount) external {
-		if (msg.sender != getContractAddress("RewardsPool")) {
-			revert InvalidOrOutdatedContract();
-		}
-
+	function mint(uint256 amount) external onlySpecificRegisteredContract("RewardsPool", msg.sender) {
 		if (totalSupply + amount > MAX_SUPPLY) {
 			revert MaximumTokensReached();
 		}
