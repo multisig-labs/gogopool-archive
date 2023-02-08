@@ -18,7 +18,7 @@ contract TokenUpgradeTests is BaseTest {
 		TokenggAVAX impl = new TokenggAVAX();
 		TokenggAVAX proxy = TokenggAVAX(deployProxy(address(impl), guardian));
 
-		proxy.initialize(store, wavax);
+		proxy.initialize(store, wavax, 0);
 
 		bytes32 oldSeparator = proxy.DOMAIN_SEPARATOR();
 		address oldAddress = address(proxy);
@@ -29,7 +29,7 @@ contract TokenUpgradeTests is BaseTest {
 		vm.prank(guardian);
 		proxy.upgradeTo(address(impl2));
 
-		proxy.initialize(store, wavax);
+		proxy.initialize(store, wavax, 0);
 
 		assertFalse(proxy.DOMAIN_SEPARATOR() == oldSeparator);
 		assertEq(address(proxy), oldAddress);
