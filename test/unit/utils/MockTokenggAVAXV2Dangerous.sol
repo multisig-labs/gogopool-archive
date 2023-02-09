@@ -3,14 +3,15 @@
 // Rewards logic inspired by xERC20 (https://github.com/ZeframLou/playpen/blob/main/src/xERC20.sol)
 pragma solidity 0.8.17;
 
-import "../BaseUpgradeable.sol";
-import {ERC20Upgradeable} from "./upgradeable/ERC20Upgradeable.sol";
-import {ERC4626Upgradeable} from "./upgradeable/ERC4626Upgradeable.sol";
-import {ProtocolDAO} from "../ProtocolDAO.sol";
-import {Storage} from "../Storage.sol";
+import "../../../contracts/contract/BaseUpgradeable.sol";
+import {ERC20Upgradeable} from "../../../contracts/contract/tokens/upgradeable/ERC20Upgradeable.sol";
+import {ERC20UpgradeableDangerous} from "./ERC20UpgradeableDangerous.sol";
+import {ERC4626UpgradeableDangerous} from "./ERC4626UpgradeableDangerous.sol";
+import {ProtocolDAO} from "../../../contracts/contract/ProtocolDAO.sol";
+import {Storage} from "../../../contracts/contract/Storage.sol";
 
-import {IWithdrawer} from "../../interface/IWithdrawer.sol";
-import {IWAVAX} from "../../interface/IWAVAX.sol";
+import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
+import {IWAVAX} from "../../../contracts/interface/IWAVAX.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
@@ -18,9 +19,10 @@ import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeCastLib} from "@rari-capital/solmate/src/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+import {console} from "forge-std/console.sol";
 
 /// @dev Local variables and parent contracts must remain in order between contract upgrades
-contract TokenggAVAX is Initializable, ERC4626Upgradeable, BaseUpgradeable {
+contract MockTokenggAVAXV2Dangerous is Initializable, ERC4626UpgradeableDangerous, BaseUpgradeable {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -72,11 +74,11 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, BaseUpgradeable {
 		Storage storageAddress,
 		ERC20 asset,
 		uint256 initialDeposit
-	) public initializer {
+	) public reinitializer(2) {
 		__ERC4626Upgradeable_init(asset, "GoGoPool Liquid Staking Token", "ggAVAX");
 		__BaseUpgradeable_init(storageAddress);
 
-		version = 1;
+		version = 2;
 
 		// sacrifice initial seed of shares to prevent front-running early deposits
 		if (initialDeposit > 0) {
@@ -148,10 +150,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, BaseUpgradeable {
 		uint256 totalAssets_ = totalAssets();
 
 		uint256 reservedAssets = totalAssets_.mulDivDown(targetCollateralRate, 1 ether);
-
-		if (reservedAssets + stakingTotalAssets > totalAssets_) {
-			return 0;
-		}
 		return totalAssets_ - reservedAssets - stakingTotalAssets;
 	}
 
@@ -231,24 +229,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, BaseUpgradeable {
 		msg.sender.safeTransferETH(assets);
 	}
 
-	/// @notice Max assets an owner can deposit
-	/// @param _owner User wallet address
-	function maxDeposit(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
-		return super.maxDeposit(_owner);
-	}
-
-	/// @notice Max shares owner can mint
-	/// @param _owner User wallet address
-	function maxMint(address _owner) public view override returns (uint256) {
-		if (getBool(keccak256(abi.encodePacked("contract.paused", "TokenggAVAX")))) {
-			return 0;
-		}
-		return super.maxMint(_owner);
-	}
-
 	/// @notice Max assets an owner can withdraw with consideration to liquidity in this contract
 	/// @param _owner User wallet address
 	function maxWithdraw(address _owner) public view override returns (uint256) {
@@ -297,8 +277,6 @@ contract TokenggAVAX is Initializable, ERC4626Upgradeable, BaseUpgradeable {
 		totalReleasedAssets += amount;
 	}
 
-	/// @notice Override of ERC20Upgradeable to set the contract version for EIP-2612
-	/// @return hash of this contracts version
 	function versionHash() internal view override returns (bytes32) {
 		return keccak256(abi.encodePacked(version));
 	}

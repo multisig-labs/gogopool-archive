@@ -24,7 +24,7 @@ contract xERC4626Test is Test {
 		xToken = TokenggAVAX(deployProxy(address(xTokenImpl), address(1)));
 		registerContract(store, "TokenggAVAX", address(xToken));
 
-		xToken.initialize(store, token);
+		xToken.initialize(store, token, 0);
 	}
 
 	/// @dev test totalAssets call before, during, and after a reward distribution that starts on cycle start

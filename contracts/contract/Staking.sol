@@ -7,8 +7,8 @@ import {Oracle} from "./Oracle.sol";
 import {ProtocolDAO} from "./ProtocolDAO.sol";
 import {Storage} from "./Storage.sol";
 import {Vault} from "./Vault.sol";
+import {TokenGGP} from "./tokens/TokenGGP.sol";
 
-import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 
@@ -23,12 +23,13 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 	staker.item<index>.ggpStaked = Total amt of GGP staked across all minipools
 	staker.item<index>.avaxStaked = Total amt of AVAX staked across all minipools
 	staker.item<index>.avaxAssigned = Total amt of liquid staker funds assigned across all minipools
-	staker.item<index>.avaxAssignedHighWater = Highest amt of liquid staker funds assigned during a GGP rewards cycle
+	staker.item<index>.avaxValidating = Total amt of liquid staker funds used for validation across all minipools
+	staker.item<index>.avaxValidatingHighWater = Highest amt of liquid staker funds used for validation during a GGP rewards cycle
 */
 
 /// @title GGP staking and staker attributes
 contract Staking is Base {
-	using SafeTransferLib for ERC20;
+	using SafeTransferLib for TokenGGP;
 	using SafeTransferLib for address;
 	using FixedPointMathLib for uint256;
 
@@ -46,8 +47,8 @@ contract Staking is Base {
 		uint256 ggpStaked;
 		uint256 avaxStaked;
 		uint256 avaxAssigned;
-		uint256 avaxAssignedHighWater;
-		uint256 minipoolCount;
+		uint256 avaxValidating;
+		uint256 avaxValidatingHighWater;
 		uint256 rewardsStartTime;
 		uint256 ggpRewards;
 		uint256 lastRewardsCycleCompleted;
@@ -55,16 +56,14 @@ contract Staking is Base {
 
 	uint256 internal constant TENTH = 0.1 ether;
 
-	ERC20 public immutable ggp;
-
-	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		ggp = ggp_;
 	}
 
 	/// @notice Total GGP (stored in vault) assigned to this contract
 	function getTotalGGPStake() public view returns (uint256) {
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		return vault.balanceOfToken("Staking", ggp);
 	}
 
@@ -119,7 +118,7 @@ contract Staking is Base {
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")), amount);
 	}
 
-	/* AVAX ASSIGNED */
+	/* AVAX ASSIGNED + REQUESTED */
 
 	/// @notice The amount of AVAX a given staker is assigned by the protocol (for minipool creation)
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
@@ -142,51 +141,46 @@ contract Staking is Base {
 		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")), amount);
 	}
 
-	/* AVAX ASSIGNED HIGH-WATER */
+	/* AVAX VALIDATING */
+
+	/// @notice The amount of AVAX a given staker has validating
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	function getAVAXValidating(address stakerAddr) public view returns (uint256) {
+		int256 stakerIndex = getIndexOf(stakerAddr);
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")));
+	}
+
+	/// @notice Increase the amount of AVAX a given staker has validating
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	/// @param amount Amount to increase
+	function increaseAVAXValidating(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")), amount);
+	}
+
+	/// @notice Decrease the amount of AVAX a given staker has validating
+	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
+	/// @param amount Amount to decrease
+	function decreaseAVAXValidating(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
+		int256 stakerIndex = requireValidStaker(stakerAddr);
+		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")), amount);
+	}
+
+	/* AVAX VALIDATING HIGH-WATER */
 
 	/// @notice Largest total AVAX amt assigned to a staker during a rewards period
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function getAVAXAssignedHighWater(address stakerAddr) public view returns (uint256) {
+	function getAVAXValidatingHighWater(address stakerAddr) public view returns (uint256) {
 		int256 stakerIndex = getIndexOf(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")));
+		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidatingHighWater")));
 	}
 
-	/// @notice Increase the AVAXAssignedHighWater
+	/// @notice Set AVAXValidatingHighWater to value passed in
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseAVAXAssignedHighWater(address stakerAddr, uint256 amount) public onlyRegisteredNetworkContract {
+	/// @param amount New value for AVAXValidatingHighWater
+	function setAVAXValidatingHighWater(address stakerAddr, uint256 amount) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), amount);
-	}
-
-	/// @notice Reset the AVAXAssignedHighWater to what the current AVAXAssigned is for the staker
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function resetAVAXAssignedHighWater(address stakerAddr) public onlyRegisteredNetworkContract {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
-		uint256 currAVAXAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
-		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssignedHighWater")), currAVAXAssigned);
-	}
-
-	/* MINIPOOL COUNT */
-
-	/// @notice The number of minipools the given staker has
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function getMinipoolCount(address stakerAddr) public view returns (uint256) {
-		int256 stakerIndex = getIndexOf(stakerAddr);
-		return getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
-	}
-
-	/// @notice Increase the number of minipools the given staker has
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function increaseMinipoolCount(address stakerAddr) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
-		addUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
-	}
-
-	/// @notice Decrease the number of minipools the given staker has
-	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	function decreaseMinipoolCount(address stakerAddr) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
-		int256 stakerIndex = requireValidStaker(stakerAddr);
-		subUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")), 1);
+		setUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidatingHighWater")), amount);
 	}
 
 	/* REWARDS START TIME */
@@ -200,7 +194,6 @@ contract Staking is Base {
 
 	/// @notice Set the timestamp when the staker registered for GGP rewards
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
-	// TODO cant use onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) since we also call from increaseMinipoolCount. Wat do?
 	function setRewardsStartTime(address stakerAddr, uint256 time) public onlyRegisteredNetworkContract {
 		int256 stakerIndex = requireValidStaker(stakerAddr);
 		if (time > block.timestamp) {
@@ -281,13 +274,15 @@ contract Staking is Base {
 	/// @notice Returns effective collateralization ratio which will be used to pay out rewards
 	///         based on current GGP price and AVAX high water mark. A staker can earn GGP rewards
 	///         on up to 150% collat ratio
+	/// returns collateral ratio of GGP -> avax high water
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @return Ratio is between 0%-150% (0-1.5 ether)
 	function getEffectiveRewardsRatio(address stakerAddr) public view returns (uint256) {
-		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
-		if (avaxAssignedHighWater == 0) {
+		uint256 avaxValidatingHighWater = getAVAXValidatingHighWater(stakerAddr);
+		if (avaxValidatingHighWater == 0) {
 			return 0;
 		}
+
 		if (getCollateralizationRatio(stakerAddr) < TENTH) {
 			return 0;
 		}
@@ -295,7 +290,7 @@ contract Staking is Base {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
 		uint256 ggpStakedInAvax = getGGPStake(stakerAddr).mulWadDown(ggpPriceInAvax);
-		uint256 ratio = ggpStakedInAvax.divWadDown(avaxAssignedHighWater);
+		uint256 ratio = ggpStakedInAvax.divWadDown(avaxValidatingHighWater);
 
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 maxRatio = dao.getMaxCollateralizationRatio();
@@ -308,16 +303,18 @@ contract Staking is Base {
 	function getEffectiveGGPStaked(address stakerAddr) external view returns (uint256) {
 		Oracle oracle = Oracle(getContractAddress("Oracle"));
 		(uint256 ggpPriceInAvax, ) = oracle.getGGPPriceInAVAX();
+		uint256 avaxValidatingHighWater = getAVAXValidatingHighWater(stakerAddr);
 
-		uint256 avaxAssignedHighWater = getAVAXAssignedHighWater(stakerAddr);
+		// ratio of ggp to avax high water
 		uint256 ratio = getEffectiveRewardsRatio(stakerAddr);
-		return avaxAssignedHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);
+		return avaxValidatingHighWater.mulWadDown(ratio).divWadDown(ggpPriceInAvax);
 	}
 
 	/// @notice Accept a GGP stake
 	/// @param amount The amount of GGP being staked
-	function stakeGGP(uint256 amount) external whenNotPaused {
+	function stakeGGP(uint256 amount) external {
 		// Transfer GGP tokens from staker to this contract
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(msg.sender, amount);
 	}
@@ -327,6 +324,7 @@ contract Staking is Base {
 	/// @param amount The amount of GGP being staked
 	function restakeGGP(address stakerAddr, uint256 amount) public onlySpecificRegisteredContract("ClaimNodeOp", msg.sender) {
 		// Transfer GGP tokens from the ClaimNodeOp contract to this contract
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ggp.safeTransferFrom(msg.sender, address(this), amount);
 		_stakeGGP(stakerAddr, amount);
 	}
@@ -334,11 +332,12 @@ contract Staking is Base {
 	/// @notice Stakes GGP in the protocol
 	/// @param stakerAddr The C-chain address of a GGP staker in the protocol
 	/// @param amount The amount of GGP being staked
-	function _stakeGGP(address stakerAddr, uint256 amount) internal {
+	function _stakeGGP(address stakerAddr, uint256 amount) internal whenNotPaused {
 		emit GGPStaked(stakerAddr, amount);
 
 		// Deposit GGP tokens from this contract to vault
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ggp.approve(address(vault), amount);
 		vault.depositToken("Staking", ggp, amount);
 
@@ -355,7 +354,7 @@ contract Staking is Base {
 
 	/// @notice Allows the staker to unstake their GGP if they are over the 150% collateralization ratio
 	/// @param amount The amount of GGP being withdrawn
-	function withdrawGGP(uint256 amount) external whenNotPaused {
+	function withdrawGGP(uint256 amount) external {
 		if (amount > getGGPStake(msg.sender)) {
 			revert InsufficientBalance();
 		}
@@ -370,6 +369,7 @@ contract Staking is Base {
 		}
 
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		vault.withdrawToken(msg.sender, ggp, amount);
 	}
 
@@ -378,6 +378,7 @@ contract Staking is Base {
 	/// @param ggpAmt The amount of GGP being slashed
 	function slashGGP(address stakerAddr, uint256 ggpAmt) public onlySpecificRegisteredContract("MinipoolManager", msg.sender) {
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		decreaseGGPStake(stakerAddr, ggpAmt);
 		vault.transferToken("ProtocolDAO", ggp, ggpAmt);
 	}
@@ -406,8 +407,8 @@ contract Staking is Base {
 		staker.ggpStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpStaked")));
 		staker.avaxAssigned = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxAssigned")));
 		staker.avaxStaked = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxStaked")));
+		staker.avaxValidating = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".avaxValidating")));
 		staker.stakerAddr = getAddress(keccak256(abi.encodePacked("staker.item", stakerIndex, ".stakerAddr")));
-		staker.minipoolCount = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".minipoolCount")));
 		staker.rewardsStartTime = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".rewardsStartTime")));
 		staker.ggpRewards = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".ggpRewards")));
 		staker.lastRewardsCycleCompleted = getUint(keccak256(abi.encodePacked("staker.item", stakerIndex, ".lastRewardsCycleCompleted")));

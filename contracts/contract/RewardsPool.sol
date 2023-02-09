@@ -64,10 +64,11 @@ contract RewardsPool is Base {
 	/// @return currentTotalSupply current total supply
 	/// @return newTotalSupply supply after mint
 	function getInflationAmt() public view returns (uint256 currentTotalSupply, uint256 newTotalSupply) {
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationRate = dao.getInflationIntervalRate();
 		uint256 inflationIntervalsElapsed = getInflationIntervalsElapsed();
-		currentTotalSupply = dao.getTotalGGPCirculatingSupply();
+		currentTotalSupply = ggp.totalSupply();
 		newTotalSupply = currentTotalSupply;
 
 		// Compute inflation for total inflation intervals elapsed
@@ -78,22 +79,22 @@ contract RewardsPool is Base {
 	}
 
 	/// @notice Releases more GGP if appropriate
-	/// @dev Mint new tokens if enough time has elapsed since last mint
+	/// @dev Mint new tokens if enough time has elapsed since last mint. Also, minting 0 tokens will revert.
 	function inflate() internal {
-		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
 		uint256 inflationIntervalElapsedSeconds = (block.timestamp - getInflationIntervalStartTime());
 		(uint256 currentTotalSupply, uint256 newTotalSupply) = getInflationAmt();
 
 		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
-		if (newTotalSupply > ggp.totalSupply()) {
-			revert MaximumTokensReached();
-		}
 
 		uint256 newTokens = newTotalSupply - currentTotalSupply;
 
+		if (newTotalSupply > ggp.MAX_SUPPLY()) {
+			newTokens = ggp.MAX_SUPPLY() - currentTotalSupply;
+		}
+
 		emit GGPInflated(newTokens);
 
-		dao.setTotalGGPCirculatingSupply(newTotalSupply);
+		ggp.mint(newTokens);
 
 		addUint(keccak256("RewardsPool.InflationIntervalStartTime"), inflationIntervalElapsedSeconds);
 		setUint(keccak256("RewardsPool.RewardsCycleTotalAmt"), newTokens);
@@ -149,11 +150,15 @@ contract RewardsPool is Base {
 	/// @notice Checking if enough time has passed since the last rewards cycle
 	/// @dev Rialto calls this to see if at least one cycle has passed
 	function canStartRewardsCycle() public view returns (bool) {
+		if (getBool(keccak256(abi.encodePacked("contract.paused", "RewardsPool")))) {
+			return false;
+		}
+
 		return getRewardsCyclesElapsed() > 0 && getInflationIntervalsElapsed() > 0;
 	}
 
 	/// @notice Public function that will run a GGP rewards cycle if possible
-	function startRewardsCycle() external {
+	function startRewardsCycle() external whenNotPaused {
 		if (!canStartRewardsCycle()) {
 			revert UnableToStartRewardsCycle();
 		}
@@ -218,6 +223,11 @@ contract RewardsPool is Base {
 				enabledMultisigs[enabledCount] = addr;
 				enabledCount++;
 			}
+		}
+		// If there are no enabled multisigs then the tokens will just sit under the multisig manager contract
+		if (enabledCount == 0) {
+			vault.transferToken("MultisigManager", ggp, allotment);
+			return;
 		}
 
 		// Dirty hack to cut unused elements off end of return value (from RP)

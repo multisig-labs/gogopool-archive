@@ -27,6 +27,7 @@ import {format} from "sol-utils/format.sol";
 import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 abstract contract BaseTest is Test {
@@ -34,6 +35,8 @@ abstract contract BaseTest is Test {
 
 	address internal constant ZERO_ADDRESS = address(0x00);
 	uint128 internal constant MAX_AMT = 1_000_000 ether;
+
+	uint256 private constant TOTAL_INITIAL_SUPPLY = 22500000 ether;
 
 	uint256 private randNonce = 0;
 	uint160 private actorCounter = 0;
@@ -48,6 +51,7 @@ abstract contract BaseTest is Test {
 	TokenGGP public ggp;
 	TokenggAVAX public ggAVAX;
 	TokenggAVAX public ggAVAXImpl;
+	ProxyAdmin public proxyAdmin;
 	WAVAX public wavax;
 	MinipoolManager public minipoolMgr;
 	MultisigManager public multisigMgr;
@@ -83,7 +87,7 @@ abstract contract BaseTest is Test {
 		oracle = new Oracle(store);
 		registerContract(store, "Oracle", address(oracle));
 
-		ggp = new TokenGGP();
+		ggp = new TokenGGP(store);
 		registerContract(store, "TokenGGP", address(ggp));
 
 		addAllowedTokens(address(ggp));
@@ -91,23 +95,28 @@ abstract contract BaseTest is Test {
 		wavax = new WAVAX();
 
 		ggAVAXImpl = new TokenggAVAX();
-		ggAVAX = TokenggAVAX(deployProxy(address(ggAVAXImpl), guardian));
+		proxyAdmin = new ProxyAdmin();
+		// prettier-ignore
+		ggAVAX = TokenggAVAX(
+			deployProxyWithAdmin(
+				address(ggAVAXImpl),
+			 	abi.encodeWithSelector(ggAVAXImpl.initialize.selector, store, wavax, 0),
+				proxyAdmin,
+				guardian
+			)
+		);
 		registerContract(store, "TokenggAVAX", address(ggAVAX));
 
-		vm.stopPrank();
-		ggAVAX.initialize(store, wavax);
-		vm.startPrank(guardian);
-
-		minipoolMgr = new MinipoolManager(store, ggp, ggAVAX);
+		minipoolMgr = new MinipoolManager(store);
 		registerContract(store, "MinipoolManager", address(minipoolMgr));
 
 		multisigMgr = new MultisigManager(store);
 		registerContract(store, "MultisigManager", address(multisigMgr));
 
-		staking = new Staking(store, ggp);
+		staking = new Staking(store);
 		registerContract(store, "Staking", address(staking));
 
-		nopClaim = new ClaimNodeOp(store, ggp);
+		nopClaim = new ClaimNodeOp(store);
 		registerContract(store, "ClaimNodeOp", address(nopClaim));
 
 		daoClaim = new ClaimProtocolDAO(store);
@@ -342,5 +351,16 @@ abstract contract BaseTest is Test {
 		bytes memory data;
 		TransparentUpgradeableProxy uups = new TransparentUpgradeableProxy(address(impl), deployer, data);
 		return payable(uups);
+	}
+
+	function deployProxyWithAdmin(
+		address impl,
+		bytes memory toCall,
+		ProxyAdmin admin,
+		address owner
+	) internal returns (address payable) {
+		TransparentUpgradeableProxy transparentProxy = new TransparentUpgradeableProxy(address(impl), address(proxyAdmin), toCall);
+		admin.transferOwnership(owner);
+		return payable(transparentProxy);
 	}
 }

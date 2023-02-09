@@ -7,6 +7,9 @@ import {Storage} from "./Storage.sol";
 
 /// @title Settings for the Protocol
 contract ProtocolDAO is Base {
+	error ContractAlreadyRegistered();
+	error ExistingContractNotRegistered();
+	error InvalidContract();
 	error ValueNotWithinRange();
 
 	modifier valueNotGreaterThanOne(uint256 setterValue) {
@@ -31,7 +34,6 @@ contract ProtocolDAO is Base {
 
 		// RewardsPool
 		setUint(keccak256("ProtocolDAO.RewardsCycleSeconds"), 28 days); // The time in which a claim period will span in seconds - 28 days by default
-		setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), 18_000_000 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimMultisig"), 0.20 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimNodeOp"), 0.70 ether);
 		setUint(keccak256("ProtocolDAO.ClaimingContractPct.ClaimProtocolDAO"), 0.10 ether);
@@ -46,7 +48,7 @@ contract ProtocolDAO is Base {
 		// Minipool
 		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXStakingAmt"), 2_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolNodeCommissionFeePct"), 0.15 ether);
-		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 10_000 ether);
+		setUint(keccak256("ProtocolDAO.MinipoolMaxAVAXAssignment"), 1_000 ether);
 		setUint(keccak256("ProtocolDAO.MinipoolMinAVAXAssignment"), 1_000 ether);
 		setUint(keccak256("ProtocolDAO.ExpectedAVAXRewardsRate"), 0.1 ether); // Annual rate as pct of 1 avax
 		setUint(keccak256("ProtocolDAO.MinipoolCancelMoratoriumSeconds"), 5 days);
@@ -85,16 +87,6 @@ contract ProtocolDAO is Base {
 	/// @notice Get how many seconds in a rewards cycle
 	function getRewardsCycleSeconds() public view returns (uint256) {
 		return getUint(keccak256("ProtocolDAO.RewardsCycleSeconds"));
-	}
-
-	/// @notice The total amount of GGP that is in circulation
-	function getTotalGGPCirculatingSupply() public view returns (uint256) {
-		return getUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"));
-	}
-
-	/// @notice Set the amount of GGP that is in circulation
-	function setTotalGGPCirculatingSupply(uint256 amount) public onlySpecificRegisteredContract("RewardsPool", msg.sender) {
-		return setUint(keccak256("ProtocolDAO.TotalGGPCirculatingSupply"), amount);
 	}
 
 	/// @notice The percentage a contract is owed for a rewards cycle
@@ -185,33 +177,56 @@ contract ProtocolDAO is Base {
 	//*** Contract Registration ***
 
 	/// @notice Register a new contract with Storage
-	/// @param addr Contract address to register
-	/// @param name Contract name to register
-	function registerContract(address addr, string memory name) public onlyGuardian {
-		setBool(keccak256(abi.encodePacked("contract.exists", addr)), true);
-		setAddress(keccak256(abi.encodePacked("contract.address", name)), addr);
-		setString(keccak256(abi.encodePacked("contract.name", addr)), name);
+	/// @param contractName Contract name to register
+	/// @param contractAddr Contract address to register
+	function registerContract(string memory contractName, address contractAddr) public onlyGuardian {
+		if (getAddress(keccak256(abi.encodePacked("contract.address", contractName))) != address(0)) {
+			revert ContractAlreadyRegistered();
+		}
+
+		if (bytes(contractName).length == 0 || contractAddr == address(0)) {
+			revert InvalidContract();
+		}
+
+		setBool(keccak256(abi.encodePacked("contract.exists", contractAddr)), true);
+		setAddress(keccak256(abi.encodePacked("contract.address", contractName)), contractAddr);
+		setString(keccak256(abi.encodePacked("contract.name", contractAddr)), contractName);
 	}
 
 	/// @notice Unregister a contract with Storage
-	/// @param addr Contract address to unregister
-	function unregisterContract(address addr) public onlyGuardian {
-		string memory name = getContractName(addr);
-		deleteBool(keccak256(abi.encodePacked("contract.exists", addr)));
+	/// @param name Name of contract to unregister
+	function unregisterContract(string memory name) public onlyGuardian {
+		address addr = getContractAddress(name);
 		deleteAddress(keccak256(abi.encodePacked("contract.address", name)));
 		deleteString(keccak256(abi.encodePacked("contract.name", addr)));
+		deleteBool(keccak256(abi.encodePacked("contract.exists", addr)));
 	}
 
-	/// @notice Upgrade a contract by unregistering the existing address, and registring a new address and name
-	/// @param newAddr Address of the new contract
-	/// @param newName Name of the new contract
+	/// @notice Upgrade a contract by registring a new address and name, and unregistering the existing address
+	/// @param contractName Name of the new contract
 	/// @param existingAddr Address of the existing contract to be deleted
-	function upgradeExistingContract(
-		address newAddr,
-		string memory newName,
-		address existingAddr
+	/// @param newAddr Address of the new contract
+	function upgradeContract(
+		string memory contractName,
+		address existingAddr,
+		address newAddr
 	) external onlyGuardian {
-		registerContract(newAddr, newName);
-		unregisterContract(existingAddr);
+		if (
+			bytes(getString(keccak256(abi.encodePacked("contract.name", existingAddr)))).length == 0 ||
+			getAddress(keccak256(abi.encodePacked("contract.address", contractName))) == address(0)
+		) {
+			revert ExistingContractNotRegistered();
+		}
+
+		if (newAddr == address(0)) {
+			revert InvalidContract();
+		}
+
+		setAddress(keccak256(abi.encodePacked("contract.address", contractName)), newAddr);
+		setString(keccak256(abi.encodePacked("contract.name", newAddr)), contractName);
+		setBool(keccak256(abi.encodePacked("contract.exists", newAddr)), true);
+
+		deleteString(keccak256(abi.encodePacked("contract.name", existingAddr)));
+		deleteBool(keccak256(abi.encodePacked("contract.exists", existingAddr)));
 	}
 }

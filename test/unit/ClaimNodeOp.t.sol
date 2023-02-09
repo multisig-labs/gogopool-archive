@@ -13,32 +13,6 @@ contract ClaimNodeOpTest is BaseTest {
 
 	function setUp() public override {
 		super.setUp();
-		distributeInitialSupply();
-	}
-
-	function distributeInitialSupply() public {
-		// note: guardian is minted 100% of the supply
-		vm.startPrank(guardian);
-
-		uint256 companyAllocation = TOTAL_INITIAL_SUPPLY.mulWadDown(.32 ether);
-		uint256 pDaoAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.3233 ether);
-		uint256 seedInvestorAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.1567 ether);
-		uint256 rewardsPoolAllo = TOTAL_INITIAL_SUPPLY.mulWadDown(.20 ether); //4.5 million
-
-		// approve vault deposits for all tokens that won't be in company wallet
-		ggp.approve(address(vault), TOTAL_INITIAL_SUPPLY - companyAllocation);
-
-		// 33% to the pDAO wallet
-		vault.depositToken("ProtocolDAO", ggp, pDaoAllo);
-
-		// TODO make an actual vesting contract
-		// 15.67% to vesting smart contract
-		vault.depositToken("ProtocolDAO", ggp, seedInvestorAllo);
-
-		// 20% to staking rewards contract
-		vault.depositToken("RewardsPool", ggp, rewardsPoolAllo);
-
-		vm.stopPrank();
 	}
 
 	function testGetRewardsCycleTotal() public {
@@ -62,23 +36,33 @@ contract ClaimNodeOpTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
 		vm.stopPrank();
 
 		address nodeOp2 = getActorWithTokens("nodeOp2", MAX_AMT, MAX_AMT);
 		vm.startPrank(nodeOp2);
 		ggp.approve(address(staking), MAX_AMT);
 		staking.stakeGGP(100 ether);
+		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
+		vm.stopPrank();
+
+		address nodeOp3 = getActorWithTokens("nodeOp2", MAX_AMT, MAX_AMT);
+		vm.startPrank(nodeOp2);
+		ggp.approve(address(staking), MAX_AMT);
+		staking.stakeGGP(100 ether);
+		// do not start
 		createMinipool(1000 ether, 1000 ether, 2 weeks);
 		vm.stopPrank();
 
 		assertFalse(nopClaim.isEligible(nodeOp1));
 		assertFalse(nopClaim.isEligible(nodeOp2));
+		assertFalse(nopClaim.isEligible(nodeOp3));
 
 		skip(dao.getRewardsEligibilityMinSeconds());
 
 		assertTrue(nopClaim.isEligible(nodeOp1));
 		assertTrue(nopClaim.isEligible(nodeOp2));
+		assertFalse(nopClaim.isEligible(nodeOp3));
 	}
 
 	function testCalculateAndDistributeRewardsInvalidStaker() public {
@@ -133,7 +117,7 @@ contract ClaimNodeOpTest is BaseTest {
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
 		assertEq(staking.getGGPRewards(nodeOp1), (nopClaim.getRewardsCycleTotal()) / 2);
 		assertEq(staking.getLastRewardsCycleCompleted(nodeOp1), rewardsPool.getRewardsCycleCount());
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), staking.getAVAXAssigned(nodeOp1));
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), staking.getAVAXAssigned(nodeOp1));
 
 		vm.expectRevert(abi.encodeWithSelector(ClaimNodeOp.RewardsAlreadyDistributedToStaker.selector, address(nodeOp1)));
 		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
@@ -171,5 +155,47 @@ contract ClaimNodeOpTest is BaseTest {
 		assertEq(ggp.balanceOf(nodeOp1), (nodeOp1PriorBalanceGGP + (totalRewardsThisCycle / 4)));
 		assertEq(staking.getGGPStake(nodeOp1), (100 ether + (totalRewardsThisCycle / 4)));
 		assertEq(staking.getGGPRewards(nodeOp1), 0);
+	}
+
+	function testClaimAndRestakePaused() public {
+		// start reward cycle
+		skip(dao.getRewardsCycleSeconds());
+		rewardsPool.startRewardsCycle();
+
+		// deposit ggAVAX
+		address nodeOp1 = getActorWithTokens("nodeOp1", MAX_AMT, MAX_AMT);
+		vm.startPrank(nodeOp1);
+		ggAVAX.depositAVAX{value: 2000 ether}();
+
+		// stake ggp and create minipool
+		ggp.approve(address(staking), MAX_AMT);
+		staking.stakeGGP(100 ether);
+		MinipoolManager.Minipool memory mp = createMinipool(1000 ether, 1000 ether, 2 weeks);
+		vm.stopPrank();
+
+		// launch minipool
+		rialto.processMinipoolStart(mp.nodeID);
+
+		// distribute rewards
+		vm.prank(address(rialto));
+		nopClaim.calculateAndDistributeRewards(nodeOp1, 200 ether);
+
+		// pause staking
+		vm.prank(address(ocyticus));
+		dao.pauseContract("Staking");
+
+		uint256 stakerRewards = staking.getGGPRewards(nodeOp1);
+		uint256 previousBalance = ggp.balanceOf(nodeOp1);
+
+		// ensure restaking fails
+		vm.startPrank(nodeOp1);
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		nopClaim.claimAndRestake((stakerRewards / 2)); // claim half of their rewards
+
+		//  claim entire reward amount
+		nopClaim.claimAndRestake((stakerRewards)); // claim all rewards
+		vm.stopPrank();
+
+		assertEq(ggp.balanceOf(nodeOp1), previousBalance + stakerRewards);
 	}
 }

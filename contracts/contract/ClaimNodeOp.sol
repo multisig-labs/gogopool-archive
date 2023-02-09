@@ -10,7 +10,6 @@ import {Storage} from "./Storage.sol";
 import {TokenGGP} from "./tokens/TokenGGP.sol";
 import {Vault} from "./Vault.sol";
 
-import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
 
 /// @title Node Operators claiming GGP Rewards
@@ -24,11 +23,8 @@ contract ClaimNodeOp is Base {
 
 	event GGPRewardsClaimed(address indexed to, uint256 amount);
 
-	ERC20 public immutable ggp;
-
-	constructor(Storage storageAddress, ERC20 ggp_) Base(storageAddress) {
+	constructor(Storage storageAddress) Base(storageAddress) {
 		version = 1;
-		ggp = ggp_;
 	}
 
 	/// @notice Get the total rewards for the most recent cycle
@@ -48,7 +44,7 @@ contract ClaimNodeOp is Base {
 		uint256 rewardsStartTime = staking.getRewardsStartTime(stakerAddr);
 		uint256 elapsedSecs = (block.timestamp - rewardsStartTime);
 		ProtocolDAO dao = ProtocolDAO(getContractAddress("ProtocolDAO"));
-		return (rewardsStartTime != 0 && elapsedSecs >= dao.getRewardsEligibilityMinSeconds());
+		return (rewardsStartTime != 0 && elapsedSecs >= dao.getRewardsEligibilityMinSeconds() && staking.getAVAXValidatingHighWater(stakerAddr) > 0);
 	}
 
 	/// @notice Set the share of rewards for a staker as a fraction of 1 ether
@@ -74,12 +70,12 @@ contract ClaimNodeOp is Base {
 			revert InvalidAmount();
 		}
 
-		staking.resetAVAXAssignedHighWater(stakerAddr);
+		uint256 currAVAXValidating = staking.getAVAXValidating(stakerAddr);
+		staking.setAVAXValidatingHighWater(stakerAddr, currAVAXValidating);
 		staking.increaseGGPRewards(stakerAddr, rewardsAmt);
 
 		// check if their rewards time should be reset
-		uint256 minipoolCount = staking.getMinipoolCount(stakerAddr);
-		if (minipoolCount == 0) {
+		if (staking.getAVAXAssigned(stakerAddr) == 0) {
 			staking.setRewardsStartTime(stakerAddr, 0);
 		}
 	}
@@ -99,6 +95,7 @@ contract ClaimNodeOp is Base {
 		staking.decreaseGGPRewards(msg.sender, ggpRewards);
 
 		Vault vault = Vault(getContractAddress("Vault"));
+		TokenGGP ggp = TokenGGP(getContractAddress("TokenGGP"));
 		uint256 restakeAmt = ggpRewards - claimAmt;
 		if (restakeAmt > 0) {
 			vault.withdrawToken(address(this), ggp, restakeAmt);

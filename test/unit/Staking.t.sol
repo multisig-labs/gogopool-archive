@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./utils/BaseTest.sol";
+import {BaseAbstract} from "../../contracts/contract/BaseAbstract.sol";
 
 contract StakingTest is BaseTest {
 	using FixedPointMathLib for uint256;
@@ -136,40 +137,6 @@ contract StakingTest is BaseTest {
 		assert(staking.getAVAXAssigned(address(nodeOp1)) == 990 ether);
 	}
 
-	function testGetMinipoolCount() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(200 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 2);
-		vm.stopPrank();
-	}
-
-	function testIncreaseMinipoolCount() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
-		vm.stopPrank();
-
-		vm.prank(address(minipoolMgr));
-		staking.increaseMinipoolCount(address(nodeOp1));
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 2);
-	}
-
-	function testDecreaseMinipoolCount() public {
-		vm.startPrank(nodeOp1);
-		staking.stakeGGP(100 ether);
-		createMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
-		vm.stopPrank();
-
-		vm.prank(address(minipoolMgr));
-		staking.decreaseMinipoolCount(address(nodeOp1));
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 0);
-	}
-
 	function testGetRewardsStartTime() public {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(200 ether);
@@ -207,7 +174,6 @@ contract StakingTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
 		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
 		vm.stopPrank();
 
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
@@ -255,7 +221,6 @@ contract StakingTest is BaseTest {
 		vm.startPrank(nodeOp1);
 		staking.stakeGGP(100 ether);
 		createAndStartMinipool(1000 ether, 1000 ether, 2 weeks);
-		assert(staking.getMinipoolCount(address(nodeOp1)) == 1);
 		vm.stopPrank();
 
 		vm.expectRevert(RewardsPool.UnableToStartRewardsCycle.selector);
@@ -353,6 +318,27 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
+	function testStakeAndWithdrawGGPPaused() public {
+		uint256 initialBalance = ggp.balanceOf(nodeOp1);
+		vm.prank(nodeOp1);
+		staking.stakeGGP(100 ether);
+
+		assertEq(staking.getGGPStake(nodeOp1), 100 ether);
+		assertEq(ggp.balanceOf(nodeOp1), initialBalance - 100 ether);
+
+		vm.prank(address(ocyticus));
+		dao.pauseContract("Staking");
+
+		vm.startPrank(nodeOp1);
+		vm.expectRevert(BaseAbstract.ContractPaused.selector);
+		staking.stakeGGP(100 ether);
+
+		// ensure withdrawing allowed while paused
+		staking.withdrawGGP(100 ether);
+		assertEq(staking.getGGPStake(nodeOp1), 0);
+		assertEq(ggp.balanceOf(nodeOp1), initialBalance);
+	}
+
 	function testWithdrawGGP() public {
 		uint256 amt = 100 ether;
 		vm.startPrank(nodeOp1);
@@ -399,24 +385,40 @@ contract StakingTest is BaseTest {
 		vm.stopPrank();
 	}
 
-	// To ensure we are managing getAVAXAssigned and getAVAXAssignedHighWater seperately now
-	function testAVAXHighWaterMark() public {
+	// To ensure we are managing getAVAXValidating and getAVAXValidatingHighWater seperately now
+	function testAVAXValidatingHighWaterMark() public {
 		vm.prank(nodeOp1);
 		staking.stakeGGP(100 ether);
 
 		vm.startPrank(address(minipoolMgr));
-		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
-		staking.increaseAVAXAssigned(nodeOp1, 1000 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
-		staking.increaseAVAXAssignedHighWater(nodeOp1, 1000 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
+		assertEq(staking.getAVAXValidating(nodeOp1), 0 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0 ether);
 
-		staking.decreaseAVAXAssigned(nodeOp1, 1000 ether);
+		staking.increaseAVAXValidating(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0 ether);
+		staking.setAVAXValidatingHighWater(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 1000 ether);
+
+		staking.decreaseAVAXValidating(nodeOp1, 1000 ether);
 		assertEq(staking.getAVAXAssigned(nodeOp1), 0 ether);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 1000 ether);
-		staking.resetAVAXAssignedHighWater(nodeOp1);
-		assertEq(staking.getAVAXAssignedHighWater(nodeOp1), 0 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 1000 ether);
+
+		staking.setAVAXValidatingHighWater(nodeOp1, 0 ether);
+		assertEq(staking.getAVAXValidatingHighWater(nodeOp1), 0 ether);
+		vm.stopPrank();
+	}
+
+	function testAVAXValidating() public {
+		vm.prank(nodeOp1);
+		staking.stakeGGP(100 ether);
+
+		vm.startPrank(address(minipoolMgr));
+		staking.increaseAVAXValidating(nodeOp1, 1000 ether);
+
+		assertEq(staking.getAVAXValidating(nodeOp1), 1000 ether);
+
+		staking.decreaseAVAXValidating(nodeOp1, 1000 ether);
+		assertEq(staking.getAVAXValidating(nodeOp1), 0);
 		vm.stopPrank();
 	}
 }
