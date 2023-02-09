@@ -12,7 +12,6 @@ import {IWithdrawer} from "../../../contracts/interface/IWithdrawer.sol";
 import {IWAVAX} from "../../../contracts/interface/IWAVAX.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import {ERC20} from "@rari-capital/solmate/src/mixins/ERC4626.sol";
 import {FixedPointMathLib} from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
@@ -21,7 +20,7 @@ import {SafeTransferLib} from "@rari-capital/solmate/src/utils/SafeTransferLib.s
 import {console} from "forge-std/console.sol";
 
 /// @dev Local variables and parent contracts must remain in order between contract upgrades
-contract MockTokenggAVAXV2Safe is Initializable, ERC4626UpgradeableSafe, UUPSUpgradeable, BaseUpgradeable {
+contract MockTokenggAVAXV2Safe is Initializable, ERC4626UpgradeableSafe, BaseUpgradeable {
 	using SafeTransferLib for ERC20;
 	using SafeTransferLib for address;
 	using SafeCastLib for *;
@@ -275,9 +274,6 @@ contract MockTokenggAVAXV2Safe is Initializable, ERC4626UpgradeableSafe, UUPSUpg
 	) internal override {
 		totalReleasedAssets += amount;
 	}
-
-	/// @notice Will revert if msg.sender is not authorized to upgrade the contract
-	function _authorizeUpgrade(address newImplementation) internal override onlyGuardian {}
 
 	function versionHash() internal view override returns (bytes32) {
 		return keccak256(abi.encodePacked(version));
