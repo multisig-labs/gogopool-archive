@@ -139,8 +139,8 @@ contract AVAXStateVariableTest is BaseTest {
 
 		// create minipools
 		MinipoolManager.Minipool memory mp1 = createMinipool(depositAmt, assignmentRequest, duration);
-		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, assignmentRequest, duration);
-		MinipoolManager.Minipool memory mp3 = createMinipool(depositAmt, assignmentRequest, duration);
+		createMinipool(depositAmt, assignmentRequest, duration);
+		createMinipool(depositAmt, assignmentRequest, duration);
 		vm.stopPrank();
 
 		// launch one minipool
@@ -197,8 +197,8 @@ contract AVAXStateVariableTest is BaseTest {
 
 		// create more minipools that are in queue (unlaunched)
 		vm.startPrank(nodeOp);
-		MinipoolManager.Minipool memory mp2 = createMinipool(depositAmt, assignmentRequest, duration);
-		MinipoolManager.Minipool memory mp3 = createMinipool(depositAmt, assignmentRequest, duration);
+		createMinipool(depositAmt, assignmentRequest, duration);
+		createMinipool(depositAmt, assignmentRequest, duration);
 		vm.stopPrank();
 
 		// make sure to distribute ggp before processing first rewards
